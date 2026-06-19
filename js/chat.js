@@ -101,28 +101,54 @@ function sendMsg() {
     
     // AI reply
     if (chatUser.ai) {
-        setTimeout(function() {
-            var reply;
-            if (typeof GEMINI_KEY !== 'undefined' && GEMINI_KEY) {
-                fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + GEMINI_KEY, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: 'You are ' + chatUser.name + ' on ChronoX. Reply naturally in 1-2 sentences to: "' + t + '"' }] }]
-                    })
-                }).then(function(res) { return res.json(); }).then(function(data) {
-                    reply = data.candidates[0].content.parts[0].text;
-                    saveAIReply(reply);
-                }).catch(function() {
-                    reply = getFallbackReply(chatUser.uid);
-                    saveAIReply(reply);
-                });
-            } else {
+    setTimeout(function() {
+        var reply;
+        
+        if (typeof GEMINI_KEY !== 'undefined' && GEMINI_KEY) {
+            fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + GEMINI_KEY, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: 'You are ' + chatUser.name + ' on a social app called ChronoX. Reply naturally like a human in 1-2 sentences to: "' + t + '"' }] }]
+                })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                reply = data.candidates[0].content.parts[0].text;
+                saveAIReply(reply);
+            })
+            .catch(function() {
                 reply = getFallbackReply(chatUser.uid);
                 saveAIReply(reply);
-            }
-        }, 1000 + Math.random() * 2000);
-    }
+            });
+        } else {
+            reply = getFallbackReply(chatUser.uid);
+            saveAIReply(reply);
+        }
+    }, 1000 + Math.random() * 2000);
+}
+
+function saveAIReply(reply) {
+    db.collection('chats').doc(chatId).collection('messages').add({
+        senderId: chatUser.uid,
+        text: reply,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        seen: true
+    });
+    db.collection('chats').doc(chatId).update({
+        lastMessage: reply,
+        lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
+    });
+}
+
+function getFallbackReply(uid) {
+    var replies = {
+        annaya_ai: ["Hey! How are you? 😊", "That's interesting! Tell me more 💫", "Just painting something new 🎨", "Life's good! What about you?"],
+        tarun_ai: ["Yo! What's up? 👋", "Coding all day bro 💻", "That's cool! Tell me more", "What games do you play? 🎮"],
+        chronox_ai: ["How can I help you? 🕷️", "ChronoX has many features! Ask me anything.", "I can help with the app. What do you need?"]
+    };
+    var r = replies[uid] || replies.chronox_ai;
+    return r[Math.floor(Math.random() * r.length)];
 }
 
 function saveAIReply(reply) {
