@@ -2,139 +2,162 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ChronoX - Premium Social Network</title>
-    
-    <!-- Firebase SDK -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronoX</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-    
-    <!-- CSS -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/games.css">
-    
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#D4AF37">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ChronoX">
-    <link rel="apple-touch-icon" href="https://img.icons8.com/color/144/spider.png">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+        body{background:#0A0E27;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center}
+        .box{background:rgba(19,24,66,0.9);padding:30px;border-radius:16px;border:1px solid rgba(212,175,55,0.3);width:90%;max-width:400px;text-align:center}
+        h2{color:#D4AF37;margin-bottom:5px}
+        p{color:rgba(255,255,255,0.6);font-size:12px;margin-bottom:20px}
+        input{width:100%;padding:12px;margin:8px 0;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:14px}
+        button{width:100%;padding:14px;margin:10px 0;background:#D4AF37;color:#0A0E27;border:none;border-radius:8px;font-weight:bold;font-size:15px;cursor:pointer}
+        .link{color:#D4AF37;font-size:13px;cursor:pointer;display:block;margin:10px 0}
+        #main{display:none}
+        #splash{text-align:center}
+        #splash h1{font-size:50px;margin:10px 0}
+        .emoji{font-size:60px}
+    </style>
 </head>
 <body>
-    <!-- Splash Screen -->
-    <div id="splashScreen">
-        <div class="splash-logo">🕷️</div>
-        <div class="splash-brand">ChronoX</div>
-        <div class="splash-loader"></div>
-    </div>
 
-    <!-- Auth Container -->
-    <div id="authContainer"></div>
+<div id="splash">
+    <div class="emoji">🕷️</div>
+    <h1 style="color:#D4AF37">ChronoX</h1>
+    <p>Loading...</p>
+</div>
 
-    <!-- Main App -->
-    <div id="mainApp">
-        <div id="contentArea"></div>
-        <nav id="bottomNav">
-            <button class="nav-btn active" data-page="home">🏠<span>Home</span></button>
-            <button class="nav-btn" data-page="chats">💬<span>Chats</span></button>
-            <button class="nav-btn" data-page="discover">🔍<span>Discover</span></button>
-            <button class="nav-btn" data-page="quiz">❓<span>Quiz</span></button>
-            <button class="nav-btn" data-page="games">🎮<span>Games</span></button>
-            <button class="nav-btn" data-page="profile">👤<span>Profile</span></button>
-        </nav>
-    </div>
+<div id="auth" style="display:none"></div>
+<div id="main"></div>
 
-    <!-- Chat Window -->
-    <div id="chatWindow">
-        <div id="chatHeader">
-            <button onclick="closeChat()">←</button>
-            <img id="chatAvatar" src="" alt="">
-            <div>
-                <div id="chatName"></div>
-                <div id="chatStatus"></div>
-            </div>
-            <div id="chatActions">
-                <label for="mediaUpload" class="chat-action-btn">📎</label>
-                <input type="file" id="mediaUpload" accept="image/*,video/*" multiple hidden onchange="sendMedia()">
-            </div>
-        </div>
-        <div id="chatMessages"></div>
-        <div id="chatInputArea">
-            <input type="text" id="msgInput" placeholder="Type a message...">
-            <button id="sendBtn" onclick="sendMessage()">➤</button>
-        </div>
-    </div>
+<script>
+// 🔴 APNA FIREBASE CONFIG YAHAN DAALO
+const firebaseConfig = {
+    apiKey: "AIzaSyBXXXXXXXXXXXXXXXXXXXXXX",
+    authDomain: "chronox-xxxxx.firebaseapp.com",
+    projectId: "chronox-xxxxx",
+    storageBucket: "chronox-xxxxx.appspot.com",
+    messagingSenderId: "XXXXXXXXXXXX",
+    appId: "1:XXXXXXXXXXXX:web:XXXXXXXXXXXXXXXX"
+};
 
-    <!-- User Profile Modal -->
-    <div id="userProfileModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button onclick="closeModal('userProfileModal')">←</button>
-                <h2>Profile</h2>
-                <button class="three-dots-btn" onclick="showUserOptions()">⋮</button>
-            </div>
-            <div id="userProfileContent"></div>
-        </div>
-    </div>
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-    <!-- User Options Dropdown -->
-    <div id="userOptionsDropdown" class="dropdown">
-        <button onclick="aboutAccount()">ℹ️ About Account</button>
-        <button onclick="reportUser()">🚩 Report</button>
-        <button onclick="blockUser()">🚫 Block</button>
-    </div>
+let currentUser = null;
 
-    <!-- Games Modal -->
-    <div id="gamesModal" class="modal">
-        <div class="modal-content" id="gamesContent"></div>
-    </div>
-
-    <!-- Quiz Modal -->
-    <div id="quizModal" class="modal">
-        <div class="modal-content" id="quizContent"></div>
-    </div>
-
-    <!-- Generic Modal -->
-    <div id="genericModal" class="modal">
-        <div class="modal-content" id="genericModalContent"></div>
-    </div>
-
-    <!-- Toast -->
-    <div id="toast"></div>
-
-    <!-- Scripts -->
-    <script src="js/firebase-config.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/chat.js"></script>
-    <script src="js/profile.js"></script>
-    <script src="js/search.js"></script>
-    <script src="js/achievements.js"></script>
-    <script src="js/ai/annaya.js"></script>
-    <script src="js/ai/tarun.js"></script>
-    <script src="js/ai/chronox-ai.js"></script>
-    <script src="js/games/tictactoe.js"></script>
-    <script src="js/games/memory.js"></script>
-    <script src="js/games/quiz.js"></script>
-    <script src="js/games/snake-ladder.js"></script>
-    <script src="js/games/uno.js"></script>
-    <script src="js/games/ludo.js"></script>
-    <script src="js/games/games-main.js"></script>
-    <script src="js/multiplayer.js"></script>
-    <script src="js/notifications.js"></script>
-    <script src="js/moderation.js"></script>
-    
-    <!-- Service Worker -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(() => console.log('✅ SW registered'))
-                .catch(err => console.log('SW error:', err));
+// Splash then auth
+setTimeout(() => {
+    document.getElementById('splash').style.display = 'none';
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            showMain();
+        } else {
+            showLogin();
         }
-    </script>
+    });
+}, 2000);
+
+function showLogin() {
+    const authDiv = document.getElementById('auth');
+    authDiv.style.display = 'flex';
+    authDiv.style.justifyContent = 'center';
+    authDiv.style.alignItems = 'center';
+    authDiv.style.height = '100vh';
+    authDiv.innerHTML = `
+        <div class="box">
+            <div class="emoji">🕷️</div>
+            <h2>ChronoX</h2>
+            <p>Premium Social Network</p>
+            <input id="lemail" placeholder="Email" type="email"><br>
+            <input id="lpass" placeholder="Password" type="password"><br>
+            <button onclick="login()">Sign In</button>
+            <span class="link" onclick="showSignup()">Create New Account</span>
+        </div>
+    `;
+}
+
+function showSignup() {
+    const authDiv = document.getElementById('auth');
+    authDiv.innerHTML = `
+        <div class="box">
+            <div class="emoji">🕷️</div>
+            <h2>Join ChronoX</h2>
+            <input id="sname" placeholder="Full Name"><br>
+            <input id="suser" placeholder="Username"><br>
+            <input id="sage" placeholder="Age" type="number"><br>
+            <input id="semail" placeholder="Email" type="email"><br>
+            <input id="spass" placeholder="Password" type="password"><br>
+            <button onclick="signup()">Create Account</button>
+            <span class="link" onclick="showLogin()">Already have account?</span>
+        </div>
+    `;
+}
+
+async function login() {
+    const e = document.getElementById('lemail').value;
+    const p = document.getElementById('lpass').value;
+    if(!e||!p) return alert('Fill all fields');
+    try {
+        await auth.signInWithEmailAndPassword(e, p);
+    } catch(x) {
+        alert(x.message);
+    }
+}
+
+async function signup() {
+    const n = document.getElementById('sname').value;
+    const u = document.getElementById('suser').value;
+    const a = parseInt(document.getElementById('sage').value);
+    const e = document.getElementById('semail').value;
+    const p = document.getElementById('spass').value;
+    
+    if(!n||!u||!a||!e||!p) return alert('Fill all fields');
+    if(a < 12) return alert('Must be 12+');
+    if(p.length < 6) return alert('Password: 6+ chars');
+    
+    try {
+        const cred = await auth.createUserWithEmailAndPassword(e, p);
+        await db.collection('users').doc(cred.user.uid).set({
+            uid: cred.user.uid, name: n, username: '@'+u, age: a, email: e,
+            bio: '', avatar: '', posts: 0, followers: [], following: [],
+            blockedUsers: [], achievements: [], streak: 0,
+            level: {current: 1, title: 'Explorer', progress: 0},
+            stats: {achievements: 0, totalMessages: 0},
+            onlineStatus: 'online'
+        });
+        alert('Account created! Welcome to ChronoX 🎉');
+    } catch(x) {
+        alert(x.message);
+    }
+}
+
+function showMain() {
+    document.getElementById('auth').style.display = 'none';
+    const main = document.getElementById('main');
+    main.style.display = 'block';
+    main.style.padding = '20px';
+    main.style.textAlign = 'center';
+    main.innerHTML = `
+        <div class="emoji">🕷️</div>
+        <h1 style="color:#D4AF37">ChronoX</h1>
+        <p>Welcome! You are logged in.</p>
+        <p style="color:#D4AF37;margin-top:20px">User: ${currentUser.email}</p>
+        <button onclick="logout()" style="margin-top:20px;background:#FF4757">Logout</button>
+    `;
+}
+
+function logout() {
+    auth.signOut();
+    currentUser = null;
+    document.getElementById('main').style.display = 'none';
+    showLogin();
+}
+</script>
 </body>
 </html>
