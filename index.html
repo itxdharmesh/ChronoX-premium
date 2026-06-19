@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ChronoX</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+        :root{--g:#D4AF37;--gl:#F5E6A3;--d:#0A0E27;--c:rgba(19,24,66,0.7);--b:rgba(212,175,55,0.2)}
+        body{background:linear-gradient(135deg,#0A0E27,#131842);color:#fff;height:100vh;overflow:hidden}
+        #splash{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--d);display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999;transition:0.5s}
+        #splash.hidden{opacity:0;pointer-events:none}
+        .brand{font-size:38px;font-weight:900;background:linear-gradient(135deg,#D4AF37,#F5E6A3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:15px 0}
+        #authScreen{position:fixed;top:0;left:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;z-index:8888;background:rgba(0,0,0,0.6)}
+        #authScreen.show{display:flex}
+        .auth-box{width:92%;max-width:400px;background:var(--c);backdrop-filter:blur(25px);border:1px solid var(--b);border-radius:20px;padding:30px 25px;text-align:center}
+        .inp{width:100%;padding:13px 15px;margin:7px 0;background:rgba(255,255,255,0.06);border:1px solid var(--b);border-radius:10px;color:#fff;font-size:15px;outline:none}
+        .inp:focus{border-color:var(--g)}
+        .btn{width:100%;padding:14px;margin:10px 0;background:linear-gradient(135deg,#D4AF37,#F5E6A3);color:var(--d);border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+        .link{color:var(--gl);cursor:pointer;font-size:13px;margin:5px;display:inline-block}
+        #mainApp{position:relative;z-index:1;display:none;height:100vh;flex-direction:column}
+        #mainApp.show{display:flex}
+        .bnav{position:fixed;bottom:0;left:0;width:100%;background:rgba(10,14,39,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--b);display:flex;justify-content:space-around;padding:8px 0 18px;z-index:100}
+        .bnav-btn{background:none;border:none;color:rgba(255,255,255,0.6);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:5px 12px;font-size:10px;font-weight:600;text-transform:uppercase}
+        .bnav-btn.active{color:var(--g)}
+        .bnav-btn .icon{font-size:22px}
+        .content{flex:1;overflow-y:auto;padding:20px 15px 80px}
+        .page{display:none;animation:fadeIn 0.3s}
+        .page.active{display:block}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        .card{background:var(--c);backdrop-filter:blur(20px);border:1px solid var(--b);border-radius:16px;padding:18px;margin-bottom:14px}
+        .chat-item{display:flex;align-items:center;padding:14px;background:var(--c);border:1px solid var(--b);border-radius:14px;margin-bottom:8px;cursor:pointer;gap:12px}
+        .avatar{width:52px;height:52px;border-radius:50%;border:2px solid var(--g);object-fit:cover;background:#1a1f4e}
+        #chatWindow{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--d);z-index:500;display:none;flex-direction:column}
+        #chatWindow.show{display:flex}
+        .chat-header{display:flex;align-items:center;padding:15px;background:var(--c);border-bottom:1px solid var(--b);gap:12px}
+        .chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:10px}
+        .msg-sent{align-self:flex-end;background:linear-gradient(135deg,#D4AF37,#F5E6A3);color:var(--d);padding:12px 16px;border-radius:18px;max-width:75%}
+        .msg-rec{align-self:flex-start;background:var(--c);border:1px solid var(--b);padding:12px 16px;border-radius:18px;max-width:75%}
+        .chat-input-area{display:flex;padding:12px 15px;gap:10px;background:var(--c);border-top:1px solid var(--b)}
+        #msgInput{flex:1;padding:12px 18px;background:rgba(255,255,255,0.05);border:1px solid var(--b);border-radius:25px;color:#fff;outline:none}
+        #sendBtn{width:45px;height:45px;background:linear-gradient(135deg,#D4AF37,#F5E6A3);border:none;border-radius:50%;color:var(--d);font-size:20px;cursor:pointer}
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:6000;display:none;align-items:center;justify-content:center}
+        .modal.show{display:flex}
+        .modal-box{width:90%;max-width:400px;background:#131842;border:1px solid var(--b);border-radius:20px;padding:25px}
+        .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--g);color:var(--d);padding:12px 24px;border-radius:25px;z-index:9999;font-weight:600;font-size:13px}
+        .toast.error{background:#FF4757;color:#fff}
+        .profile-top{display:flex;align-items:center;gap:20px;margin-bottom:15px}
+        .stats{display:flex;gap:18px}
+        .stat{text-align:center;cursor:pointer}
+        .stat-num{font-size:18px;font-weight:700;color:var(--g);display:block}
+        .stat-label{font-size:10px;color:rgba(255,255,255,0.6)}
+        .actions{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:15px}
+        .act-btn{padding:10px;background:rgba(255,255,255,0.04);border:1px solid var(--b);border-radius:10px;color:#fff;cursor:pointer;font-size:12px;text-align:center}
+        .btn-out{width:100%;padding:14px;margin:5px 0;background:transparent;border:1px solid var(--g);color:var(--g);border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+        .captcha{background:rgba(255,255,255,0.05);border:1px solid var(--b);border-radius:10px;padding:15px;margin:12px 0;text-align:left}
+        .captcha-box{width:24px;height:24px;border:2px solid var(--g);border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-right:10px}
+        .captcha-box.checked{background:var(--g)}
+        .captcha-box.checked::after{content:'✓';color:var(--d);font-weight:bold}
+        .emoji-logo{font-size:50px;text-align:center;margin:10px 0}
+        .blue-tick{display:inline-block;width:16px;height:16px;background:#1E90FF;border-radius:50%;text-align:center;line-height:16px;font-size:10px;color:#fff;margin-left:4px}
+        @media(min-width:768px){.content{max-width:600px;margin:0 auto}.bnav{max-width:600px;left:50%;transform:translateX(-50%);border-radius:20px 20px 0 0}}
+    </style>
+</head>
+<body>
+
+<div id="splash">
+    <div class="emoji-logo">🕷️</div>
+    <div class="brand">ChronoX</div>
+    <div style="color:rgba(255,255,255,0.6)">Premium Social Network</div>
+</div>
+
+<div id="authScreen"></div>
+
+<div id="mainApp">
+    <div class="content" id="contentArea"></div>
+    <nav class="bnav">
+        <button class="bnav-btn active" data-page="home"><span class="icon">🏠</span>Home</button>
+        <button class="bnav-btn" data-page="chats"><span class="icon">💬</span>Chats</button>
+        <button class="bnav-btn" data-page="search"><span class="icon">🔍</span>Search</button>
+        <button class="bnav-btn" data-page="profile"><span class="icon">👤</span>Profile</button>
+    </nav>
+</div>
+
+<div id="chatWindow">
+    <div class="chat-header">
+        <button onclick="closeChat()" style="background:none;border:none;color:var(--g);font-size:24px;cursor:pointer">←</button>
+        <img class="avatar" id="chatAvatar" style="width:40px;height:40px">
+        <div style="flex:1"><div style="font-weight:600" id="chatName"></div><div style="font-size:11px" id="chatStatus"></div></div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+        <input id="msgInput" placeholder="Type a message...">
+        <button id="sendBtn" onclick="sendMsg()">➤</button>
+    </div>
+</div>
+
+<!-- Modals -->
+<div class="modal" id="editModal">
+    <div class="modal-box">
+        <h3 style="color:var(--g);text-align:center;margin-bottom:20px">Edit Profile</h3>
+        <input class="inp" id="eName" placeholder="Name">
+        <input class="inp" id="eUser" placeholder="Username">
+        <textarea class="inp" id="eBio" placeholder="Bio" rows="3" style="resize:none"></textarea>
+        <button class="btn" onclick="saveProfile()">Save</button>
+        <button class="btn-out" onclick="closeModal('editModal')">Cancel</button>
+    </div>
+</div>
+
+<div class="modal" id="forgotModal">
+    <div class="modal-box">
+        <h3 style="color:var(--g);text-align:center;margin-bottom:20px">Reset Password</h3>
+        <input class="inp" id="resetEmail" placeholder="Email" type="email">
+        <div class="captcha"><div class="captcha-box" id="fcaptcha" onclick="this.classList.toggle('checked')"></div><span style="color:rgba(255,255,255,0.6);font-size:13px">I'm not a robot</span></div>
+        <button class="btn" onclick="resetPass()">Send Link</button>
+        <button class="btn-out" onclick="closeModal('forgotModal')">Cancel</button>
+    </div>
+</div>
+
+<div class="modal" id="listModal">
+    <div class="modal-box">
+        <h3 style="color:var(--g);text-align:center;margin-bottom:20px" id="listTitle"></h3>
+        <div id="listContent"></div>
+        <button class="btn-out" onclick="closeModal('listModal')">Close</button>
+    </div>
+</div>
+
+<div class="modal" id="privacyModal">
+    <div class="modal-box">
+        <h3 style="color:var(--g);text-align:center;margin-bottom:20px">Privacy</h3>
+        <button class="btn-out" onclick="closeModal('privacyModal');document.getElementById('passModal').classList.add('show')">🔑 Change Password</button>
+        <button class="btn-out" onclick="closeModal('privacyModal');showBlocked()">🚫 Blocked Users</button>
+        <button class="btn-out" onclick="closeModal('privacyModal');resetAch()">🔄 Reset Achievements</button>
+        <button class="btn-out" onclick="closeModal('privacyModal')">Close</button>
+    </div>
+</div>
+
+<div class="modal" id="passModal">
+    <div class="modal-box">
+        <h3 style="color:var(--g);text-align:center;margin-bottom:20px">Change Password</h3>
+        <input class="inp" id="oldPass" placeholder="Current Password" type="password">
+        <input class="inp" id="newPass" placeholder="New Password" type="password">
+        <input class="inp" id="confPass" placeholder="Confirm Password" type="password">
+        <button class="btn" onclick="changePass()">Update</button>
+        <button class="btn-out" onclick="closeModal('passModal')">Cancel</button>
+    </div>
+</div>
+
+<div class="modal" id="blockModal">
+    <div class="modal-box">
+        <h3 style="color:var(--g);text-align:center;margin-bottom:20px">Blocked Users</h3>
+        <div id="blockList"></div>
+        <button class="btn-out" onclick="closeModal('blockModal')">Close</button>
+    </div>
+</div>
+
+<div class="modal" id="achModal">
+    <div class="modal-box">
+        <h3 style="color:var(--g);text-align:center;margin-bottom:20px">Achievements</h3>
+        <div id="achList"></div>
+        <button class="btn-out" onclick="closeModal('achModal')">Close</button>
+    </div>
+</div>
+
+<script>
+// ========== FIREBASE CONFIG - YEH BADALO ==========
+const firebaseConfig = {
+  apiKey: "AIzaSyBROVVwRZfnPJcBy1y1jwkG3D124m7S7zw",
+  authDomain: "chronox-4562a.firebaseapp.com",
+  projectId: "chronox-4562a",
+  storageBucket: "chronox-4562a.firebasestorage.app",
+  messagingSenderId: "88388929062",
+  appId: "1:88388929062:web:ec830cab64b8b207dac8e7",
+  measurementId: "G-LMWYZ8RSKN"
+};
+
+// ========== GOOGLE GEMINI API (OPTIONAL) ==========
+const GEMINI_KEY = "AQ.Ab8RN6JeA-wi9QbkIrCgUYAmOaIRQE3w9t7SJ2Kuy8PrWr3O5g";
+
+// ========== INIT ==========
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+let user = null, data = null, chatId = null, chatUser = null, listener = null;
+
+// Stars
+for(let i=0;i<80;i++){
+    let s=document.createElement('div');
+    s.style.cssText=`position:fixed;left:${Math.random()*100}%;top:${Math.random()*100}%;width:${Math.random()*3+1}px;height:${Math.random()*3+1}px;background:#fff;border-radius:50%;opacity:${Math.random()*0.4+0.2};z-index:0`;
+    document.body.appendChild(s);
+}
+
+// Splash
+setTimeout(()=>{
+    document.getElementById('splash').classList.add('hidden');
+    auth.onAuthStateChanged(async u=>{
+        if(u){user=u;data=(await db.collection('users').doc(u.uid).get()).data()||{};await streak();app();}
+        else login();
+    });
+},2000);
+
+// ========== AUTH ==========
+function login(){
+    document.getElementById('mainApp').classList.remove('show');
+    document.getElementById('authScreen').classList.add('show');
+    document.getElementById('authScreen').innerHTML=`
+        <div class="auth-box">
+            <div class="emoji-logo">🕷️</div>
+            <h2 style="color:var(--g)">ChronoX</h2>
+            <input class="inp" id="lemail" placeholder="Email" type="email">
+            <input class="inp" id="lpass" placeholder="Password" type="password">
+            <button class="btn" onclick="signIn()">Sign In</button>
+            <span class="link" onclick="forgot()">Forgot Password?</span>
+            <span class="link" onclick="signup()">Create Account</span>
+        </div>`;
+}
+
+function signup(){
+    document.getElementById('authScreen').innerHTML=`
+        <div class="auth-box">
+            <div class="emoji-logo">🕷️</div>
+            <h2 style="color:var(--g)">Join ChronoX</h2>
+            <input class="inp" id="sname" placeholder="Full Name">
+            <input class="inp" id="suser" placeholder="Username (a-z, 0-9, ., _)">
+            <input class="inp" id="sage" placeholder="Age" type="number">
+            <input class="inp" id="semail" placeholder="Email" type="email">
+            <input class="inp" id="spass" placeholder="Password (6+ chars)" type="password">
+            <input class="inp" id="scpass" placeholder="Confirm Password" type="password">
+            <div class="captcha"><div class="captcha-box" id="scaptcha" onclick="this.classList.toggle('checked')"></div><span style="color:rgba(255,255,255,0.6);font-size:13px">I'm not a robot</span></div>
+            <button class="btn" onclick="createAccount()">Create Account</button>
+            <span class="link" onclick="login()">Already have account?</span>
+        </div>`;
+}
+
+function forgot(){document.getElementById('forgotModal').classList.add('show');}
+
+async function signIn(){
+    let e=document.getElementById('lemail').value,p=document.getElementById('lpass').value;
+    if(!e||!p)return toast('Fill all fields','error');
+    try{await auth.signInWithEmailAndPassword(e,p);}catch(x){toast(x.message,'error');}
+}
+
+async function createAccount(){
+    let n=document.getElementById('sname').value;
+    let u=document.getElementById('suser').value;
+    let a=parseInt(document.getElementById('sage').value);
+    let e=document.getElementById('semail').value;
+    let p=document.getElementById('spass').value;
+    let cp=document.getElementById('scpass').value;
+    if(!n||!u||!a||!e||!p)return toast('Fill all fields','error');
+    if(a<12)return toast('Must be 12+','error');
+    if(p.length<6)return toast('Password: 6+ chars','error');
+    if(p!==cp)return toast('Passwords dont match','error');
+    if(!/^[a-zA-Z0-9._]+$/.test(u))return toast('Invalid username','error');
+    if(!document.getElementById('scaptcha').classList.contains('checked'))return toast('Verify captcha','error');
+    let snap=await db.collection('users').where('username','==','@'+u).get();
+    if(!snap.empty)return toast('Username taken!','error');
+    try{
+        let cred=await auth.createUserWithEmailAndPassword(e,p);
+        await db.collection('users').doc(cred.user.uid).set({
+            uid:cred.user.uid,name:n,username:'@'+u,age:a,email:e,bio:'',avatar:'',
+            posts:0,followers:[],following:[],blockedUsers:[],
+            stats:{chats:0,achievements:0,totalMessages:0},
+            level:{current:1,title:'Explorer',progress:0},
+            achievements:[],streak:0,bestStreak:0,
+            lastActive:null,lastUsernameChange:null,usernameChangeCount:0,
+            onlineStatus:'offline',lastSeen:null,recentSearches:[]
+        });
+        toast('Account created! 🎉');
+    }catch(x){toast(x.message,'error');}
+}
+
+async function resetPass(){
+    let e=document.getElementById('resetEmail').value;
+    if(!e)return toast('Enter email','error');
+    if(!document.getElementById('fcaptcha').classList.contains('checked'))return toast('Verify captcha','error');
+    try{await auth.sendPasswordResetEmail(e);toast('Link sent! 📧');closeModal('forgotModal');}catch(x){toast(x.message,'error');}
+}
+
+// ========== APP ==========
+function app(){
+    document.getElementById('authScreen').classList.remove('show');
+    document.getElementById('mainApp').classList.add('show');
+    document.querySelectorAll('.bnav-btn').forEach(b=>b.addEventListener('click',function(){nav(this.dataset.page);}));
+    nav('home');
+    db.collection('users').doc(user.uid).update({onlineStatus:'online'});
+}
+
+function nav(page){
+    document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelector(`[data-page="${page}"]`).classList.add('active');
+    let c=document.getElementById('contentArea');
+    if(page==='home')home(c);
+    if(page==='chats')chats(c);
+    if(page==='search')search(c);
+    if(page==='profile')profile(c);
+}
+
+async function streak(){
+    let ref=db.collection('users').doc(user.uid);
+    let d=(await ref.get()).data();
+    let today=new Date();today.setHours(0,0,0,0);
+    let last=d.lastActive?d.lastActive.toDate():null;
+    let s=d.streak||0;
+    if(last){last.setHours(0,0,0,0);let diff=(today-last)/86400000;if(diff===1)s++;else if(diff>1)s=1;}
+    else s=1;
+    await ref.update({streak:s,lastActive:new Date(),bestStreak:Math.max(s,d.bestStreak||0)});
+    data.streak=s;data.bestStreak=Math.max(s,d.bestStreak||0);
+}
+
+// ========== HOME ==========
+async function home(c){
+    let lb='';
+    try{
+        let snap=await db.collection('users').orderBy('stats.achievements','desc').limit(10).get();
+        let i=0;
+        snap.forEach(doc=>{if(doc.id!==user.uid){let u=doc.data();i++;lb+=`<div style="display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid rgba(255,255,255,0.05)"><span style="font-weight:800;width:30px;color:${i<=3?'var(--g)':'#fff'}">#${i}</span><img src="${u.avatar||av(u.name)}" style="width:40px;height:40px;border-radius:50%;border:2px solid var(--g)" onerror="this.src=av('${u.name}')"><div style="flex:1"><b>${u.name}</b><br><span style="font-size:11px;color:var(--gl)">${u.username}</span></div><span style="color:var(--g);font-weight:700">🏆${u.stats?.achievements||0}</span></div>`;}});
+    }catch(e){}
+    c.innerHTML=`
+        <div class="card" style="text-align:center"><div class="emoji-logo">🕷️</div><h2 style="color:var(--g)">${data.name}</h2><p style="color:var(--gl)">${data.username}</p></div>
+        <div class="card" style="display:flex;align-items:center;gap:12px"><span style="font-size:40px">🔥</span><div><h1 style="color:var(--g)">${data.streak||0} Days</h1><small style="color:rgba(255,255,255,0.6)">Streak • Best: ${data.bestStreak||0}</small></div></div>
+        <div class="card"><h3 style="color:var(--g);margin-bottom:12px">🏆 Leaderboard</h3>${lb||'No data'}</div>`;
+}
+
+// ========== CHATS ==========
+function chats(c){
+    c.innerHTML='<h2 style="color:var(--g);margin-bottom:15px">💬 Messages</h2><div id="chatList"></div>';
+    loadChats();
+}
+
+function loadChats(){
+    let ai=[{id:'annaya_ai',n:'Annaya',a:'👩‍🦰'},{id:'tarun_ai',n:'Tarun',a:'👨‍💻'},{id:'chronox_ai',n:'ChronoX AI',a:'🕷️'}];
+    db.collection('chats').where('participants','array-contains',user.uid).orderBy('lastMessageTime','desc').onSnapshot(async snap=>{
+        let h='';
+        for(let a of ai){
+            let doc=await db.collection('chats').doc(`ai_${user.uid}_${a.id}`).get();
+            let d=doc.data()||{};
+            h+=`<div class="chat-item" onclick="openAIChat('${a.id}','${a.n}','${a.a}')"><div style="width:52px;height:52px;border-radius:50%;border:2px solid var(--g);display:flex;align-items:center;justify-content:center;font-size:30px;background:#1a1f4e">${a.a}</div><div style="flex:1"><b>${a.n} <span class="blue-tick">✓</span></b><br><small style="color:rgba(255,255,255,0.6)">${d.lastMessage||'Tap to chat'}</small></div><small style="color:#2ED573">● Online</small></div>`;
+        }
+        for(let doc of snap.docs){
+            let chat=doc.data();
+            let oid=chat.participants.find(id=>id!==user.uid);
+            if(['annaya_ai','tarun_ai','chronox_ai'].includes(oid))continue;
+            let ud=await db.collection('users').doc(oid).get();
+            let u=ud.data();
+            if(!u||(data.blockedUsers||[]).includes(oid))continue;
+            h+=`<div class="chat-item" onclick="openChat('${doc.id}','${oid}','${u.name}','${u.avatar||''}')"><img class="avatar" src="${u.avatar||av(u.name)}" onerror="this.src=av('${u.name}')"><div style="flex:1"><b>${u.name}</b><br><small style="color:rgba(255,255,255,0.6)">${chat.lastMessage||''}</small></div><small style="color:var(--gl)">${chat.lastMessageTime?tf(chat.lastMessageTime.toDate()):''}</small></div>`;
+        }
+        document.getElementById('chatList').innerHTML=h||'<p style="text-align:center;color:rgba(255,255,255,0.6);padding:40px">No chats</p>';
+    });
+}
+
+function openAIChat(aid,name,avt){
+    chatId=`ai_${user.uid}_${aid}`;
+    chatUser={uid:aid,name,avatar:avt,ai:true};
+    document.getElementById('chatWindow').classList.add('show');
+    document.getElementById('chatAvatar').style.display='none';
+    document.getElementById('chatName').textContent=name;
+    document.getElementById('chatStatus').textContent='● Active now';
+    document.getElementById('chatStatus').style.color='#2ED573';
+    document.getElementById('chatMessages').innerHTML='';
+    document.getElementById('msgInput').value='';
+    if(listener)listener();
+    listener=db.collection('chats').doc(chatId).collection('messages').orderBy('timestamp','asc').onSnapshot(snap=>{
+        let mc=document.getElementById('chatMessages');mc.innerHTML='';
+        snap.forEach(doc=>{let m=doc.data();mc.innerHTML+=`<div class="${m.senderId===user.uid?'msg-sent':'msg-rec'}">${m.text}<br><small style="opacity:0.7">${m.timestamp?tf(m.timestamp.toDate()):''}</small></div>`;});
+        mc.scrollTop=mc.scrollHeight;
+    });
+}
+
+function openChat(cid,uid,name,avt){
+    chatId=cid;chatUser={uid,name,avatar:avt,ai:false};
+    document.getElementById('chatWindow').classList.add('show');
+    document.getElementById('chatAvatar').style.display='';
+    document.getElementById('chatAvatar').src=avt||av(name);
+    document.getElementById('chatAvatar').onerror=function(){this.src=av(name);};
+    document.getElementById('chatName').textContent=name;
+    document.getElementById('chatStatus').textContent='...';
+    document.getElementById('chatMessages').innerHTML='';
+    document.getElementById('msgInput').value='';
+    db.collection('users').doc(uid).get().then(doc=>{
+        let u=doc.data();
+        let s=document.getElementById('chatStatus');
+        if(u.onlineStatus==='online'){s.textContent='● Active now';s.style.color='#2ED573';}
+        else{s.textContent='Offline';s.style.color='rgba(255,255,255,0.6)';}
+    });
+    if(listener)listener();
+    listener=db.collection('chats').doc(cid).collection('messages').orderBy('timestamp','asc').onSnapshot(snap=>{
+        let mc=document.getElementById('chatMessages');mc.innerHTML='';
+        snap.forEach(doc=>{let m=doc.data();mc.innerHTML+=`<div class="${m.senderId===user.uid?'msg-sent':'msg-rec'}">${m.text}<br><small style="opacity:0.7">${m.timestamp?tf(m.timestamp.toDate()):''}</small>${m.senderId===user.uid?`<br><small style="color:rgba(255,255,255,0.4)">${m.seen?'✓✓ Seen':'✓ Sent'}</small>`:''}</div>`;});
+        mc.scrollTop=mc.scrollHeight;
+    });
+}
+
+function closeChat(){
+    document.getElementById('chatWindow').classList.remove('show');
+    if(listener)listener();listener=null;chatId=null;chatUser=null;
+}
+
+async function sendMsg(){
+    let t=document.getElementById('msgInput').value.trim();
+    if(!t||!chatId||!chatUser)return;
+    await db.collection('chats').doc(chatId).collection('messages').add({senderId:user.uid,text:t,timestamp:firebase.firestore.FieldValue.serverTimestamp(),seen:false});
+    await db.collection('chats').doc(chatId).set({participants:[user.uid,chatUser.uid],lastMessage:t,lastMessageTime:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    document.getElementById('msgInput').value='';
+    if(chatUser.ai){
+        setTimeout(async()=>{
+            let r=aiReply(chatUser.uid);
+            await db.collection('chats').doc(chatId).collection('messages').add({senderId:chatUser.uid,text:r,timestamp:firebase.firestore.FieldValue.serverTimestamp(),seen:true});
+            await db.collection('chats').doc(chatId).update({lastMessage:r,lastMessageTime:firebase.firestore.FieldValue.serverTimestamp()});
+        },1000+Math.random()*2000);
+    }
+}
+
+function aiReply(id){
+    let r={annaya_ai:["Hey! How are you? 😊","That's interesting! 💫","Just painting 🎨","Life's good!"],tarun_ai:["Yo! 👋","Coding all day 💻","Cool bro!","What games? 🎮"],chronox_ai:["How can I help? 🕷️","ChronoX has many features!","Use bottom menu to navigate","Earn achievements daily! 🔥"]};
+    let arr=r[id]||r.chronox_ai;
+    return arr[Math.floor(Math.random()*arr.length)];
+}
+
+// ========== SEARCH ==========
+function search(c){
+    let rec=(data.recentSearches||[]).map(s=>`<span style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;color:var(--gl);margin:4px" onclick="document.getElementById('sinput').value='${s}';doSearch('${s}')">${s}</span>`).join('');
+    c.innerHTML=`<h2 style="color:var(--g);margin-bottom:15px">🔍 Discover</h2><input class="inp" id="sinput" placeholder="Search..." onkeyup="doSearch(this.value)" style="margin-bottom:12px"><div style="margin-bottom:12px">${rec}</div><div id="sresults"></div>`;
+}
+
+async function doSearch(q){
+    let c=document.getElementById('sresults');
+    if(!c||!q)return;
+    let snap=await db.collection('users').where('username','>=','@'+q).where('username','<=','@'+q+'\uf8ff').limit(20).get();
+    let users=[];snap.forEach(doc=>{if(doc.id!==user.uid)users.push({id:doc.id,...doc.data()});});
+    if(q.length>=2){let r=data.recentSearches||[];r=[q,...r.filter(s=>s!==q)].slice(0,5);await db.collection('users').doc(user.uid).update({recentSearches:r});data.recentSearches=r;}
+    c.innerHTML=users.filter(u=>!(data.blockedUsers||[]).includes(u.id)).map(u=>`
+        <div class="chat-item"><img class="avatar" src="${u.avatar||av(u.name)}" style="width:48px;height:48px" onerror="this.src=av('${u.name}')"><div style="flex:1"><b>${u.name}</b><br><small style="color:var(--gl)">${u.username}</small></div>
+        ${(u.followers||[]).includes(user.uid)?`<button class="btn-out" style="width:auto;padding:8px 16px" onclick="startChat('${u.id}')">Chat</button>`:`<button class="btn" style="width:auto;padding:8px 16px" onclick="follow('${u.id}',this)">Follow</button>`}</div>`).join('')||'<p style="text-align:center;padding:30px;color:rgba(255,255,255,0.6)">No users</p>';
+}
+
+async function follow(uid,btn){
+    await db.collection('users').doc(user.uid).update({following:firebase.firestore.FieldValue.arrayUnion(uid)});
+    await db.collection('users').doc(uid).update({followers:firebase.firestore.FieldValue.arrayUnion(user.uid)});
+    btn.textContent='Chat';btn.className='btn-out';btn.style.width='auto';btn.style.padding='8px 16px';btn.onclick=()=>startChat(uid);
+    data=(await db.collection('users').doc(user.uid).get()).data();toast('Followed!');
+}
+
+async function startChat(uid){
+    let snap=await db.collection('chats').where('participants','array-contains',user.uid).get();
+    let ec=null;snap.forEach(doc=>{if(doc.data().participants.includes(uid))ec={id:doc.id};});
+    let u=(await db.collection('users').doc(uid).get()).data();
+    if(ec)openChat(ec.id,uid,u.name,u.avatar);
+    else{let ref=await db.collection('chats').add({participants:[user.uid,uid],lastMessage:'',lastMessageTime:firebase.firestore.FieldValue.serverTimestamp()});openChat(ref.id,uid,u.name,u.avatar);}
+}
+
+// ========== PROFILE ==========
+function profile(c){
+    c.innerHTML=`
+        <div class="profile-top">
+            <div style="position:relative"><img class="avatar" src="${data.avatar||av(data.name)}" id="pAv" style="width:85px;height:85px" onerror="this.src=av('${data.name}')"><label for="avUp" style="position:absolute;bottom:0;right:0;width:28px;height:28px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer">📷</label><input type="file" id="avUp" accept="image/*" hidden onchange="upAv()"></div>
+            <div class="stats"><div class="stat"><span class="stat-num">${data.posts||0}</span><span class="stat-label">Posts</span></div><div class="stat" onclick="showList('followers')"><span class="stat-num">${(data.followers||[]).length}</span><span class="stat-label">Followers</span></div><div class="stat" onclick="showList('following')"><span class="stat-num">${(data.following||[]).length}</span><span class="stat-label">Following</span></div></div>
+        </div>
+        <h3>${data.name}</h3><p style="color:var(--gl)">${data.username}</p><p style="color:rgba(255,255,255,0.6);font-size:13px">${data.bio||'No bio'}</p>
+        <div class="actions">
+            <div class="act-btn" onclick="editProf()">✏️ Edit</div>
+            <div class="act-btn" onclick="showAch()">🏆 Achievements</div>
+            <div class="act-btn" onclick="document.getElementById('privacyModal').classList.add('show')">🔒 Privacy</div>
+            <div class="act-btn" onclick="navigator.clipboard.writeText('${data.username}');toast('Copied!')">📤 Share</div>
+        </div>
+        <div class="card"><div style="display:flex;justify-content:space-between"><div><b style="color:var(--g)">${data.level?.title||'Explorer'}</b><br><small>Level ${data.level?.current||1}</small></div><span style="color:var(--g)">${data.stats?.achievements||0} 🏆</span></div><div style="width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:10px;margin-top:10px"><div style="width:${(data.level?.progress||0)%100}%;height:100%;background:linear-gradient(90deg,#D4AF37,#F5E6A3);border-radius:10px"></div></div></div>
+        <button class="btn-out" onclick="logout()" style="color:#FF4757;border-color:#FF4757">🚪 Logout</button>`;
+}
+
+function editProf(){
+    document.getElementById('eName').value=data.name||'';
+    document.getElementById('eUser').value=(data.username||'').replace('@','');
+    document.getElementById('eBio').value=data.bio||'';
+    document.getElementById('editModal').classList.add('show');
+}
+
+async function saveProfile(){
+    let n=document.getElementById('eName').value.trim();
+    let u=document.getElementById('eUser').value.trim();
+    let b=document.getElementById('eBio').value.trim();
+    if(!n||!u)return toast('Required','error');
+    if(!/^[a-zA-Z0-9._]+$/.test(u))return toast('Invalid username','error');
+    let nu='@'+u;
+    if(nu!==data.username){
+        let snap=await db.collection('users').where('username','==',nu).get();
+        if(!snap.empty)return toast('Taken!','error');
+        await db.collection('users').doc(user.uid).update({username:nu,lastUsernameChange:new Date(),usernameChangeCount:(data.usernameChangeCount||0)+1});
+    }
+    await db.collection('users').doc(user.uid).update({name:n,bio:b});
+    data=(await db.collection('users').doc(user.uid).get()).data();
+    closeModal('editModal');nav('profile');toast('Saved!');
+}
+
+async function upAv(){
+    let f=document.getElementById('avUp').files[0];if(!f)return;
+    await storage.ref(`avatars/${user.uid}`).put(f);
+    let url=await storage.ref(`avatars/${user.uid}`).getDownloadURL();
+    await db.collection('users').doc(user.uid).update({avatar:url});
+    data=(await db.collection('users').doc(user.uid).get()).data();nav('profile');toast('Avatar updated!');
+}
+
+async function showList(t){
+    document.getElementById('listModal').classList.add('show');
+    document.getElementById('listTitle').textContent=t==='followers'?'Followers':'Following';
+    let c=document.getElementById('listContent');c.innerHTML='Loading...';
+    let ids=data[t]||[],h='';
+    for(let id of ids){
+        let u=(await db.collection('users').doc(id).get()).data();if(!u)continue;
+        h+=`<div class="chat-item"><img class="avatar" src="${u.avatar||av(u.name)}" style="width:48px;height:48px" onerror="this.src=av('${u.name}')"><div style="flex:1"><b>${u.name}</b><br><small style="color:var(--gl)">${u.username}</small></div><button class="btn-out" style="width:auto;padding:8px 16px" onclick="startChat('${id}')">Chat</button>${t==='following'?`<button class="btn-out" style="width:auto;padding:8px 16px;color:#FF4757;border-color:#FF4757" onclick="unfollow('${id}')">Unfollow</button>`:''}</div>`;
+    }
+    c.innerHTML=h||'<p style="text-align:center;padding:20px;color:rgba(255,255,255,0.6)">None</p>';
+}
+
+async function unfollow(uid){
+    await db.collection('users').doc(user.uid).update({following:firebase.firestore.FieldValue.arrayRemove(uid)});
+    await db.collection('users').doc(uid).update({followers:firebase.firestore.FieldValue.arrayRemove(user.uid)});
+    data=(await db.collection('users').doc(user.uid).get()).data();closeModal('listModal');nav('profile');toast('Unfollowed');
+}
+
+async function showBlocked(){
+    document.getElementById('blockModal').classList.add('show');
+    let c=document.getElementById('blockList');c.innerHTML='Loading...';
+    let ids=data.blockedUsers||[],h='';
+    for(let id of ids){
+        let u=(await db.collection('users').doc(id).get()).data();if(!u)continue;
+        h+=`<div class="chat-item"><img class="avatar" src="${u.avatar||av(u.name)}" style="width:48px;height:48px"><div style="flex:1"><b>${u.name}</b><br><small style="color:var(--gl)">${u.username}</small></div><button class="btn" style="width:auto;padding:8px 16px" onclick="unblock('${id}')">Unblock</button></div>`;
+    }
+    c.innerHTML=h||'<p style="text-align:center;padding:20px;color:rgba(255,255,255,0.6)">None</p>';
+}
+
+async function unblock(uid){
+    await db.collection('users').doc(user.uid).update({blockedUsers:firebase.firestore.FieldValue.arrayRemove(uid)});
+    data=(await db.collection('users').doc(user.uid).get()).data();showBlocked();toast('Unblocked!');
+}
+
+async function changePass(){
+    let o=document.getElementById('oldPass').value,n=document.getElementById('newPass').value,c=document.getElementById('confPass').value;
+    if(!o||!n)return toast('Fill all','error');
+    if(n.length<6)return toast('Min 6 chars','error');
+    if(n!==c)return toast('Dont match','error');
+    try{
+        await user.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(user.email,o));
+        await user.updatePassword(n);closeModal('passModal');toast('Password updated! 🔒');
+    }catch(e){toast('Wrong password','error');}
+}
+
+function showAch(){
+    let all=[{id:'first_msg',n:'First Words',d:'Send first message',i:'💬',p:10},{id:'chatty_10',n:'Chatty',d:'10 messages',i:'💭',p:25},{id:'streak_3',n:'Consistent',d:'3-day streak',i:'🔥',p:30},{id:'first_follow',n:'Making Friends',d:'Follow someone',i:'🤝',p:15},{id:'profile_pic',n:'Looking Good',d:'Upload avatar',i:'📸',p:20},{id:'bio_writer',n:'Storyteller',d:'Write bio',i:'✍️',p:15}];
+    let earned=data.achievements||[];
+    document.getElementById('achModal').classList.add('show');
+    document.getElementById('achList').innerHTML=all.map(a=>`<div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;margin-bottom:8px;background:rgba(255,255,255,0.03);opacity:${earned.includes(a.id)?1:0.4};filter:grayscale(${earned.includes(a.id)?0:1})"><span style="font-size:30px">${a.i}</span><div style="flex:1"><b>${a.n}</b><br><small style="color:rgba(255,255,255,0.6)">${a.d}</small></div><b style="color:var(--g)">${earned.includes(a.id)?'✅ +'+a.p:'🔒 '+a.p+'pts'}</b></div>`).join('');
+}
+
+function resetAch(){if(confirm('Reset?')){db.collection('users').doc(user.uid).update({achievements:[],'stats.achievements':0,'level.progress':0,'level.current':1,'level.title':'Explorer'});toast('Reset!');}}
+
+function logout(){db.collection('users').doc(user.uid).update({onlineStatus:'offline',lastSeen:new Date()});auth.signOut();user=null;data=null;login();}
+
+// ========== UTILS ==========
+function av(n){let i=(n||'U')[0].toUpperCase();return`data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%231a1f4e" width="100" height="100"/><text x="50" y="60" text-anchor="middle" fill="%23D4AF37" font-size="40">${i}</text></svg>`;}
+function tf(d){if(!d)return'';let df=Date.now()-d;if(df<6e4)return'Now';if(df<36e5)return Math.floor(df/6e4)+'m';if(df<864e5)return Math.floor(df/36e5)+'h';return d.toLocaleDateString();}
+function toast(m,t){let e=document.querySelector('.toast');if(e)e.remove();let n=document.createElement('div');n.className='toast'+(t==='error'?' error':'');n.textContent=m;document.body.appendChild(n);setTimeout(()=>n.remove(),3000);}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+document.addEventListener('click',e=>{if(e.target.classList.contains('modal'))e.target.classList.remove('show');});
+document.addEventListener('keypress',e=>{if(e.key==='Enter'&&document.getElementById('chatWindow').classList.contains('show'))sendMsg();});
+</script>
+</body>
+</html>
