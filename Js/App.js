@@ -241,13 +241,30 @@ async function sendMsg() {
     document.getElementById('msgInput').value = '';
     if (chatUser.ai) {
         setTimeout(async () => {
-            const replies = {
-                annaya_ai: ["Hey! 😊", "That's interesting! 💫", "Just painting 🎨", "Life's good!"],
-                tarun_ai: ["Yo! 👋", "Coding all day 💻", "Cool bro!", "What games? 🎮"],
-                chronox_ai: ["How can I help? 🕷️", "ChronoX has many features!", "Ask me anything!"]
-            };
-            const r = replies[chatUser.uid] || replies.chronox_ai;
-            const reply = r[Math.floor(Math.random() * r.length)];
+            let reply;
+            if (typeof GEMINI_KEY !== 'undefined' && GEMINI_KEY) {
+                try {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_KEY}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: `You are ${chatUser.name} on a social app called ChronoX. Reply naturally like a human in 1-2 sentences to: "${t}"` }] }]
+                        })
+                    });
+                    const data = await res.json();
+                    reply = data.candidates[0].content.parts[0].text;
+                } catch(e) {
+                    reply = "Hey! That's interesting! 😊";
+                }
+            } else {
+                const replies = {
+                    annaya_ai: ["Hey! How are you? 😊", "That's interesting! 💫", "Just painting 🎨"],
+                    tarun_ai: ["Yo! 👋", "Coding all day 💻", "Cool bro!"],
+                    chronox_ai: ["How can I help? 🕷️", "ChronoX has features!", "Ask me anything!"]
+                };
+                const r = replies[chatUser.uid] || replies.chronox_ai;
+                reply = r[Math.floor(Math.random() * r.length)];
+            }
             await db.collection('chats').doc(chatId).collection('messages').add({ senderId: chatUser.uid, text: reply, timestamp: firebase.firestore.FieldValue.serverTimestamp(), seen: true });
             await db.collection('chats').doc(chatId).update({ lastMessage: reply, lastMessageTime: firebase.firestore.FieldValue.serverTimestamp() });
         }, 1000 + Math.random() * 2000);
@@ -348,6 +365,117 @@ function openGames() {
         <div class="modal-header"><h2>🎮 Games</h2><button onclick="closeModal('gamesModal')" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer">✕</button></div>
         <button class="btn-out" onclick="startTTT()">❌⭕ Tic Tac Toe</button>
         <button class="btn-out" onclick="startMemory()">🧠 Memory Match</button>
+        <button class="btn-out" onclick="startQuiz()">❓ Quiz</button>`;
+}
+
+// Tic Tac Toe
+let ttt = []; let tttActive = false;
+function startTTT() {
+    ttt = ['', '', '', '', '', '', '', '', '']; tttActive = true;
+    document.getElementById('gamesContent').innerHTML = `
+        <div class="modal-header"><button onclick="openGames()">←</button><h2>Tic Tac Toe</h2><div></div></div>
+        <div id="tttGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:280px;margin:20px auto">
+            ${[0,1,2,3,4,5,6,7,8].map(i => `<div style="aspect-ratio:1;background:var(--card);border:2px solid rgba(212,175,55,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:40px;cursor:pointer" onclick="tttMove(${i})" id="ttt${i}"></div>`).join('')}
+        </div>
+        <p id="tttStatus" style="text-align:center;color:var(--gold)">Your turn (X)</p>`;
+}
+
+function tttMove(i) {
+    if (!tttActive || ttt[i] !== '') return;
+    ttt[i] = 'X'; document.getElementById(`ttt${i}`).textContent = 'X'; document.getElementById(`ttt${i}`).style.color = 'var(--gold)';
+    if (checkWin('X')) { tttActive = false; document.getElementById('tttStatus').textContent = '🎉 You Win!'; return; }
+    if (ttt.every(c => c !== '')) { tttActive = false; document.getElementById('tttStatus').textContent = '🤝 Draw!'; return; }
+    setTimeout(() => {
+        const empty = ttt.map((c, i) => c === '' ? i : null).filter(i => i !== null);
+        const ai = empty[Math.floor(Math.random() * empty.length)];
+        ttt[ai] = 'O'; document.getElementById(`ttt${ai}`).textContent = 'O'; document.getElementById(`ttt${ai}`).style.color = '#FF4757';
+        if (checkWin('O')) { tttActive = false; document.getElementById('tttStatus').textContent = '😞 AI Wins!'; }
+        else if (ttt.every(c => c !== '')) { tttActive = false; document.getElementById('tttStatus').textContent = '🤝 Draw!'; }
+        else document.getElementById('tttStatus').textContent = 'Your turn (X)';
+    }, 500);
+}
+function checkWin(p) {
+    const w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    return w.some(w => w.every(i => ttt[i] === p));
+}
+
+// Memory
+let mem = []; let flipped = []; let matched = []; let moves = 0; let locked = false;
+function startMemory() {
+    const emojis = ['🎮', '🎯', '🎨', '🎵', '🎭', '🎪', '🎲', '🎸'];
+    mem = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+    flipped = []; matched = []; moves = 0; locked = false;
+    document.getElementById('gamesContent').innerHTML = `
+        <div class="modal-header"><button onclick="openGames()">←</button><h2>Memory</h2><div></div></div>
+        <p style="text-align:center;color:var(--gold)">Moves: <span id="memMoves">0</span></p>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:320px;margin:15px auto">
+            ${mem.map((e, i) => `<div style="aspect-ratio:1;background:var(--card);border:2px solid rgba(212,175,55,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:30px;cursor:pointer" onclick="flipMem(${i})" id="mem${i}">❓</div>`).join('')}
+        </div>`;
+}
+function flipMem(i) {
+    if (locked || flipped.includes(i) || matched.includes(i)) return;
+    flipped.push(i); document.getElementById(`mem${i}`).textContent = mem[i];
+    if (flipped.length === 2) {
+        moves++; document.getElementById('memMoves').textContent = moves; locked = true;
+        const [a, b] = flipped;
+        if (mem[a] === mem[b]) { matched.push(a, b); flipped = []; locked = false; if (matched.length === 16) toast('🎉 Done!'); }
+        else { setTimeout(() => { document.getElementById(`mem${a}`).textContent = '❓'; document.getElementById(`mem${b}`).textContent = '❓'; flipped = []; locked = false; }, 800); }
+    }
+}
+
+// Quiz
+let qq = []; let qi = 0; let qs = 0;
+const QUIZ = [
+    { q: "Capital of France?", o: ["London", "Paris", "Berlin", "Madrid"], a: 1 },
+    { q: "Red Planet?", o: ["Venus", "Jupiter", "Mars", "Saturn"], a: 2 },
+    { q: "2+2×2?", o: ["6", "8", "4", "10"], a: 0 },
+    { q: "Mona Lisa painter?", o: ["Van Gogh", "Picasso", "Da Vinci", "Michelangelo"], a: 2 },
+    { q: "Largest ocean?", o: ["Atlantic", "Indian", "Arctic", "Pacific"], a: 3 },
+    { q: "King of Jungle?", o: ["Tiger", "Lion", "Elephant", "Bear"], a: 1 },
+    { q: "H2O is?", o: ["Oxygen", "Hydrogen", "Water", "Air"], a: 2 },
+    { q: "Continents?", o: ["5", "6", "7", "8"], a: 2 },
+    { q: "Fastest animal?", o: ["Lion", "Cheetah", "Horse", "Dog"], a: 1 },
+    { q: "India independence?", o: ["1945", "1947", "1950", "1942"], a: 1 }
+];
+function startQuiz() {
+    qq = QUIZ.sort(() => Math.random() - 0.5).slice(0, 10); qi = 0; qs = 0; showQuizQ();
+}
+function showQuizQ() {
+    if (qi >= qq.length) return showQuizR();
+    const q = qq[qi];
+    document.getElementById('gamesContent').innerHTML = `
+        <div class="modal-header"><h2>Quiz ${qi+1}/10</h2><div></div></div>
+        <h3 style="margin:15px 0">${q.q}</h3>
+        ${q.o.map((o, i) => `<button class="btn-out" onclick="answerQuiz(${i})" style="text-align:left;margin:5px 0">${o}</button>`).join('')}`;
+}
+function answerQuiz(i) {
+    if (qq[qi].a === i) qs++;
+    qi++; showQuizQ();
+}
+function showQuizR() {
+    let emoji, msg;
+    if (qs <= 3) { emoji = '😢'; msg = 'Need Hardwork! Keep learning! 💪'; }
+    else if (qs <= 6) { emoji = '🌟'; msg = 'Good job! Keep going! 📚'; }
+    else if (qs <= 8) { emoji = '😍'; msg = 'Amazing! You rock! 🚀'; }
+    else { emoji = '😱'; msg = 'Excellent! Genius! 👑'; }
+    document.getElementById('gamesContent').innerHTML = `
+        <div style="text-align:center;padding:20px">
+            <div style="font-size:60px">${emoji}</div>
+            <h2 style="color:var(--gold)">${qs}/10</h2>
+            <p>${msg}</p>
+            <button class="btn" onclick="startQuiz()">Try Again</button>
+            <button class="btn-out" onclick="openGames()">Back</button>
+        </div>`;
+}
+
+// ==================== UTILS ====================
+function av(n) { const i = (n || 'U')[0].toUpperCase(); return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%231a1f4e" width="100" height="100"/><text x="50" y="60" text-anchor="middle" fill="%23D4AF37" font-size="40">${i}</text></svg>`; }
+function tf(d) { if (!d) return ''; const df = Date.now() - d; if (df < 60000) return 'Now'; if (df < 3600000) return Math.floor(df / 60000) + 'm'; if (df < 86400000) return Math.floor(df / 3600000) + 'h'; return d.toLocaleDateString(); }
+function toast(m, t) { const e = document.querySelector('.toast'); if (e) e.remove(); const n = document.createElement('div'); n.className = 'toast' + (t === 'error' ? ' error' : ''); n.textContent = m; document.body.appendChild(n); setTimeout(() => n.remove(), 3000); }
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.addEventListener('click', e => { if (e.target.classList.contains('modal')) e.target.classList.remove('show'); });
+document.addEventListener('keypress', e => { if (e.key === 'Enter' && document.getElementById('chatWindow').classList.contains('show')) sendMsg(); });        <button class="btn-out" onclick="startMemory()">🧠 Memory Match</button>
         <button class="btn-out" onclick="startQuiz()">❓ Quiz</button>`;
 }
 
