@@ -1,3 +1,22 @@
+// Force hide splash
+setTimeout(() => {
+    document.getElementById('splashScreen').style.display = 'none';
+    showLogin();
+}, 3000);
+
+auth.onAuthStateChanged(async user => {
+    if (user) {
+        currentUser = user;
+        try {
+            const doc = await db.collection('users').doc(user.uid).get();
+            currentUserData = doc.data() || {};
+            await updateStreak();
+        } catch(e) {
+            currentUserData = {};
+        }
+        showApp();
+    }
+});
 // ==================== APP ====================
 let currentUser = null;
 let currentUserData = null;
