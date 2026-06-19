@@ -8,9 +8,22 @@ let chatListener = null;
 // Splash
 setTimeout(() => {
     document.getElementById('splashScreen').classList.add('hidden');
-    
-    // Pehle login dikhao
     showLogin();
+    
+    auth.onAuthStateChanged(async user => {
+        if (user) {
+            currentUser = user;
+            try {
+                const doc = await db.collection('users').doc(user.uid).get();
+                currentUserData = doc.data() || {};
+                await updateStreak();
+            } catch(e) {
+                currentUserData = {};
+            }
+            showApp();
+        }
+    });
+}, 2500);
     
     // Fir check karo user logged in hai ya nahi
     auth.onAuthStateChanged(async user => {
