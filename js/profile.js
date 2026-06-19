@@ -42,18 +42,18 @@ function uploadDP() {
     
     toast('Uploading...');
     
-    var ref = firebase.storage().ref('avatars/' + currentUser.uid);
-    ref.put(file).then(function() {
-        ref.getDownloadURL().then(function(url) {
-            db.collection('users').doc(currentUser.uid).update({ avatar: url }).then(function() {
-                currentUserData.avatar = url;
-                document.getElementById('pAv').src = url;
-                toast('Profile picture updated! 📸');
-            });
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var base64 = e.target.result;
+        db.collection('users').doc(currentUser.uid).update({ avatar: base64 }).then(function() {
+            currentUserData.avatar = base64;
+            document.getElementById('pAv').src = base64;
+            toast('Profile picture updated! 📸');
+        }).catch(function() {
+            toast('Upload failed! Try again.', 'error');
         });
-    }).catch(function(err) {
-        toast('Upload failed! Try again.', 'error');
-    });
+    };
+    reader.readAsDataURL(file);
 }
 
 function editProfile() {
