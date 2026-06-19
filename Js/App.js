@@ -8,19 +8,25 @@ let chatListener = null;
 // Splash
 setTimeout(() => {
     document.getElementById('splashScreen').classList.add('hidden');
+    
+    // Pehle login dikhao
+    showLogin();
+    
+    // Fir check karo user logged in hai ya nahi
     auth.onAuthStateChanged(async user => {
         if (user) {
             currentUser = user;
-            const doc = await db.collection('users').doc(user.uid).get();
-            currentUserData = doc.data() || {};
-            await updateStreak();
+            try {
+                const doc = await db.collection('users').doc(user.uid).get();
+                currentUserData = doc.data() || {};
+                await updateStreak();
+            } catch(e) {
+                currentUserData = {};
+            }
             showApp();
-        } else {
-            showLogin();
         }
     });
 }, 2500);
-
 // ==================== AUTH ====================
 function showLogin() {
     document.getElementById('mainApp').classList.remove('show');
