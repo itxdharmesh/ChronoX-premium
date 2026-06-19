@@ -14,6 +14,14 @@
     <!-- CSS -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/games.css">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#D4AF37">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ChronoX">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/144/spider.png">
 </head>
 <body>
     <!-- Splash Screen -->
@@ -28,10 +36,7 @@
 
     <!-- Main App -->
     <div id="mainApp">
-        <!-- Content Area -->
         <div id="contentArea"></div>
-        
-        <!-- Bottom Navigation -->
         <nav id="bottomNav">
             <button class="nav-btn active" data-page="home">🏠<span>Home</span></button>
             <button class="nav-btn" data-page="chats">💬<span>Chats</span></button>
@@ -42,7 +47,7 @@
         </nav>
     </div>
 
-    <!-- Chat Window Modal -->
+    <!-- Chat Window -->
     <div id="chatWindow">
         <div id="chatHeader">
             <button onclick="closeChat()">←</button>
@@ -69,7 +74,7 @@
             <div class="modal-header">
                 <button onclick="closeModal('userProfileModal')">←</button>
                 <h2>Profile</h2>
-                <button class="three-dots" onclick="showUserOptions()">⋮</button>
+                <button class="three-dots-btn" onclick="showUserOptions()">⋮</button>
             </div>
             <div id="userProfileContent"></div>
         </div>
@@ -116,8 +121,20 @@
     <script src="js/games/memory.js"></script>
     <script src="js/games/quiz.js"></script>
     <script src="js/games/snake-ladder.js"></script>
+    <script src="js/games/uno.js"></script>
+    <script src="js/games/ludo.js"></script>
+    <script src="js/games/games-main.js"></script>
     <script src="js/multiplayer.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/moderation.js"></script>
+    
+    <!-- Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log('✅ SW registered'))
+                .catch(err => console.log('SW error:', err));
+        }
+    </script>
 </body>
 </html>
