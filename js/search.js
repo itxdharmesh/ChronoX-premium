@@ -55,6 +55,17 @@ function viewUserProfile(userId) {
         if (!u) return toast('User not found', 'error');
         openModal('genericModal');
         var isFollowing = (u.followers || []).indexOf(currentUser.uid) !== -1;
+        var isBlocked = (currentUserData.blockedUsers || []).indexOf(userId) !== -1;
+        
+        if (isBlocked) {
+            document.getElementById('genericContent').innerHTML = 
+                '<h2 style="color:var(--gold);text-align:center">Blocked User</h2>' +
+                '<p style="text-align:center;color:rgba(255,255,255,0.6)">You have blocked this user</p>' +
+                '<button class="btn" onclick="unblockUserProfile(\'' + userId + '\')">Unblock</button>' +
+                '<button class="btn-out" onclick="closeModal(\'genericModal\')">Close</button>';
+            return;
+        }
+        
         var h = '<h2 style="color:var(--gold);text-align:center">' + u.name + '</h2>';
         h += '<p style="text-align:center;color:var(--gold-light)">' + u.username + '</p>';
         h += '<p style="text-align:center;color:rgba(255,255,255,0.6)">' + (u.bio || 'No bio') + '</p>';
@@ -68,6 +79,8 @@ function viewUserProfile(userId) {
             h += '<button class="btn" style="flex:1" onclick="followUserProfile(\'' + userId + '\')">Follow</button>';
         }
         h += '</div>';
+        h += '<button class="btn-out" style="color:#FF4757;border-color:#FF4757;margin-top:8px" onclick="blockUserProfile(\'' + userId + '\')">🚫 Block</button>';
+        h += '<button class="btn-out" style="margin-top:5px" onclick="reportUserModal(\'' + userId + '\')">🚩 Report</button>';
         h += '<button class="btn-out" onclick="closeModal(\'genericModal\')">Close</button>';
         document.getElementById('genericContent').innerHTML = h;
     });
@@ -85,6 +98,37 @@ function unfollowUser(userId) {
     db.collection('users').doc(userId).update({ followers: firebase.firestore.FieldValue.arrayRemove(currentUser.uid) });
     toast('Unfollowed');
     closeModal('genericModal');
+}
+
+function blockUserProfile(userId) {
+    if (!confirm('Block this user?')) return;
+    db.collection('users').doc(currentUser.uid).update({ blockedUsers: firebase.firestore.FieldValue.arrayUnion(userId) });
+    currentUserData.blockedUsers = currentUserData.blockedUsers || [];
+    currentUserData.blockedUsers.push(userId);
+    closeModal('genericModal');
+    toast('Blocked! 🚫');
+}
+
+function unblockUserProfile(userId) {
+    db.collection('users').doc(currentUser.uid).update({ blockedUsers: firebase.firestore.FieldValue.arrayRemove(userId) });
+    currentUserData.blockedUsers = (currentUserData.blockedUsers || []).filter(function(id) { return id !== userId; });
+    closeModal('genericModal');
+    toast('Unblocked! ✅');
+}
+
+function reportUserModal(userId) {
+    document.getElementById('genericContent').innerHTML = 
+        '<h2 style="color:var(--gold);margin-bottom:15px">🚩 Report</h2>' +
+        '<button class="btn-out" onclick="submitReport(\'' + userId + '\',\'Spam\')">📢 Spam</button>' +
+        '<button class="btn-out" onclick="submitReport(\'' + userId + '\',\'Harassment\')">😡 Harassment</button>' +
+        '<button class="btn-out" onclick="submitReport(\'' + userId + '\',\'Other\')">📋 Other</button>' +
+        '<button class="btn-out" onclick="closeModal(\'genericModal\')">Cancel</button>';
+}
+
+function submitReport(userId, reason) {
+    db.collection('reports').add({ reportedUser: userId, reportedBy: currentUser.uid, reason: reason, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+    closeModal('genericModal');
+    toast('Reported! 🚩');
 }
 
 console.log('Search loaded');
