@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ChronoX - Premium Social Network</title>
+    <title>ChronoX</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 </head>
 <body>
 
@@ -25,7 +24,7 @@
     <nav id="bottomNav">
         <button class="nav-btn active" data-page="home"><span>🏠</span>Home</button>
         <button class="nav-btn" data-page="chats"><span>💬</span>Chats</button>
-        <button class="nav-btn" data-page="search"><span>🔍</span>Discover</button>
+        <button class="nav-btn" data-page="search"><span>🔍</span>Search</button>
         <button class="nav-btn" data-page="games"><span>🎮</span>Games</button>
         <button class="nav-btn" data-page="profile"><span>👤</span>Profile</button>
     </nav>
@@ -38,18 +37,13 @@
     </div>
     <div id="chatMessages"></div>
     <div id="chatInput">
-        <input id="msgInput" placeholder="Type a message...">
+        <input id="msgInput" placeholder="Message...">
         <button onclick="sendMsg()">➤</button>
     </div>
 </div>
 
-<div class="modal" id="genericModal">
-    <div class="modal-box" id="genericContent"></div>
-</div>
-
-<div class="modal" id="gamesModal">
-    <div class="modal-box" id="gamesContent"></div>
-</div>
+<div class="modal" id="genericModal"><div class="modal-box" id="genericContent"></div></div>
+<div class="modal" id="gamesModal"><div class="modal-box" id="gamesContent"></div></div>
 
 <script src="js/firebase-config.js"></script>
 <script src="js/utils.js"></script>
