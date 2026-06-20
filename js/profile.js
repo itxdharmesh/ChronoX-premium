@@ -85,9 +85,7 @@ function saveProfile() {
 }
 
 function shareProfile() {
-    navigator.clipboard.writeText(currentUserData.username || '@user').then(function() {
-        toast('Copied! 📋');
-    });
+    navigator.clipboard.writeText(currentUserData.username || '@user').then(function() { toast('Copied! 📋'); });
 }
 
 function openPrivacy() {
@@ -120,9 +118,7 @@ function changePassword() {
     }).then(function() {
         closeModal('genericModal');
         toast('Updated! 🔒');
-    }).catch(function() {
-        toast('Wrong password', 'error');
-    });
+    }).catch(function() { toast('Wrong password', 'error'); });
 }
 
 function showBlockedUsers() {
@@ -130,17 +126,23 @@ function showBlockedUsers() {
     var h = '<h2 style="color:var(--gold);margin-bottom:15px">🚫 Blocked Users</h2>';
     if (blocked.length === 0) {
         h += '<p style="text-align:center;color:rgba(255,255,255,0.6);padding:20px">None</p>';
+        h += '<button class="btn-out" onclick="openPrivacy()">Back</button>';
+        document.getElementById('genericContent').innerHTML = h;
     } else {
+        h += '<div id="blockedList">Loading...</div>';
+        h += '<button class="btn-out" onclick="openPrivacy()">Back</button>';
+        document.getElementById('genericContent').innerHTML = h;
+        var items = '';
+        var done = 0;
         blocked.forEach(function(id) {
             db.collection('users').doc(id).get().then(function(doc) {
+                done++;
                 var u = doc.data();
-                if (u) h += '<div class="chat-item"><div class="av" style="width:40px;height:40px">' + (u.name||'?')[0] + '</div><div style="flex:1"><b>' + u.name + '</b></div><button class="btn" style="width:auto;padding:6px 14px" onclick="unblockUser(\'' + id + '\')">Unblock</button></div>';
-                document.getElementById('genericContent').innerHTML = h + '<button class="btn-out" onclick="openPrivacy()">Back</button>';
+                if (u) items += '<div class="chat-item"><div class="av" style="width:40px;height:40px">' + (u.name||'?')[0] + '</div><div style="flex:1"><b>' + u.name + '</b></div><button class="btn" style="width:auto;padding:6px 14px" onclick="unblockUser(\'' + id + '\')">Unblock</button></div>';
+                if (done === blocked.length) document.getElementById('blockedList').innerHTML = items;
             });
         });
-        h += '<button class="btn-out" onclick="openPrivacy()">Back</button>';
     }
-    document.getElementById('genericContent').innerHTML = h;
 }
 
 function unblockUser(id) {
@@ -154,16 +156,14 @@ function unblockUser(id) {
 function deleteAccount() {
     document.getElementById('genericContent').innerHTML = 
         '<h2 style="color:#FF4757;margin-bottom:15px">🗑️ Delete Account</h2>' +
-        '<p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:15px">This cannot be undone! All your data will be permanently deleted.</p>' +
+        '<p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:15px">This cannot be undone!</p>' +
         '<input class="inp" id="delPass" placeholder="Enter password to confirm" type="password">' +
-        '<input class="inp" id="delReason" placeholder="Reason for leaving (optional)">' +
         '<button class="btn" style="background:#FF4757" onclick="confirmDelete()">Delete My Account</button>' +
         '<button class="btn-out" onclick="openPrivacy()">Cancel</button>';
 }
 
 function confirmDelete() {
     var pass = document.getElementById('delPass').value;
-    var reason = document.getElementById('delReason').value;
     if (!pass) return toast('Enter password', 'error');
     var cred = firebase.auth.EmailAuthProvider.credential(currentUser.email, pass);
     currentUser.reauthenticateWithCredential(cred).then(function() {
@@ -171,11 +171,9 @@ function confirmDelete() {
     }).then(function() {
         return currentUser.delete();
     }).then(function() {
-        toast('Account deleted! Goodbye 👋');
+        toast('Account deleted! 👋');
         setTimeout(function() { location.reload(); }, 2000);
-    }).catch(function() {
-        toast('Wrong password', 'error');
-    });
+    }).catch(function() { toast('Wrong password', 'error'); });
 }
 
 function showFollowList(type) {
