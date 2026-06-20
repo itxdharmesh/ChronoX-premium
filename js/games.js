@@ -1,10 +1,8 @@
 // ==================== GAMES ====================
 
 function openGames() {
-    var modal = document.getElementById('gamesModal');
-    var content = document.getElementById('gamesContent');
-    modal.classList.add('show');
-    content.innerHTML = 
+    openModal('gamesModal');
+    document.getElementById('gamesContent').innerHTML = 
         '<h2 style="color:var(--gold);margin-bottom:15px">🎮 Games</h2>' +
         '<button class="btn-out" onclick="startTTT()">❌⭕ Tic Tac Toe</button>' +
         '<button class="btn-out" onclick="startMemory()">🧠 Memory Match</button>' +
@@ -12,6 +10,7 @@ function openGames() {
         '<button class="btn-out" onclick="closeModal(\'gamesModal\')">Close</button>';
 }
 
+// Tic Tac Toe
 var ttt = [], tttActive = false;
 
 function startTTT() {
@@ -56,6 +55,7 @@ function tttCheck(p) {
     return false;
 }
 
+// Memory Game
 var memCards = [], memFlipped = [], memMatched = [], memMoves = 0, memLocked = false;
 
 function startMemory() {
@@ -101,6 +101,7 @@ function memFlip(i) {
     }
 }
 
+// Quiz
 var quizQ = [], quizI = 0, quizS = 0;
 var QUIZ_BANK = [
     {q:"Capital of France?",o:["London","Paris","Berlin","Madrid"],a:1},
