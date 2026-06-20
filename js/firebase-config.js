@@ -13,10 +13,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-const storage = firebase.storage();
 
-// 🔴 GEMINI API KEY (FREE from: https://aistudio.google.com/apikey)
+// 🔴 GEMINI API KEY (optional - real AI ke liye)
 const GEMINI_KEY = "AQ.Ab8RN6JeA-wi9QbkIrCgUYAmOaIRQE3w9t7SJ2Kuy8PrWr3O5g";
-
-let currentUser = null;
-let currentUserData = null;
