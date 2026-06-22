@@ -32,7 +32,7 @@ html, body {
     bottom: 0;
 }
 
-/* ==================== PREMIUM ANIMATED BACKGROUND ==================== */
+/* ==================== SPACE BACKGROUND ==================== */
 .stars-container {
     position: fixed;
     top: 0; left: 0;
@@ -40,8 +40,6 @@ html, body {
     pointer-events: none;
     z-index: 0;
 }
-
-/* Twinkling Stars */
 .star {
     position: absolute;
     background: #fff;
@@ -51,10 +49,9 @@ html, body {
 }
 @keyframes twinkle {
     0%, 100% { opacity: 0.2; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.8); box-shadow: 0 0 6px #fff, 0 0 12px var(--gold); }
+    50% { opacity: 1; transform: scale(1.5); }
 }
 
-/* Drifting Clouds */
 .clouds-container {
     position: fixed;
     top: 0; left: 0;
@@ -74,7 +71,6 @@ html, body {
     100% { transform: translateX(calc(100vw + 150px)); }
 }
 
-/* Shooting Stars */
 .shooting-star {
     position: fixed;
     width: 120px;
@@ -94,7 +90,6 @@ html, body {
     100% { transform: translateX(calc(100vw + 120px)) translateY(400px) rotate(-25deg); opacity: 0; }
 }
 
-/* Nebula Glow */
 .nebula {
     position: fixed;
     border-radius: 50%;
@@ -103,32 +98,12 @@ html, body {
     z-index: 0;
     animation: nebulaPulse 8s ease-in-out infinite;
 }
-.nebula-1 {
-    width: 300px; height: 300px;
-    background: rgba(124, 58, 237, 0.08);
-    top: -50px; right: -50px;
-}
-.nebula-2 {
-    width: 250px; height: 250px;
-    background: rgba(0, 212, 255, 0.06);
-    bottom: -30px; left: -30px;
-    animation-delay: 4s;
-}
-.nebula-3 {
-    width: 200px; height: 200px;
-    background: rgba(212, 175, 55, 0.05);
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    animation-delay: 2s;
-}
+.nebula-1 { width: 300px; height: 300px; background: rgba(124, 58, 237, 0.08); top: -50px; right: -50px; }
+.nebula-2 { width: 250px; height: 250px; background: rgba(0, 212, 255, 0.06); bottom: -30px; left: -30px; animation-delay: 4s; }
+.nebula-3 { width: 200px; height: 200px; background: rgba(212, 175, 55, 0.05); top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: 2s; }
 @keyframes nebulaPulse {
     0%, 100% { transform: scale(1); opacity: 0.5; }
     50% { transform: scale(1.3); opacity: 1; }
-}
-.nebula-3 { animation: nebulaCenter 8s ease-in-out infinite; }
-@keyframes nebulaCenter {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
-    50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.8; }
 }
 
 /* ==================== CHRONOX C-SPIDER LOGO ==================== */
@@ -153,7 +128,7 @@ html, body {
     border-bottom-color: transparent;
     transform: rotate(-45deg);
     animation: logoSpin 8s linear infinite;
-    box-shadow: 0 0 25px rgba(212,175,55,0.5), 0 0 50px rgba(0,212,255,0.3), inset 0 0 20px rgba(212,175,55,0.1);
+    box-shadow: 0 0 25px rgba(212,175,55,0.5), 0 0 50px rgba(0,212,255,0.3);
 }
 @keyframes logoSpin {
     0% { transform: rotate(-45deg); }
@@ -167,7 +142,6 @@ html, body {
     transform: translate(-50%, -50%);
     font-size: 34px;
     animation: logoSpiderPulse 2s ease-in-out infinite;
-    filter: drop-shadow(0 0 10px rgba(212,175,55,0.6));
 }
 @keyframes logoSpiderPulse {
     0%, 100% { transform: translate(-50%, -50%) scale(1); }
@@ -190,7 +164,7 @@ html, body {
     50% { opacity: 1; transform: scale(2); }
 }
 
-/* SPLASH */
+/* ==================== SPLASH ==================== */
 #splashScreen {
     position: fixed;
     top: 0; left: 0;
@@ -241,7 +215,7 @@ html, body {
     100% { transform: translateX(350%); }
 }
 
-/* AUTH */
+/* ==================== AUTH ==================== */
 #authScreen {
     position: fixed;
     top: 0; left: 0;
@@ -357,7 +331,7 @@ html, body {
 }
 .link:hover { color: var(--blue-neon); }
 
-/* MAIN APP */
+/* ==================== MAIN APP ==================== */
 #mainApp {
     display: none;
     width: 100%;
@@ -376,7 +350,7 @@ html, body {
     -webkit-overflow-scrolling: touch;
 }
 
-/* BOTTOM NAV */
+/* ==================== BOTTOM NAV ==================== */
 #bottomNav {
     position: fixed;
     bottom: 0; left: 0;
@@ -424,7 +398,7 @@ html, body {
 }
 .nav-btn:active span:first-child { transform: scale(1.2); }
 
-/* CARDS */
+/* ==================== CARDS ==================== */
 .card {
     background: rgba(19,24,66,0.7);
     backdrop-filter: blur(20px);
@@ -454,7 +428,70 @@ html, body {
 .card:hover::before { left: 100%; }
 .card:active { transform: scale(0.98); }
 
-/* CHAT */
+/* ==================== CHAT LIST ==================== */
+#chatListContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    background: rgba(19,24,66,0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(212,175,55,0.15);
+    border-radius: 14px;
+    cursor: pointer;
+    gap: 14px;
+    transition: all 0.2s ease;
+    margin-bottom: 6px;
+}
+.chat-item:active {
+    background: rgba(212,175,55,0.1);
+    border-color: var(--gold);
+    transform: scale(0.98);
+}
+
+.chat-avatar-img {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #1a1f4e;
+}
+
+.av {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    background: #1a1f4e;
+    flex-shrink: 0;
+}
+
+.blue-tick {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    background: #1E90FF;
+    border-radius: 50%;
+    font-size: 10px;
+    color: #fff;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+/* ==================== CHAT WINDOW ==================== */
 #chatWindow {
     position: fixed;
     top: 0; left: 0;
@@ -479,6 +516,7 @@ html, body {
     border-bottom: 1px solid var(--border);
     gap: 12px;
 }
+
 #chatMessages {
     flex: 1;
     overflow-y: auto;
@@ -487,6 +525,7 @@ html, body {
     flex-direction: column;
     gap: 8px;
 }
+
 .msg-sent {
     align-self: flex-end;
     background: linear-gradient(135deg, #D4AF37, var(--blue-neon));
@@ -513,11 +552,13 @@ html, body {
     from { transform: scale(0.8); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
 }
+
 #typingIndicator {
     padding: 5px 20px;
     font-size: 12px;
-    color: var(--text2);
+    color: rgba(255,255,255,0.5);
     font-style: italic;
+    min-height: 20px;
     animation: blink 1s ease-in-out infinite;
 }
 @keyframes blink {
@@ -525,7 +566,43 @@ html, body {
     50% { opacity: 0.3; }
 }
 
-/* MODAL */
+#chatInput {
+    display: flex !important;
+    padding: 12px 15px !important;
+    background: rgba(19,24,66,0.9) !important;
+    border-top: 1px solid var(--border) !important;
+    gap: 10px !important;
+    align-items: center !important;
+}
+
+#msgInput {
+    flex: 1 !important;
+    padding: 12px 18px !important;
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 25px !important;
+    color: #fff !important;
+    outline: none !important;
+    font-size: 16px !important;
+    display: block !important;
+}
+
+#sendBtn, #chatInput button {
+    width: 44px !important;
+    height: 44px !important;
+    background: linear-gradient(135deg, #D4AF37, #00D4FF) !important;
+    border: none !important;
+    border-radius: 50% !important;
+    color: #0A0E27 !important;
+    font-size: 20px !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* ==================== MODAL ==================== */
 .modal {
     position: fixed;
     top: 0; left: 0;
@@ -549,7 +626,7 @@ html, body {
     animation: slideUp 0.3s ease;
 }
 
-/* PROFILE */
+/* ==================== PROFILE ==================== */
 .profile-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
 .avatar {
     width: 80px; height: 80px;
@@ -559,8 +636,13 @@ html, body {
     background: #1a1f4e;
     transition: all 0.3s ease;
 }
+.avatar:active { transform: scale(1.05); }
 .stats { display: flex; gap: 15px; }
-.stat { text-align: center; cursor: pointer; transition: transform 0.2s ease; }
+.stat {
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
 .stat:active { transform: scale(1.1); }
 .stat-num { font-size: 18px; font-weight: 700; color: var(--gold); display: block; }
 .stat-label { font-size: 10px; color: var(--text2); text-transform: uppercase; }
@@ -592,51 +674,7 @@ html, body {
 }
 .btn-out:hover { background: rgba(212,175,55,0.1); }
 
-/* CHAT ITEMS */
-.chat-item {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 6px;
-    cursor: pointer;
-    gap: 10px;
-    transition: all 0.3s ease;
-}
-.chat-item:hover { border-color: var(--gold); transform: translateX(3px); }
-.chat-avatar-img {
-    width: 48px; height: 48px;
-    border-radius: 50%;
-    border: 2px solid var(--gold);
-    object-fit: cover;
-    flex-shrink: 0;
-}
-.av {
-    width: 48px; height: 48px;
-    border-radius: 50%;
-    border: 2px solid var(--gold);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    background: #1a1f4e;
-    flex-shrink: 0;
-}
-.blue-tick {
-    display: inline-block;
-    width: 16px; height: 16px;
-    background: #1E90FF;
-    border-radius: 50%;
-    text-align: center;
-    line-height: 16px;
-    font-size: 10px;
-    color: #fff;
-    margin-left: 4px;
-}
-
-/* TOAST */
+/* ==================== TOAST ==================== */
 .toast {
     position: fixed;
     top: 15px;
@@ -659,7 +697,7 @@ html, body {
     to { top: 15px; opacity: 1; }
 }
 
-/* LEVEL BAR */
+/* ==================== LEVEL BAR ==================== */
 .level-bar {
     width: 100%;
     height: 6px;
@@ -689,14 +727,14 @@ html, body {
     50% { opacity: 1; }
 }
 
-/* SCROLLBAR */
+/* ==================== SCROLLBAR ==================== */
 ::-webkit-scrollbar { width: 2px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
 
-/* RESPONSIVE */
+/* ==================== RESPONSIVE ==================== */
 @media (max-width: 380px) {
     .auth-box { padding: 25px 20px; }
     .nav-btn { font-size: 9px; }
     .nav-btn span:first-child { font-size: 20px; }
-    }
+        }
