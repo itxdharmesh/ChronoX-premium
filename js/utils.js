@@ -62,4 +62,22 @@ function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// ==================== RIPPLE EFFECT ON BUTTONS ====================
+document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.btn');
+    if (!btn) return;
+    
+    var ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    var rect = btn.getBoundingClientRect();
+    var size = Math.max(rect.width, rect.height);
+    ripple.style.width = size + 'px';
+    ripple.style.height = size + 'px';
+    ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+    ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+    btn.appendChild(ripple);
+    
+    setTimeout(function() { ripple.remove(); }, 600);
+});
+
 console.log('✅ Utils loaded');
