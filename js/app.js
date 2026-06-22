@@ -16,8 +16,7 @@ setTimeout(function() {
                         streak: 0, bestStreak: 0, xp: 0, coins: 500,
                         level: { current: 1, title: 'Explorer', progress: 0 },
                         stats: { achievements: 0, totalMessages: 0 },
-                        inventory: [], lastDailyReward: null, rewardStreak: 0,
-                        onlineStatus: 'online'
+                        inventory: [], lastDailyReward: null, rewardStreak: 0, onlineStatus: 'online'
                     };
                 }
                 showApp();
@@ -42,11 +41,6 @@ function showApp() {
     if (currentUser) {
         db.collection('users').doc(currentUser.uid).update({ onlineStatus: 'online' });
     }
-    window.addEventListener('beforeunload', function() {
-        if (currentUser) {
-            db.collection('users').doc(currentUser.uid).update({ onlineStatus: 'offline', lastSeen: firebase.firestore.FieldValue.serverTimestamp() });
-        }
-    });
 }
 
 function navigate(p) {
@@ -61,8 +55,7 @@ function navigate(p) {
         if (p === 'games') openGames();
         if (p === 'profile') renderProfile(c);
     } catch(e) {
-        console.error(e);
-        c.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.6);padding:30px">Error loading page. Please refresh.</p>';
+        c.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.6);padding:30px">Error loading.</p>';
     }
 }
 
@@ -82,60 +75,25 @@ function updateStreak() {
 }
 
 function renderHome(c) {
-    var u = currentUserData;
+    var u = currentUserData || {};
     var name = (u.name && u.name !== 'undefined') ? u.name : 'User';
-    
     c.innerHTML = 
-        '<div class="card" style="text-align:center">' +
-            '<div style="font-size:60px">🕷️</div>' +
-            '<h1 style="color:var(--gold);font-size:26px;font-weight:900;letter-spacing:3px">ChronoX</h1>' +
-            '<p style="color:rgba(255,255,255,0.6)">Welcome, ' + name + '</p>' +
-        '</div>' +
-        '<div class="card" style="display:flex;align-items:center;gap:15px">' +
-            '<span style="font-size:45px">🔥</span>' +
-            '<div><h1 style="color:var(--gold)">' + (u.streak || 0) + ' Days</h1><small style="color:rgba(255,255,255,0.6)">Streak</small></div>' +
-        '</div>' +
-        '<div class="card" style="text-align:center;background:linear-gradient(135deg,rgba(212,175,55,0.15),rgba(0,212,255,0.08));border:1px solid #D4AF37">' +
-            '<h3 style="color:#D4AF37;margin-bottom:5px">🎁 Daily Reward</h3>' +
-            '<div style="font-size:30px;margin:10px 0">💰 <b style="color:#D4AF37">20</b></div>' +
-            '<button class="btn" onclick="claimDailyReward()">Claim Reward 🎁</button>' +
-        '</div>' +
-        '<div class="card">' +
-            '<div style="display:flex;justify-content:space-around;text-align:center">' +
-                '<div><h2 style="color:var(--gold)">' + (u.coins || 0) + '</h2><small>💰 Coins</small></div>' +
-                '<div><h2 style="color:#00D4FF">' + (u.xp || 0) + '</h2><small>⚡ XP</small></div>' +
-                '<div><h2 style="color:#2ED573">' + (u.stats?.achievements || 0) + '</h2><small>🏆</small></div>' +
-            '</div>' +
-        '</div>' +
-        '<div class="card">' +
-            '<h3 style="color:var(--gold);margin-bottom:10px">Quick Links</h3>' +
-            '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">' +
-                '<button class="btn-out" onclick="navigate(\'games\')">🎮 Games Hub</button>' +
-                '<button class="btn-out" onclick="navigate(\'chats\')">💬 Messages</button>' +
-                '<button class="btn-out" onclick="navigate(\'search\')">🔍 Discover</button>' +
-                '<button class="btn-out" onclick="navigate(\'profile\')">👤 Profile</button>' +
-            '</div>' +
-        '</div>';
+        '<div class="card" style="text-align:center"><div style="font-size:60px">🕷️</div><h1 style="color:var(--gold);font-size:26px;font-weight:900;letter-spacing:3px">ChronoX</h1><p style="color:rgba(255,255,255,0.6)">Welcome, ' + name + '</p></div>' +
+        '<div class="card" style="display:flex;align-items:center;gap:15px"><span style="font-size:45px">🔥</span><div><h1 style="color:var(--gold)">' + (u.streak || 0) + ' Days</h1><small style="color:rgba(255,255,255,0.6)">Streak</small></div></div>' +
+        '<div class="card"><div style="display:flex;justify-content:space-around;text-align:center"><div><h2 style="color:var(--gold)">' + (u.coins || 0) + '</h2><small>💰 Coins</small></div><div><h2 style="color:#00D4FF">' + (u.xp || 0) + '</h2><small>⚡ XP</small></div><div><h2 style="color:#2ED573">' + (u.stats?.achievements || 0) + '</h2><small>🏆</small></div></div></div>' +
+        '<div class="card"><h3 style="color:var(--gold);margin-bottom:10px">Quick Links</h3><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px"><button class="btn-out" onclick="navigate(\'games\')">🎮 Games</button><button class="btn-out" onclick="navigate(\'chats\')">💬 Chats</button><button class="btn-out" onclick="navigate(\'search\')">🔍 Search</button><button class="btn-out" onclick="openShop()">🛍️ Shop</button></div></div>';
 }
 
 function claimDailyReward() {
-    var u = currentUserData;
+    if (!currentUserData) return;
     var today = new Date().toDateString();
-    var lastReward = u.lastDailyReward ? new Date(u.lastDailyReward).toDateString() : '';
-    
-    if (today === lastReward) {
-        showToast('Already claimed today! Come back tomorrow.', 'error');
-        return;
-    }
-    
+    var last = currentUserData.lastDailyReward ? new Date(currentUserData.lastDailyReward).toDateString() : '';
+    if (today === last) { showToast('Already claimed!', 'error'); return; }
     var reward = 20;
-    db.collection('users').doc(currentUser.uid).update({
-        coins: firebase.firestore.FieldValue.increment(reward),
-        lastDailyReward: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(function() {
+    db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(reward), lastDailyReward: firebase.firestore.FieldValue.serverTimestamp() }).then(function() {
         currentUserData.coins = (currentUserData.coins || 0) + reward;
         currentUserData.lastDailyReward = new Date().toISOString();
-        showToast('🎁 +' + reward + ' coins claimed!');
+        showToast('🎁 +' + reward + ' coins!');
         navigate('home');
     });
 }
