@@ -1,0 +1,64 @@
+var memCards, memFlipped, memMatched, memMoves, memLocked;
+
+function startMemory() {
+    openGameScreen('🧠 Memory Match');
+    gameCanvas.style.display = 'none';
+    
+    var emojis = ['🎮','🎯','🎨','🎵','🎭','🎪','🎲','🎸'];
+    memCards = []; for (var i=0;i<emojis.length;i++) { memCards.push(emojis[i]); memCards.push(emojis[i]); }
+    for (var i=memCards.length-1;i>0;i--) { var j=Math.floor(Math.random()*(i+1)); var t=memCards[i]; memCards[i]=memCards[j]; memCards[j]=t; }
+    memFlipped=[]; memMatched=[]; memMoves=0; memLocked=false;
+    
+    var div = document.createElement('div');
+    div.id = 'memContainer';
+    div.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-y:auto';
+    
+    var h = '<h2 style="color:var(--gold);margin-bottom:10px;text-align:center">🧠 Memory Match</h2>';
+    h += '<p style="text-align:center;color:var(--gold);margin-bottom:15px">Moves: <span id="memMoves">0</span></p>';
+    h += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:320px">';
+    for (var i=0;i<16;i++) {
+        h += '<div style="aspect-ratio:1;background:var(--card);border:2px solid rgba(212,175,55,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:30px;cursor:pointer;transition:0.3s" onclick="memFlip('+i+')" id="mem'+i+'"><span style="opacity:0">'+memCards[i]+'</span></div>';
+    }
+    h += '</div><button class="btn-out" onclick="closeGameScreen()" style="margin-top:15px">Exit</button>';
+    div.innerHTML = h;
+    gameCanvas.parentNode.insertBefore(div, gameCanvas);
+    currentGameRestart = startMemory;
+}
+
+function memFlip(i) {
+    if (memLocked || memFlipped.indexOf(i)!==-1 || memMatched.indexOf(i)!==-1) return;
+    memFlipped.push(i);
+    var card = document.getElementById('mem'+i);
+    card.innerHTML = '<span>'+memCards[i]+'</span>';
+    card.style.transform = 'rotateY(180deg)';
+    card.style.background = 'rgba(212,175,55,0.2)';
+    card.style.borderColor = 'var(--gold)';
+    
+    if (memFlipped.length===2) {
+        memMoves++;
+        document.getElementById('memMoves').textContent = memMoves;
+        memLocked = true;
+        var a=memFlipped[0], b=memFlipped[1];
+        if (memCards[a]===memCards[b]) {
+            memMatched.push(a,b); memFlipped=[]; memLocked=false;
+            document.getElementById('mem'+a).style.background = 'rgba(46,213,115,0.3)';
+            document.getElementById('mem'+b).style.background = 'rgba(46,213,115,0.3)';
+            updateGameScore(10);
+            if (memMatched.length===16) {
+                setTimeout(function() { endGame('🎉 Completed in '+memMoves+' moves!'); }, 500);
+            }
+        } else {
+            setTimeout(function() {
+                document.getElementById('mem'+a).innerHTML = '<span style="opacity:0">'+memCards[a]+'</span>';
+                document.getElementById('mem'+a).style.transform = 'rotateY(0deg)';
+                document.getElementById('mem'+a).style.background = 'var(--card)';
+                document.getElementById('mem'+a).style.borderColor = 'rgba(212,175,55,0.2)';
+                document.getElementById('mem'+b).innerHTML = '<span style="opacity:0">'+memCards[b]+'</span>';
+                document.getElementById('mem'+b).style.transform = 'rotateY(0deg)';
+                document.getElementById('mem'+b).style.background = 'var(--card)';
+                document.getElementById('mem'+b).style.borderColor = 'rgba(212,175,55,0.2)';
+                memFlipped=[]; memLocked=false;
+            }, 800);
+        }
+    }
+}
