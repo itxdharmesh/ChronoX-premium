@@ -2,7 +2,7 @@
 var chatId = null;
 var chatUser = null;
 var chatListener = null;
-var activeTab = 'chats'; // 'chats' or 'requests'
+var activeTab = 'chats';
 
 function renderChats(c) {
     c.innerHTML = 
@@ -26,11 +26,11 @@ function loadChatList() {
     }
 }
 
-// ==================== ACTIVE CHATS (Mutual Follow) ====================
+// ==================== ACTIVE CHATS ====================
 function loadActiveChats(container) {
     var h = '';
     
-    // AI Users
+    // AI Users at top
     var ai = [
         { id: 'annaya_ai', n: 'Annaya', a: '👩‍🦰' },
         { id: 'tarun_ai', n: 'Tarun', a: '👨‍💻' },
@@ -41,12 +41,18 @@ function loadActiveChats(container) {
         var aiChatId = 'ai_' + currentUser.uid + '_' + x.id;
         db.collection('chats').doc(aiChatId).get().then(function(d) {
             var dd = d.data() || {};
-            h += createChatItem(aiChatId, x.id, x.n, x.a, true, dd.lastMessage, dd.lastMessageTime, true);
+            h += '<div class="chat-item" onclick="openChatWindow(\'' + aiChatId + '\',\'' + x.id + '\',\'' + x.n + '\',\'' + x.a + '\',true)">' +
+                '<div class="av">' + x.a + '</div>' +
+                '<div style="flex:1;min-width:0"><b>' + x.n + ' <span class="blue-tick">✓</span></b><br>' +
+                '<small style="color:rgba(255,255,255,0.5)">' + (dd.lastMessage || 'Tap to chat') + '</small></div>' +
+                '<div style="text-align:right"><div style="color:#2ED573;font-size:11px">● Online</div>' +
+                '<small style="color:var(--gold-light);font-size:10px">' + (dd.lastMessageTime ? formatTime(dd.lastMessageTime.toDate()) : '') + '</small></div>' +
+                '</div>';
             container.innerHTML = h || '<p style="text-align:center;color:rgba(255,255,255,0.6);padding:30px">No chats yet</p>';
         });
     });
     
-    // Mutual follow chats + Followed users who messaged
+    // Real user chats
     db.collection('chats')
         .where('participants', 'array-contains', currentUser.uid)
         .orderBy('lastMessageTime', 'desc')
@@ -56,7 +62,7 @@ function loadActiveChats(container) {
             snap.forEach(function(doc) {
                 var chat = doc.data();
                 var otherId = chat.participants.find(function(id) { return id !== currentUser.uid; });
-                if (['annaya_ai', 'tarun_ai', 'chronox_ai'].includes(otherId)) return;
+                if (!otherId || ['annaya_ai', 'tarun_ai', 'chronox_ai'].includes(otherId)) return;
                 
                 var promise = db.collection('users').doc(otherId).get().then(function(ud) {
                     var u = ud.data();
@@ -64,14 +70,15 @@ function loadActiveChats(container) {
                     if ((currentUserData.blockedUsers || []).indexOf(otherId) !== -1) return '';
                     if ((u.blockedUsers || []).indexOf(currentUser.uid) !== -1) return '';
                     
-                    // Check if chat is approved or mutual follow
                     var isMutualFollow = (currentUserData.following || []).indexOf(otherId) !== -1 && 
                                         (currentUserData.followers || []).indexOf(otherId) !== -1;
                     var isApproved = chat.approved === true;
+                    var iFollowedThem = (currentUserData.following || []).indexOf(otherId) !== -1;
+                    var hasMessages = chat.lastMessage && chat.lastMessage.length > 0;
                     
-                    // Show only if mutual follow OR chat is approved OR I followed and messaged
-                    if (isMutualFollow || isApproved || (currentUserData.following || []).indexOf(otherId) !== -1) {
-                        return createChatItem(doc.id, otherId, u.name, u.avatar, false, chat.lastMessage, chat.lastMessageTime, false);
+                    // Show in chat list if: mutual follow, approved, or I followed + messaged
+                    if (isMutualFollow || isApproved || (iFollowedThem && hasMessages)) {
+                        return createChatItem(doc.id, otherId, u.name, u.avatar, false, chat.lastMessage, chat.lastMessageTime, u.onlineStatus === 'online');
                     }
                     return '';
                 });
@@ -79,7 +86,7 @@ function loadActiveChats(container) {
             });
             
             Promise.all(promises).then(function(results) {
-                var realChats = results.join('');
+                var realChats = results.filter(function(r) { return r !== ''; }).join('');
                 container.innerHTML = h + realChats || '<p style="text-align:center;color:rgba(255,255,255,0.6);padding:30px">No chats yet</p>';
             });
         });
@@ -87,19 +94,22 @@ function loadActiveChats(container) {
 
 // ==================== CHAT REQUESTS ====================
 function loadChatRequests(container) {
+    container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.6);padding:20px">Loading requests...</p>';
+    
     db.collection('chat_requests')
         .where('to', '==', currentUser.uid)
         .where('status', '==', 'pending')
         .orderBy('timestamp', 'desc')
-        .onSnapshot(function(snap) {
-            var h = '';
-            
+        .get()
+        .then(function(snap) {
             if (snap.empty) {
                 container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.6);padding:30px">No pending requests</p>';
                 return;
             }
             
+            var h = '';
             var promises = [];
+            
             snap.forEach(function(doc) {
                 var req = doc.data();
                 var promise = db.collection('users').doc(req.from).get().then(function(ud) {
@@ -111,11 +121,11 @@ function loadChatRequests(container) {
                             '<img src="' + (u.avatar || defaultAvatar(u.name)) + '" style="width:48px;height:48px;border-radius:50%;border:2px solid var(--gold);object-fit:cover" onerror="this.src=\'' + defaultAvatar(u.name) + '\'">' +
                             '<div style="flex:1"><b>' + u.name + '</b><br><small style="color:var(--gold-light)">' + u.username + '</small></div>' +
                         '</div>' +
-                        '<p style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:12px">💬 ' + req.message + '</p>' +
+                        '<p style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:12px">💬 ' + (req.message || 'No message') + '</p>' +
                         '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">' +
                             '<button class="btn" style="font-size:12px;padding:10px" onclick="acceptChatRequest(\'' + doc.id + '\',\'' + req.from + '\',\'' + req.chatId + '\')">✅ Accept</button>' +
                             '<button class="btn-out" style="font-size:12px;padding:10px;color:#FF4757;border-color:#FF4757" onclick="rejectChatRequest(\'' + doc.id + '\')">❌ Reject</button>' +
-                            '<button class="btn-out" style="font-size:12px;padding:10px" onclick="viewRequestMessage(\'' + req.message + '\')">👁️ View</button>' +
+                            '<button class="btn-out" style="font-size:12px;padding:10px" onclick="alert(\'Message: ' + (req.message || 'No message') + '\')">👁️ View</button>' +
                             '<button class="btn-out" style="font-size:12px;padding:10px" onclick="blockRequestUser(\'' + req.from + '\',\'' + doc.id + '\')">🚫 Block</button>' +
                         '</div>' +
                     '</div>';
@@ -135,7 +145,7 @@ function createChatItem(chatId, userId, name, avatar, isAI, lastMsg, lastTime, i
     var timeStr = lastTime ? formatTime(lastTime.toDate ? lastTime.toDate() : lastTime) : '';
     var msg = lastMsg || 'Tap to chat';
     var statusColor = isAI || isOnline ? '#2ED573' : '#888';
-    var statusText = isAI || isOnline ? '● Online' : '';
+    var statusText = isAI || isOnline ? '● Online' : '●';
     
     return '<div class="chat-item" onclick="openChatWindow(\'' + chatId + '\',\'' + userId + '\',\'' + name + '\',\'' + (avatar || '') + '\',' + isAI + ')">' +
         '<div style="position:relative;flex-shrink:0">' +
@@ -156,17 +166,21 @@ function createChatItem(chatId, userId, name, avatar, isAI, lastMsg, lastTime, i
     '</div>';
 }
 
-// ==================== OPEN CHAT ====================
+// ==================== OPEN CHAT WINDOW ====================
 function openChatWindow(cid, uid, name, avt, ai) {
     chatId = cid;
     chatUser = { uid: uid, name: name, avt: avt, ai: ai };
     
-    document.getElementById('chatWindow').classList.add('show');
+    var chatWin = document.getElementById('chatWindow');
+    chatWin.classList.add('show');
     document.getElementById('chatName').textContent = name;
     document.getElementById('chatMessages').innerHTML = '';
     document.getElementById('msgInput').value = '';
     document.getElementById('typingIndicator').textContent = '';
-    document.getElementById('msgInput').focus();
+    
+    setTimeout(function() {
+        document.getElementById('msgInput').focus();
+    }, 300);
     
     var avatarEl = document.getElementById('chatAvatar');
     if (ai) {
@@ -203,6 +217,7 @@ function openChatWindow(cid, uid, name, avt, ai) {
             mc.scrollTop = mc.scrollHeight;
         });
     
+    // Mark as seen
     if (!ai) {
         db.collection('chats').doc(cid).collection('messages')
             .where('senderId', '==', uid)
@@ -216,58 +231,15 @@ function openChatWindow(cid, uid, name, avt, ai) {
     }
 }
 
-// ==================== SEND MESSAGE (WITH REQUEST LOGIC) ====================
+// ==================== SEND MESSAGE ====================
 function sendMessage() {
     var input = document.getElementById('msgInput');
+    if (!input) return;
+    
     var t = input.value.trim();
     if (!t || !chatId || !chatUser) return;
     
-    // Check if this is a non-mutual chat (request system)
-    if (!chatUser.ai) {
-        var isMutualFollow = (currentUserData.following || []).indexOf(chatUser.uid) !== -1 && 
-                            (currentUserData.followers || []).indexOf(chatUser.uid) !== -1;
-        
-        db.collection('chats').doc(chatId).get().then(function(doc) {
-            var chatData = doc.data() || {};
-            var isApproved = chatData.approved === true;
-            var messageCount = chatData.messageCount || 0;
-            var iFollowed = (currentUserData.following || []).indexOf(chatUser.uid) !== -1;
-            
-            // Agar mutual follow nahi hai aur approved nahi hai
-            if (!isMutualFollow && !isApproved) {
-                // Agar maine follow kiya aur pehla msg hai
-                if (iFollowed && messageCount === 0) {
-                    // Allow first message and create request
-                    saveAndSendMessage(t);
-                    db.collection('chats').doc(chatId).update({ messageCount: 1 });
-                    
-                    // Create chat request for other user
-                    db.collection('chat_requests').add({
-                        from: currentUser.uid,
-                        to: chatUser.uid,
-                        chatId: chatId,
-                        message: t,
-                        status: 'pending',
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    showToast('Message sent as request! 📩');
-                } else if (messageCount >= 1 && !isApproved) {
-                    showToast('You can only send 1 message until they accept your request', 'error');
-                }
-                return;
-            }
-            
-            // Normal message sending
-            saveAndSendMessage(t);
-        });
-    } else {
-        // AI chat - always allow
-        saveAndSendMessage(t);
-    }
-}
-
-function saveAndSendMessage(t) {
+    // Save message
     db.collection('chats').doc(chatId).collection('messages').add({
         senderId: currentUser.uid,
         text: t,
@@ -281,22 +253,27 @@ function saveAndSendMessage(t) {
         lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
     
-    document.getElementById('msgInput').value = '';
-    document.getElementById('msgInput').focus();
+    // Clear input
+    input.value = '';
+    input.focus();
     
-    if (t.split(' ').length >= 3 && typeof addXP === 'function') addXP(5);
+    // XP
+    if (t.split(' ').length >= 3 && typeof addXP === 'function') {
+        addXP(5);
+    }
     
     // AI Reply
     if (chatUser.ai) {
         document.getElementById('typingIndicator').textContent = chatUser.name + ' is typing...';
+        
         setTimeout(function() {
             document.getElementById('typingIndicator').textContent = '';
             var reply = getFallbackReply(chatUser.uid);
             
             if (typeof GEMINI_KEY !== 'undefined' && GEMINI_KEY && GEMINI_KEY.length > 5) {
-                var personality = chatUser.uid === 'annaya_ai' ? 'You are Annaya, a 22-year-old female artist. Be warm.' :
-                                 chatUser.uid === 'tarun_ai' ? 'You are Tarun, a 24-year-old male coder. Be cool.' :
-                                 'You are ChronoX AI, app assistant. Be helpful.';
+                var personality = chatUser.uid === 'annaya_ai' ? 'You are Annaya, 22yo female artist. Be warm and friendly.' :
+                                 chatUser.uid === 'tarun_ai' ? 'You are Tarun, 24yo male coder. Be cool and casual.' :
+                                 'You are ChronoX AI assistant. Be helpful.';
                 
                 fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + GEMINI_KEY, {
                     method: 'POST',
@@ -329,8 +306,9 @@ function saveAIReply(reply) {
 // ==================== REQUEST ACTIONS ====================
 function acceptChatRequest(requestId, fromUid, chatId) {
     db.collection('chat_requests').doc(requestId).update({ status: 'accepted' });
-    db.collection('chats').doc(chatId).update({ approved: true, messageCount: 0 });
+    db.collection('chats').doc(chatId).update({ approved: true });
     showToast('Request accepted! ✅');
+    activeTab = 'chats';
     loadChatList();
 }
 
@@ -338,10 +316,6 @@ function rejectChatRequest(requestId) {
     db.collection('chat_requests').doc(requestId).update({ status: 'rejected' });
     showToast('Request rejected ❌');
     loadChatList();
-}
-
-function viewRequestMessage(msg) {
-    alert('Message: ' + msg);
 }
 
 function blockRequestUser(uid, requestId) {
@@ -378,8 +352,8 @@ function closeChat() {
 
 function getFallbackReply(uid) {
     var replies = {
-        annaya_ai: ["Hey! How are you? 😊", "That's interesting! 💫", "Just painting 🎨"],
-        tarun_ai: ["Yo! 👋", "Coding all day 💻", "Cool bro!"],
+        annaya_ai: ["Hey! How are you? 😊", "That's interesting! 💫", "Just painting 🎨", "Life's good!"],
+        tarun_ai: ["Yo! 👋", "Coding all day 💻", "Cool bro!", "What games? 🎮"],
         chronox_ai: ["How can I help? 🕷️", "Ask me anything!", "ChronoX is awesome!"]
     };
     var r = replies[uid] || replies.chronox_ai;
@@ -399,6 +373,10 @@ function attachMedia() {
                 mediaUrl: e.target.result,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(), seen: false
             });
+            db.collection('chats').doc(chatId).set({
+                lastMessage: '📷 Image',
+                lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
         };
         reader.readAsDataURL(file);
     };
@@ -410,13 +388,16 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         var chatWin = document.getElementById('chatWindow');
         if (chatWin && chatWin.classList.contains('show')) {
-            e.preventDefault(); sendMessage();
+            e.preventDefault();
+            sendMessage();
         }
     }
 });
 
 document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal')) e.target.classList.remove('show');
+    if (e.target.classList.contains('modal')) {
+        e.target.classList.remove('show');
+    }
 });
 
-console.log('✅ Chat system with Request feature loaded');
+console.log('✅ Chat system loaded');
