@@ -32,7 +32,7 @@ html, body {
     bottom: 0;
 }
 
-/* 🌌 ANIMATED SPACE STARS */
+/* ==================== PREMIUM ANIMATED BACKGROUND ==================== */
 .stars-container {
     position: fixed;
     top: 0; left: 0;
@@ -40,6 +40,8 @@ html, body {
     pointer-events: none;
     z-index: 0;
 }
+
+/* Twinkling Stars */
 .star {
     position: absolute;
     background: #fff;
@@ -49,25 +51,84 @@ html, body {
 }
 @keyframes twinkle {
     0%, 100% { opacity: 0.2; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.5); }
+    50% { opacity: 1; transform: scale(1.8); box-shadow: 0 0 6px #fff, 0 0 12px var(--gold); }
 }
 
-/* ✨ SHOOTING STARS */
-.shooting-star {
+/* Drifting Clouds */
+.clouds-container {
     position: fixed;
-    width: 100px;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.8), transparent);
-    border-radius: 2px;
-    animation: shoot 3s linear infinite;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     pointer-events: none;
     z-index: 0;
 }
-.shooting-star:nth-child(1) { animation-delay: 0s; top: 15%; }
-.shooting-star:nth-child(2) { animation-delay: 1.5s; top: 55%; }
+.cloud {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 50%;
+    filter: blur(30px);
+    animation: drift var(--speed) linear infinite;
+}
+@keyframes drift {
+    0% { transform: translateX(-150px); }
+    100% { transform: translateX(calc(100vw + 150px)); }
+}
+
+/* Shooting Stars */
+.shooting-star {
+    position: fixed;
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(212,175,55,0.5), transparent);
+    border-radius: 2px;
+    animation: shoot 4s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+.shooting-star:nth-child(1) { animation-delay: 0s; top: 10%; }
+.shooting-star:nth-child(2) { animation-delay: 2s; top: 40%; }
+.shooting-star:nth-child(3) { animation-delay: 3.5s; top: 70%; }
 @keyframes shoot {
-    0% { transform: translateX(-100px) translateY(0) rotate(-30deg); opacity: 1; }
-    100% { transform: translateX(110vw) translateY(300px) rotate(-30deg); opacity: 0; }
+    0% { transform: translateX(-120px) translateY(0) rotate(-25deg); opacity: 1; }
+    70% { opacity: 1; }
+    100% { transform: translateX(calc(100vw + 120px)) translateY(400px) rotate(-25deg); opacity: 0; }
+}
+
+/* Nebula Glow */
+.nebula {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    animation: nebulaPulse 8s ease-in-out infinite;
+}
+.nebula-1 {
+    width: 300px; height: 300px;
+    background: rgba(124, 58, 237, 0.08);
+    top: -50px; right: -50px;
+}
+.nebula-2 {
+    width: 250px; height: 250px;
+    background: rgba(0, 212, 255, 0.06);
+    bottom: -30px; left: -30px;
+    animation-delay: 4s;
+}
+.nebula-3 {
+    width: 200px; height: 200px;
+    background: rgba(212, 175, 55, 0.05);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation-delay: 2s;
+}
+@keyframes nebulaPulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.3); opacity: 1; }
+}
+.nebula-3 { animation: nebulaCenter 8s ease-in-out infinite; }
+@keyframes nebulaCenter {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+    50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.8; }
 }
 
 /* ==================== CHRONOX C-SPIDER LOGO ==================== */
@@ -92,7 +153,7 @@ html, body {
     border-bottom-color: transparent;
     transform: rotate(-45deg);
     animation: logoSpin 8s linear infinite;
-    box-shadow: 0 0 20px rgba(212,175,55,0.4), 0 0 40px rgba(0,212,255,0.2);
+    box-shadow: 0 0 25px rgba(212,175,55,0.5), 0 0 50px rgba(0,212,255,0.3), inset 0 0 20px rgba(212,175,55,0.1);
 }
 @keyframes logoSpin {
     0% { transform: rotate(-45deg); }
@@ -106,6 +167,7 @@ html, body {
     transform: translate(-50%, -50%);
     font-size: 34px;
     animation: logoSpiderPulse 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(212,175,55,0.6));
 }
 @keyframes logoSpiderPulse {
     0%, 100% { transform: translate(-50%, -50%) scale(1); }
@@ -497,13 +559,8 @@ html, body {
     background: #1a1f4e;
     transition: all 0.3s ease;
 }
-.avatar:active { transform: scale(1.05); }
 .stats { display: flex; gap: 15px; }
-.stat {
-    text-align: center;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
+.stat { text-align: center; cursor: pointer; transition: transform 0.2s ease; }
 .stat:active { transform: scale(1.1); }
 .stat-num { font-size: 18px; font-weight: 700; color: var(--gold); display: block; }
 .stat-label { font-size: 10px; color: var(--text2); text-transform: uppercase; }
@@ -631,20 +688,6 @@ html, body {
     0%, 100% { opacity: 0.5; }
     50% { opacity: 1; }
 }
-
-/* BADGE */
-.badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-.badge-gold { background: var(--gold); color: #0A0E27; }
-.badge-blue { background: var(--blue-neon); color: #0A0E27; }
-.badge-purple { background: var(--purple); color: #fff; }
 
 /* SCROLLBAR */
 ::-webkit-scrollbar { width: 2px; }
