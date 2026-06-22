@@ -1,0 +1,16 @@
+{
+    "name": "ChronoX - Premium Social Network",
+    "short_name": "ChronoX",
+    "description": "Futuristic Space-Themed Social Network",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0A0E27",
+    "theme_color": "#D4AF37",
+    "icons": [
+        {
+            "src": "https://img.icons8.com/color/144/spider.png",
+            "sizes": "144x144",
+            "type": "image/png"
+        }
+    ]
+}
