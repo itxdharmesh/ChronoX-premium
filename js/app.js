@@ -16,7 +16,7 @@ setTimeout(function() {
                         streak: 0, bestStreak: 0, xp: 0, coins: 500,
                         level: { current: 1, title: 'Explorer', progress: 0 },
                         stats: { achievements: 0, totalMessages: 0 },
-                        inventory: [], lastDailyReward: null, rewardStreak: 0, onlineStatus: 'online'
+                        inventory: []
                     };
                 }
                 showApp();
@@ -84,18 +84,4 @@ function renderHome(c) {
         '<div class="card"><h3 style="color:var(--gold);margin-bottom:10px">Quick Links</h3><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px"><button class="btn-out" onclick="navigate(\'games\')">🎮 Games</button><button class="btn-out" onclick="navigate(\'chats\')">💬 Chats</button><button class="btn-out" onclick="navigate(\'search\')">🔍 Search</button><button class="btn-out" onclick="openShop()">🛍️ Shop</button></div></div>';
 }
 
-function claimDailyReward() {
-    if (!currentUserData) return;
-    var today = new Date().toDateString();
-    var last = currentUserData.lastDailyReward ? new Date(currentUserData.lastDailyReward).toDateString() : '';
-    if (today === last) { showToast('Already claimed!', 'error'); return; }
-    var reward = 20;
-    db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(reward), lastDailyReward: firebase.firestore.FieldValue.serverTimestamp() }).then(function() {
-        currentUserData.coins = (currentUserData.coins || 0) + reward;
-        currentUserData.lastDailyReward = new Date().toISOString();
-        showToast('🎁 +' + reward + ' coins!');
-        navigate('home');
-    });
-}
-
-console.log('✅ App loaded');
+console.log('✅ App loaded - No Rewards');
