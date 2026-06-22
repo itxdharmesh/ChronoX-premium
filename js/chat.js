@@ -31,118 +31,124 @@ function loadChatList() {
         return;
     }
     
-    // AI Users - ALWAYS SHOW
-    var aiUsers = [
-        { id: 'annaya_ai', name: 'Annaya', avatar: '👩‍🦰' },
-        { id: 'tarun_ai', name: 'Tarun', avatar: '👨‍💻' },
-        { id: 'chronox_ai', name: 'ChronoX AI', avatar: '🕷️' }
-    ];
-    
-    var allItems = [];
-    
-    aiUsers.forEach(function(ai) {
-        allItems.push({
-            chatId: 'ai_' + currentUser.uid + '_' + ai.id,
-            userId: ai.id,
-            name: ai.name,
-            avatar: ai.avatar,
-            isAI: true,
-            lastMsg: 'Tap to chat',
-            time: '',
-            isOnline: true
-        });
+    // GET USERS I FOLLOW - Unki chat dikhao
+    var followingIds = currentUserData.following || [];
+    var mutualIds = followingIds.filter(function(id) {
+        return (currentUserData.followers || []).indexOf(id) !== -1;
     });
     
-    // Get real chats
+    // Also get users from existing chats
     db.collection('chats')
         .where('participants', 'array-contains', currentUser.uid)
         .get()
         .then(function(snap) {
-            var promises = [];
+            var chatUsers = {};
             
+            // Pehle existing chats se users lo
             snap.forEach(function(doc) {
                 var chat = doc.data();
                 var otherId = chat.participants.find(function(id) { return id !== currentUser.uid; });
-                if (!otherId || ['annaya_ai','tarun_ai','chronox_ai'].includes(otherId)) return;
-                
-                promises.push(
-                    db.collection('users').doc(otherId).get().then(function(ud) {
-                        var u = ud.data();
-                        if (!u) return;
-                        if ((currentUserData.blockedUsers||[]).indexOf(otherId) !== -1) return;
-                        if ((u.blockedUsers||[]).indexOf(currentUser.uid) !== -1) return;
-                        
-                        allItems.push({
-                            chatId: doc.id,
-                            userId: otherId,
-                            name: u.name,
-                            avatar: u.avatar || '',
-                            isAI: false,
-                            lastMsg: chat.lastMessage || '',
-                            time: chat.lastMessageTime ? formatTime(chat.lastMessageTime.toDate()) : '',
-                            isOnline: u.onlineStatus === 'online',
-                            lastSeen: u.lastSeen ? u.lastSeen.toDate() : null
-                        });
-                    })
-                );
+                if (otherId && !['annaya_ai','tarun_ai','chronox_ai'].includes(otherId)) {
+                    chatUsers[otherId] = { chatId: doc.id, lastMsg: chat.lastMessage || '', time: chat.lastMessageTime };
+                }
             });
             
-            Promise.all(promises).then(function() {
-                renderChatItems(container, allItems);
+            // Add mutual followers who don't have chat yet
+            mutualIds.forEach(function(id) {
+                if (!chatUsers[id]) {
+                    chatUsers[id] = { chatId: null, lastMsg: '', time: null };
+                }
             });
-        })
-        .catch(function() {
-            renderChatItems(container, allItems);
+            
+            // Also add users I follow
+            followingIds.forEach(function(id) {
+                if (!chatUsers[id]) {
+                    chatUsers[id] = { chatId: null, lastMsg: '', time: null };
+                }
+            });
+            
+            var userIds = Object.keys(chatUsers);
+            
+            if (userIds.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:30px">Follow someone to start chatting!</p>';
+                return;
+            }
+            
+            // Fetch all user data
+            var promises = userIds.map(function(uid) {
+                return db.collection('users').doc(uid).get().then(function(ud) {
+                    var u = ud.data();
+                    if (!u) return null;
+                    if ((currentUserData.blockedUsers||[]).indexOf(uid) !== -1) return null;
+                    if ((u.blockedUsers||[]).indexOf(currentUser.uid) !== -1) return null;
+                    
+                    var info = chatUsers[uid];
+                    var isOnline = u.onlineStatus === 'online';
+                    var statusText = isOnline ? '● Online' : getLastSeenText(u.lastSeen ? u.lastSeen.toDate() : null);
+                    var statusColor = isOnline ? '#2ED573' : '#888';
+                    
+                    return {
+                        uid: uid,
+                        chatId: info.chatId || ('new_' + [currentUser.uid, uid].sort().join('_')),
+                        name: u.name,
+                        avatar: u.avatar || '',
+                        lastMsg: info.lastMsg || 'Tap to chat',
+                        time: info.time ? formatTime(info.time.toDate()) : '',
+                        isOnline: isOnline,
+                        statusText: statusText,
+                        statusColor: statusColor
+                    };
+                });
+            });
+            
+            Promise.all(promises).then(function(results) {
+                var users = results.filter(function(r) { return r !== null; });
+                
+                if (users.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:30px">No chats available</p>';
+                    return;
+                }
+                
+                // Sort: online first, then by name
+                users.sort(function(a, b) {
+                    if (a.isOnline && !b.isOnline) return -1;
+                    if (!a.isOnline && b.isOnline) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+                
+                var html = '';
+                users.forEach(function(u) {
+                    html += '<div class="chat-item" onclick="openChatWindow(\'' + u.chatId + '\',\'' + u.uid + '\',\'' + u.name + '\',\'' + u.avatar + '\',false)" style="display:flex;align-items:center;padding:14px;background:rgba(19,24,66,0.7);border:1px solid rgba(212,175,55,0.15);border-radius:14px;cursor:pointer;gap:12px;margin-bottom:6px">';
+                    
+                    // Avatar
+                    html += '<div style="position:relative;flex-shrink:0">';
+                    html += '<img src="' + (u.avatar || defaultAvatar(u.name)) + '" style="width:52px;height:52px;border-radius:50%;border:2px solid #D4AF37;object-fit:cover" onerror="this.src=\'' + defaultAvatar(u.name) + '\'">';
+                    html += '<span style="position:absolute;bottom:2px;right:2px;width:12px;height:12px;background:' + u.statusColor + ';border-radius:50%;border:2px solid #0A0E27"></span>';
+                    html += '</div>';
+                    
+                    // Info
+                    html += '<div style="flex:1;min-width:0">';
+                    html += '<b>' + u.name + '</b><br>';
+                    html += '<small style="color:rgba(255,255,255,0.5);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + u.lastMsg + '</small>';
+                    html += '</div>';
+                    
+                    // Meta
+                    html += '<div style="text-align:right;flex-shrink:0">';
+                    html += '<small style="color:' + u.statusColor + ';font-size:11px">' + u.statusText + '</small><br>';
+                    html += '<small style="color:#D4AF37;font-size:10px">' + u.time + '</small>';
+                    html += '</div>';
+                    
+                    html += '</div>';
+                });
+                
+                container.innerHTML = html;
+            });
         });
 }
 
-function renderChatItems(container, items) {
-    if (items.length === 0) {
-        container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:30px">No chats yet. Search and message someone!</p>';
-        return;
-    }
-    
-    var html = '';
-    
-    items.forEach(function(item) {
-        var dp = item.isAI ? '' : (item.avatar || defaultAvatar(item.name));
-        var statusColor = item.isOnline ? '#2ED573' : '#888';
-        var statusText = item.isOnline ? '● Online' : (item.lastSeen ? getLastSeenText(item.lastSeen) : 'Offline');
-        var isAIClass = item.isAI ? 'true' : 'false';
-        
-        html += '<div class="chat-item" onclick="openChatWindow(\'' + item.chatId + '\',\'' + item.userId + '\',\'' + item.name + '\',\'' + (item.avatar||'') + '\',' + isAIClass + ')" style="display:flex;align-items:center;padding:14px;background:rgba(19,24,66,0.7);border:1px solid rgba(212,175,55,0.15);border-radius:14px;cursor:pointer;gap:12px;margin-bottom:6px">';
-        
-        // Avatar
-        if (item.isAI) {
-            html += '<div style="width:52px;height:52px;border-radius:50%;border:2px solid #D4AF37;display:flex;align-items:center;justify-content:center;font-size:26px;background:#1a1f4e;flex-shrink:0">' + item.avatar + '</div>';
-        } else {
-            html += '<div style="position:relative;flex-shrink:0">';
-            html += '<img src="' + (dp || defaultAvatar(item.name)) + '" style="width:52px;height:52px;border-radius:50%;border:2px solid #D4AF37;object-fit:cover" onerror="this.src=\'' + defaultAvatar(item.name) + '\'">';
-            html += '<span style="position:absolute;bottom:2px;right:2px;width:12px;height:12px;background:' + statusColor + ';border-radius:50%;border:2px solid #0A0E27"></span>';
-            html += '</div>';
-        }
-        
-        // Info
-        html += '<div style="flex:1;min-width:0">';
-        html += '<b>' + item.name + (item.isAI ? ' <span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:#1E90FF;border-radius:50%;font-size:10px;color:#fff;margin-left:4px">✓</span>' : '') + '</b><br>';
-        html += '<small style="color:rgba(255,255,255,0.5);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (item.lastMsg || 'Tap to chat') + '</small>';
-        html += '</div>';
-        
-        // Meta
-        html += '<div style="text-align:right;flex-shrink:0">';
-        html += '<small style="color:' + statusColor + ';font-size:11px">' + statusText + '</small><br>';
-        html += '<small style="color:#D4AF37;font-size:10px">' + item.time + '</small>';
-        html += '</div>';
-        
-        html += '</div>';
-    });
-    
-    container.innerHTML = html;
-}
-
-// Baaki functions same rahenge...
+// Baaki functions
 function openChatWindow(cid, uid, name, avt, ai) {
-    chatId = cid; chatUser = { uid: uid, name: name, avt: avt, ai: ai };
+    chatId = cid; chatUser = { uid: uid, name: name, avt: avt, ai: ai || false };
     document.getElementById('chatWindow').classList.add('show');
     document.getElementById('chatName').textContent = name;
     document.getElementById('chatMessages').innerHTML = '';
@@ -170,23 +176,25 @@ function closeChat() { document.getElementById('chatWindow').classList.remove('s
 function sendMessage() {
     var input = document.getElementById('msgInput'); if (!input) return;
     var t = input.value.trim(); if (!t || !chatId || !chatUser) return;
-    db.collection('chats').doc(chatId).collection('messages').add({senderId:currentUser.uid,text:t,timestamp:firebase.firestore.FieldValue.serverTimestamp(),seen:false});
-    db.collection('chats').doc(chatId).set({participants:[currentUser.uid,chatUser.uid],lastMessage:t,lastMessageTime:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-    input.value=''; input.focus();
-    if (chatUser.ai) {
-        document.getElementById('typingIndicator').textContent = chatUser.name + ' is typing...';
-        setTimeout(function() {
-            document.getElementById('typingIndicator').textContent = '';
-            var replies = {annaya_ai:["Hey! 😊","That's cool! 💫","Just painting 🎨"],tarun_ai:["Yo! 👋","Nice bro! 💻","What games? 🎮"],chronox_ai:["How can I help? 🕷️","Ask me anything!"]};
-            var reply = (replies[chatUser.uid]||replies.chronox_ai)[Math.floor(Math.random()*3)];
-            db.collection('chats').doc(chatId).collection('messages').add({senderId:chatUser.uid,text:reply,timestamp:firebase.firestore.FieldValue.serverTimestamp(),seen:true});
-            db.collection('chats').doc(chatId).update({lastMessage:reply,lastMessageTime:firebase.firestore.FieldValue.serverTimestamp()});
-        }, 1000);
+    
+    // If new chat, create it
+    if (chatId.startsWith('new_')) {
+        var newRef = db.collection('chats').doc();
+        newRef.set({participants:[currentUser.uid, chatUser.uid], lastMessage: t, lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()}).then(function() {
+            chatId = newRef.id;
+            db.collection('chats').doc(chatId).collection('messages').add({senderId:currentUser.uid, text:t, timestamp:firebase.firestore.FieldValue.serverTimestamp(), seen:false});
+            input.value=''; input.focus();
+        });
+        return;
     }
+    
+    db.collection('chats').doc(chatId).collection('messages').add({senderId:currentUser.uid, text:t, timestamp:firebase.firestore.FieldValue.serverTimestamp(), seen:false});
+    db.collection('chats').doc(chatId).set({participants:[currentUser.uid, chatUser.uid], lastMessage:t, lastMessageTime:firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+    input.value=''; input.focus();
 }
 
 function getLastSeenText(ls) { if(!ls)return'Offline';var d=Date.now()-ls,m=Math.floor(d/60000),h=Math.floor(d/3600000);if(m<1)return'Just now';if(m<60)return m+'m ago';if(h<24)return h+'h ago';return ls.toLocaleDateString('en-IN',{day:'numeric',month:'short'}); }
 function attachMedia() { var inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.onchange=function(){var f=inp.files[0];if(!f||!chatId)return;var r=new FileReader();r.onload=function(e){db.collection('chats').doc(chatId).collection('messages').add({senderId:currentUser.uid,text:'📷 Photo',mediaUrl:e.target.result,timestamp:firebase.firestore.FieldValue.serverTimestamp(),seen:false});};r.readAsDataURL(f);};inp.click(); }
 document.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){var w=document.getElementById('chatWindow');if(w&&w.classList.contains('show')){e.preventDefault();sendMessage();}}});
 document.addEventListener('click',function(e){if(e.target.classList.contains('modal'))e.target.classList.remove('show');});
-console.log('✅ Chat loaded - Force Render');
+console.log('✅ Chat loaded - Real Users Only');
