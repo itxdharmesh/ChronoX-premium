@@ -16,7 +16,6 @@
 </head>
 <body>
 
-<!-- SPACE BACKGROUND -->
 <div class="stars-container" id="starsContainer"></div>
 <div class="clouds-container" id="cloudsContainer"></div>
 <div class="nebula nebula-1"></div>
@@ -26,23 +25,15 @@
 <div class="shooting-star"></div>
 <div class="shooting-star"></div>
 
-<!-- SPLASH -->
 <div id="splashScreen">
-    <div class="chronox-logo">
-        <div class="logo-c"></div>
-        <div class="logo-dot"></div>
-        <div class="logo-dot"></div>
-        <div class="logo-dot"></div>
-    </div>
+    <div class="chronox-logo"><div class="logo-c"></div><div class="logo-dot"></div><div class="logo-dot"></div><div class="logo-dot"></div></div>
     <div class="splash-brand">ChronoX</div>
     <p style="color:rgba(255,255,255,0.5);letter-spacing:3px;text-transform:uppercase;font-size:12px">Premium Social Network</p>
     <div class="splash-loader"><div></div></div>
 </div>
 
-<!-- AUTH -->
 <div id="authScreen"></div>
 
-<!-- MAIN APP -->
 <div id="mainApp">
     <div id="contentArea"></div>
     <nav id="bottomNav">
@@ -54,16 +45,12 @@
     </nav>
 </div>
 
-<!-- CHAT WINDOW -->
 <div id="chatWindow">
     <div id="chatHeader">
         <button onclick="closeChat()" style="background:none;border:none;color:var(--gold);font-size:24px;cursor:pointer;padding:5px">←</button>
         <img id="chatAvatar" src="" style="width:40px;height:40px;border-radius:50%;border:2px solid var(--gold);object-fit:cover;display:none" onerror="this.style.display='none'">
         <span id="chatAvatarEmoji" style="font-size:35px;display:none"></span>
-        <div style="flex:1">
-            <div style="font-weight:600" id="chatName">User</div>
-            <div style="font-size:11px" id="chatStatus">● Online</div>
-        </div>
+        <div style="flex:1"><div style="font-weight:600" id="chatName">User</div><div style="font-size:11px" id="chatStatus">● Online</div></div>
     </div>
     <div id="chatMessages"></div>
     <div id="typingIndicator"></div>
@@ -74,11 +61,9 @@
     </div>
 </div>
 
-<!-- MODALS -->
 <div class="modal" id="genericModal"><div class="modal-box" id="genericContent"></div></div>
 <div class="modal" id="gamesModal"><div class="modal-box" id="gamesContent"></div></div>
 
-<!-- SCRIPTS -->
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
@@ -103,56 +88,10 @@
 <script src="js/games/rps.js"></script>
 <script src="js/games/number.js"></script>
 
-<!-- BACKGROUND ANIMATIONS -->
 <script>
-(function() {
-    var container = document.getElementById('starsContainer');
-    if (!container) return;
-    for (var i = 0; i < 150; i++) {
-        var star = document.createElement('div');
-        star.className = 'star';
-        star.style.left = Math.random() * 100 + '%';
-        star.style.top = Math.random() * 100 + '%';
-        var size = Math.random() * 3 + 1;
-        star.style.width = size + 'px';
-        star.style.height = size + 'px';
-        star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
-        star.style.setProperty('--delay', Math.random() * 4 + 's');
-        container.appendChild(star);
-    }
-})();
-
-(function() {
-    var container = document.getElementById('cloudsContainer');
-    if (!container) return;
-    var configs = [
-        { w: 200, h: 80, top: 5, speed: 60 },
-        { w: 280, h: 100, top: 15, speed: 80 },
-        { w: 180, h: 70, top: 30, speed: 55 },
-        { w: 320, h: 110, top: 50, speed: 90 },
-        { w: 220, h: 85, top: 65, speed: 65 },
-        { w: 260, h: 95, top: 80, speed: 75 },
-        { w: 190, h: 75, top: 90, speed: 50 }
-    ];
-    configs.forEach(function(c) {
-        var cloud = document.createElement('div');
-        cloud.className = 'cloud';
-        cloud.style.width = c.w + 'px';
-        cloud.style.height = c.h + 'px';
-        cloud.style.top = c.top + '%';
-        cloud.style.left = '-' + c.w + 'px';
-        cloud.style.setProperty('--speed', c.speed + 's');
-        container.appendChild(cloud);
-    });
-})();
+(function(){var c=document.getElementById('starsContainer');if(!c)return;for(var i=0;i<150;i++){var s=document.createElement('div');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';var sz=Math.random()*3+1;s.style.width=sz+'px';s.style.height=sz+'px';s.style.setProperty('--duration',(Math.random()*3+2)+'s');s.style.setProperty('--delay',Math.random()*4+'s');c.appendChild(s);}})();
+(function(){var c=document.getElementById('cloudsContainer');if(!c)return;var cf=[{w:200,h:80,t:5,s:60},{w:280,h:100,t:15,s:80},{w:180,h:70,t:30,s:55},{w:320,h:110,t:50,s:90},{w:220,h:85,t:65,s:65},{w:260,h:95,t:80,s:75},{w:190,h:75,t:90,s:50}];cf.forEach(function(x){var cl=document.createElement('div');cl.className='cloud';cl.style.width=x.w+'px';cl.style.height=x.h+'px';cl.style.top=x.t+'%';cl.style.left='-'+x.w+'px';cl.style.setProperty('--speed',x.s+'s');c.appendChild(cl);});})();
+if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js');}
 </script>
-
-<!-- SERVICE WORKER -->
-<script>
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
-}
-</script>
-
 </body>
-            </html>
+</html>
