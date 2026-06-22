@@ -58,4 +58,4 @@ function tttBestMove() {
     for (var i=0;i<9;i++) { if(tttBoard[i]===''){tttBoard[i]='O';if(tttCheckWin('O')){tttBoard[i]='';return i;}tttBoard[i]='';} }
     for (var i=0;i<9;i++) { if(tttBoard[i]===''){tttBoard[i]='X';if(tttCheckWin('X')){tttBoard[i]='';return i;}tttBoard[i]='';} }
     var p=[4,0,2,6,8,1,3,5,7]; for (var i=0;i<p.length;i++) if(tttBoard[p[i]]==='') return p[i]; return 0;
-        }
+}
