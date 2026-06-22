@@ -62,7 +62,72 @@ function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// ==================== RIPPLE EFFECT ON BUTTONS ====================
+// ==================== COINS SYSTEM ====================
+function addCoins(amount) {
+    if (!currentUser) return;
+    amount = Math.floor(amount);
+    if (amount <= 0) return;
+    
+    db.collection('users').doc(currentUser.uid).update({
+        coins: firebase.firestore.FieldValue.increment(amount)
+    }).then(function() {
+        if (currentUserData) {
+            currentUserData.coins = (currentUserData.coins || 0) + amount;
+        }
+        showToast('💰 +' + amount + ' coins!');
+    }).catch(function(err) {
+        console.error('Coin update error:', err);
+    });
+}
+
+function spendCoins(amount) {
+    if (!currentUser) return false;
+    if ((currentUserData.coins || 0) < amount) {
+        showToast('Not enough coins! 😢', 'error');
+        return false;
+    }
+    
+    db.collection('users').doc(currentUser.uid).update({
+        coins: firebase.firestore.FieldValue.increment(-amount)
+    }).then(function() {
+        if (currentUserData) {
+            currentUserData.coins = (currentUserData.coins || 0) - amount;
+        }
+    });
+    return true;
+}
+
+// ==================== XP SYSTEM ====================
+function addXP(amount) {
+    if (!currentUser) return;
+    amount = Math.floor(amount);
+    if (amount <= 0) return;
+    
+    var ref = db.collection('users').doc(currentUser.uid);
+    ref.get().then(function(doc) {
+        var d = doc.data();
+        var newXP = (d.xp || 0) + amount;
+        var newProgress = (d.level?.progress || 0) + amount;
+        var newLevel = Math.floor(newProgress / 100) + 1;
+        var titles = ['Explorer','Adventurer','Traveler','Voyager','Pioneer','Elite','Master','Legend','Mythic','Eternal'];
+        var titleIndex = Math.min(newLevel - 1, titles.length - 1);
+        
+        ref.update({
+            xp: newXP,
+            'level.progress': newProgress,
+            'level.current': newLevel,
+            'level.title': titles[titleIndex]
+        }).then(function() {
+            if (currentUserData) {
+                currentUserData.xp = newXP;
+                currentUserData.level = { current: newLevel, title: titles[titleIndex], progress: newProgress };
+            }
+            showToast('⚡ +' + amount + ' XP!');
+        });
+    });
+}
+
+// ==================== RIPPLE EFFECT ====================
 document.addEventListener('click', function(e) {
     var btn = e.target.closest('.btn');
     if (!btn) return;
