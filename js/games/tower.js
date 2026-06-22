@@ -186,4 +186,8 @@ document.addEventListener('click', function(e) {
     if (towerData.gold < 100) { showToast('Need 100 gold!', 'error'); return; }
     var rect = gameCanvas.getBoundingClientRect();
     var x = e.clientX - rect.left, y = e.clientY - rect.top;
-    towerData.t
+    towerData.towers.push({x:x, y:y});
+    towerData.gold -= 100;
+});
+
+console.log('✅ Premium Tower Defense loaded');
