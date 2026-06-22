@@ -1,0 +1,44 @@
+var ngNum, ngAttempts;
+
+function startNumberGuess() {
+    openGameScreen('🔢 Number Guess');
+    gameCanvas.style.display = 'none';
+    ngNum = Math.floor(Math.random()*100)+1;
+    ngAttempts = 0;
+    
+    var div = document.createElement('div');
+    div.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px';
+    div.innerHTML = 
+        '<h2 style="color:var(--gold);margin-bottom:15px">🔢 Number Guessing</h2>'+
+        '<p style="color:rgba(255,255,255,0.6);margin-bottom:20px;text-align:center">Guess a number between 1-100</p>'+
+        '<input class="inp" id="ngInput" type="number" min="1" max="100" placeholder="Enter number..." style="max-width:250px;text-align:center;font-size:24px">'+
+        '<button class="btn" onclick="checkNG()" style="max-width:250px;margin-top:10px">Guess!</button>'+
+        '<p id="ngHint" style="color:var(--gold);margin-top:15px;font-size:18px;text-align:center"></p>'+
+        '<p id="ngAttempts" style="color:rgba(255,255,255,0.5);text-align:center"></p>'+
+        '<button class="btn-out" onclick="closeGameScreen()" style="margin-top:20px">Exit</button>';
+    gameCanvas.parentNode.insertBefore(div, gameCanvas);
+    currentGameRestart = startNumberGuess;
+}
+
+function checkNG() {
+    var g = parseInt(document.getElementById('ngInput').value);
+    if (!g || g<1 || g>100) return;
+    ngAttempts++;
+    
+    if (g === ngNum) {
+        var pts = Math.max(100 - ngAttempts*10, 10);
+        updateGameScore(pts);
+        if (typeof addXP === 'function') addXP(pts);
+        document.getElementById('ngHint').textContent = '🎉 Correct! The number was '+ngNum;
+        document.getElementById('ngAttempts').textContent = 'Attempts: '+ngAttempts+' | +'+pts+' pts';
+        document.getElementById('ngInput').disabled = true;
+    } else if (g < ngNum) {
+        document.getElementById('ngHint').textContent = '📈 Higher!';
+        document.getElementById('ngAttempts').textContent = 'Attempts: '+ngAttempts;
+    } else {
+        document.getElementById('ngHint').textContent = '📉 Lower!';
+        document.getElementById('ngAttempts').textContent = 'Attempts: '+ngAttempts;
+    }
+    document.getElementById('ngInput').value = '';
+    document.getElementById('ngInput').focus();
+}
