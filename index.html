@@ -16,7 +16,6 @@
 </head>
 <body>
 
-<!-- ==================== PREMIUM ANIMATED BACKGROUND ==================== -->
 <div class="stars-container" id="starsContainer"></div>
 <div class="clouds-container" id="cloudsContainer"></div>
 <div class="nebula nebula-1"></div>
@@ -26,7 +25,6 @@
 <div class="shooting-star"></div>
 <div class="shooting-star"></div>
 
-<!-- ==================== SPLASH SCREEN ==================== -->
 <div id="splashScreen">
     <div class="chronox-logo">
         <div class="logo-c"></div>
@@ -39,10 +37,8 @@
     <div class="splash-loader"><div></div></div>
 </div>
 
-<!-- ==================== AUTH SCREEN ==================== -->
 <div id="authScreen"></div>
 
-<!-- ==================== MAIN APP ==================== -->
 <div id="mainApp">
     <div id="contentArea"></div>
     <nav id="bottomNav">
@@ -54,7 +50,7 @@
     </nav>
 </div>
 
-<!-- ==================== CHAT WINDOW ==================== -->
+<!-- CHAT WINDOW -->
 <div id="chatWindow">
     <div id="chatHeader">
         <button onclick="closeChat()" style="background:none;border:none;color:var(--gold);font-size:24px;cursor:pointer;padding:5px">←</button>
@@ -67,21 +63,14 @@
     <div id="chatMessages"></div>
     <div id="typingIndicator"></div>
     <div id="chatInput">
-        <button onclick="attachMedia()" style="background:none;border:none;font-size:22px;cursor:pointer;padding:8px;flex-shrink:0">📎</button>
-        <input id="msgInput" placeholder="Type a message..." autocomplete="off" style="flex:1;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:25px;color:#fff;outline:none;font-size:16px">
-        <button onclick="sendMessage()" id="sendBtn" style="width:44px;height:44px;background:linear-gradient(135deg,#D4AF37,#00D4FF);border:none;border-radius:50%;color:#0A0E27;font-size:20px;cursor:pointer;flex-shrink:0">➤</button>
+        <input id="msgInput" placeholder="Type a message..." autocomplete="off">
+        <button onclick="sendMessage()" id="sendBtn">➤</button>
     </div>
 </div>
 
-<!-- ==================== MODALS ==================== -->
-<div class="modal" id="genericModal">
-    <div class="modal-box" id="genericContent"></div>
-</div>
-<div class="modal" id="gamesModal">
-    <div class="modal-box" id="gamesContent"></div>
-</div>
+<div class="modal" id="genericModal"><div class="modal-box" id="genericContent"></div></div>
+<div class="modal" id="gamesModal"><div class="modal-box" id="gamesContent"></div></div>
 
-<!-- ==================== SCRIPTS ==================== -->
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
@@ -91,21 +80,9 @@
 <script src="js/search.js"></script>
 <script src="js/achievements.js"></script>
 <script src="js/notifications.js"></script>
-
-<!-- ==================== GAMES ==================== -->
-<script src="js/games/snake.js"></script>
-<script src="js/games/pong.js"></script>
-<script src="js/games/runner.js"></script>
-<script src="js/games/flappy.js"></script>
-<script src="js/games/invaders.js"></script>
-<script src="js/games/breakout.js"></script>
-<script src="js/games/tower.js"></script>
-<script src="js/games/tictactoe.js"></script>
 <script src="js/games/games-main.js"></script>
 
-<!-- ==================== BACKGROUND ANIMATIONS ==================== -->
 <script>
-// Create Twinkling Stars
 (function() {
     var container = document.getElementById('starsContainer');
     for (var i = 0; i < 150; i++) {
@@ -122,10 +99,9 @@
     }
 })();
 
-// Create Drifting Clouds
 (function() {
     var container = document.getElementById('cloudsContainer');
-    var cloudConfigs = [
+    var configs = [
         { w: 200, h: 80, top: 5, speed: 60 },
         { w: 280, h: 100, top: 15, speed: 80 },
         { w: 180, h: 70, top: 30, speed: 55 },
@@ -134,8 +110,7 @@
         { w: 260, h: 95, top: 80, speed: 75 },
         { w: 190, h: 75, top: 90, speed: 50 }
     ];
-    
-    cloudConfigs.forEach(function(c) {
+    configs.forEach(function(c) {
         var cloud = document.createElement('div');
         cloud.className = 'cloud';
         cloud.style.width = c.w + 'px';
@@ -148,7 +123,6 @@
 })();
 </script>
 
-<!-- ==================== SERVICE WORKER ==================== -->
 <script>
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js');
