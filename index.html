@@ -16,14 +16,23 @@
 </head>
 <body>
 
+<!-- SPACE BACKGROUND -->
+<div class="stars-container" id="starsContainer"></div>
+<div class="shooting-star"></div>
+<div class="shooting-star"></div>
+
+<!-- SPLASH SCREEN -->
 <div id="splashScreen">
     <div class="splash-logo">🕷️</div>
     <div class="splash-brand">ChronoX</div>
+    <p style="color:rgba(255,255,255,0.5);letter-spacing:3px;text-transform:uppercase;font-size:12px">Premium Social Network</p>
     <div class="splash-loader"><div></div></div>
 </div>
 
+<!-- AUTH SCREEN -->
 <div id="authScreen"></div>
 
+<!-- MAIN APP -->
 <div id="mainApp">
     <div id="contentArea"></div>
     <nav id="bottomNav">
@@ -35,23 +44,34 @@
     </nav>
 </div>
 
+<!-- CHAT WINDOW -->
 <div id="chatWindow">
     <div id="chatHeader">
-        <button onclick="closeChat()">←</button>
-        <div id="chatName"></div>
+        <button onclick="closeChat()" style="background:none;border:none;color:var(--gold);font-size:24px;cursor:pointer;padding:5px">←</button>
+        <img class="chat-avatar-img" id="chatAvatar" src="" style="width:40px;height:40px" onerror="this.style.display='none'">
+        <div style="flex:1">
+            <div style="font-weight:600" id="chatName">User</div>
+            <div style="font-size:11px;color:#2ED573" id="chatStatus">● Online</div>
+        </div>
     </div>
     <div id="chatMessages"></div>
     <div id="typingIndicator"></div>
     <div id="chatInput">
-        <button onclick="attachMedia()">📎</button>
-        <input id="msgInput" placeholder="Message...">
-        <button onclick="sendMessage()">➤</button>
+        <button onclick="attachMedia()" style="background:none;border:none;font-size:22px;cursor:pointer;padding:8px;flex-shrink:0">📎</button>
+        <input id="msgInput" placeholder="Type a message..." autocomplete="off" style="flex:1;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:25px;color:#fff;outline:none;font-size:16px">
+        <button onclick="sendMessage()" id="sendBtn" style="width:44px;height:44px;background:linear-gradient(135deg,#D4AF37,#00D4FF);border:none;border-radius:50%;color:#0A0E27;font-size:20px;cursor:pointer;flex-shrink:0">➤</button>
     </div>
 </div>
 
-<div class="modal" id="genericModal"><div class="modal-box" id="genericContent"></div></div>
-<div class="modal" id="gamesModal"><div class="modal-box" id="gamesContent"></div></div>
+<!-- MODALS -->
+<div class="modal" id="genericModal">
+    <div class="modal-box" id="genericContent"></div>
+</div>
+<div class="modal" id="gamesModal">
+    <div class="modal-box" id="gamesContent"></div>
+</div>
 
+<!-- SCRIPTS -->
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
@@ -64,10 +84,30 @@
 <script src="js/achievements.js"></script>
 <script src="js/notifications.js"></script>
 
+<!-- CREATE STARS -->
 <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js');
+(function() {
+    var container = document.getElementById('starsContainer');
+    for (var i = 0; i < 100; i++) {
+        var star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        var size = Math.random() * 3 + 1;
+        star.style.width = size + 'px';
+        star.style.height = size + 'px';
+        star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+        star.style.setProperty('--delay', Math.random() * 4 + 's');
+        container.appendChild(star);
     }
+})();
+</script>
+
+<!-- SERVICE WORKER -->
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+}
 </script>
 
 </body>
