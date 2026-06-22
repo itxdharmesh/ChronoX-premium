@@ -1,10 +1,8 @@
 var currentUser = null;
 var currentUserData = null;
 
-// Splash
 setTimeout(function() {
     document.getElementById('splashScreen').classList.add('hidden');
-    
     auth.onAuthStateChanged(function(user) {
         if (user) {
             currentUser = user;
@@ -13,35 +11,19 @@ setTimeout(function() {
                     currentUserData = doc.data();
                 } else {
                     currentUserData = {
-                        uid: user.uid,
-                        name: 'User',
-                        username: '@user',
-                        bio: '',
-                        avatar: '',
-                        followers: [],
-                        following: [],
-                        blockedUsers: [],
-                        achievements: [],
-                        streak: 0,
-                        bestStreak: 0,
-                        xp: 0,
-                        coins: 0,
+                        uid: user.uid, name: 'User', username: '@user', bio: '', avatar: '',
+                        followers: [], following: [], blockedUsers: [], achievements: [],
+                        streak: 0, bestStreak: 0, xp: 0, coins: 500,
                         level: { current: 1, title: 'Explorer', progress: 0 },
                         stats: { achievements: 0, totalMessages: 0 },
-                        inventory: [],
-                        lastDailyReward: null,
-                        rewardStreak: 0
+                        inventory: [], lastDailyReward: null, rewardStreak: 0,
+                        onlineStatus: 'online'
                     };
                 }
                 showApp();
                 updateStreak();
-            }).catch(function(err) {
-                console.error('User data load error:', err);
-                currentUserData = {
-                    name: 'User', username: '@user', bio: '', avatar: '',
-                    followers: [], following: [], level: { current: 1, title: 'Explorer', progress: 0 },
-                    stats: { achievements: 0 }, coins: 0, inventory: []
-                };
+            }).catch(function() {
+                currentUserData = { name: 'User', username: '@user', bio: '', avatar: '', followers: [], following: [], level: { current: 1, title: 'Explorer', progress: 0 }, stats: { achievements: 0 }, coins: 500, inventory: [] };
                 showApp();
             });
         } else {
@@ -51,29 +33,26 @@ setTimeout(function() {
 }, 2500);
 
 function showApp() {
-    console.log('showApp called');
     document.getElementById('authScreen').classList.remove('show');
     document.getElementById('mainApp').classList.add('show');
-    
     document.querySelectorAll('.nav-btn').forEach(function(b) {
-        b.addEventListener('click', function() {
-            navigate(this.dataset.page);
-        });
+        b.addEventListener('click', function() { navigate(this.dataset.page); });
     });
-    
     navigate('home');
-    
     if (currentUser) {
         db.collection('users').doc(currentUser.uid).update({ onlineStatus: 'online' });
     }
+    window.addEventListener('beforeunload', function() {
+        if (currentUser) {
+            db.collection('users').doc(currentUser.uid).update({ onlineStatus: 'offline', lastSeen: firebase.firestore.FieldValue.serverTimestamp() });
+        }
+    });
 }
 
 function navigate(p) {
-    console.log('Navigate to:', p);
     document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
     var btn = document.querySelector('[data-page="' + p + '"]');
     if (btn) btn.classList.add('active');
-    
     var c = document.getElementById('contentArea');
     try {
         if (p === 'home') renderHome(c);
@@ -82,8 +61,8 @@ function navigate(p) {
         if (p === 'games') openGames();
         if (p === 'profile') renderProfile(c);
     } catch(e) {
-        console.error('Navigation error:', e);
-        c.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.6);padding:30px">Something went wrong. Please refresh.</p>';
+        console.error(e);
+        c.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.6);padding:30px">Error loading page. Please refresh.</p>';
     }
 }
 
@@ -95,19 +74,10 @@ function updateStreak() {
         var today = new Date(); today.setHours(0,0,0,0);
         var last = d.lastActive ? d.lastActive.toDate() : null;
         var s = d.streak || 0;
-        if (last) {
-            last.setHours(0,0,0,0);
-            var diff = (today - last) / 86400000;
-            if (diff === 1) s++;
-            else if (diff > 1) s = 1;
-        } else { s = 1; }
-        ref.update({
-            streak: s,
-            lastActive: firebase.firestore.FieldValue.serverTimestamp(),
-            bestStreak: Math.max(s, d.bestStreak || 0)
-        });
-        currentUserData.streak = s;
-        currentUserData.bestStreak = Math.max(s, d.bestStreak || 0);
+        if (last) { last.setHours(0,0,0,0); var diff = (today - last) / 86400000; if (diff === 1) s++; else if (diff > 1) s = 1; }
+        else { s = 1; }
+        ref.update({ streak: s, lastActive: firebase.firestore.FieldValue.serverTimestamp(), bestStreak: Math.max(s, d.bestStreak || 0) });
+        currentUserData.streak = s; currentUserData.bestStreak = Math.max(s, d.bestStreak || 0);
     });
 }
 
@@ -125,6 +95,11 @@ function renderHome(c) {
             '<span style="font-size:45px">🔥</span>' +
             '<div><h1 style="color:var(--gold)">' + (u.streak || 0) + ' Days</h1><small style="color:rgba(255,255,255,0.6)">Streak</small></div>' +
         '</div>' +
+        '<div class="card" style="text-align:center;background:linear-gradient(135deg,rgba(212,175,55,0.15),rgba(0,212,255,0.08));border:1px solid #D4AF37">' +
+            '<h3 style="color:#D4AF37;margin-bottom:5px">🎁 Daily Reward</h3>' +
+            '<div style="font-size:30px;margin:10px 0">💰 <b style="color:#D4AF37">20</b></div>' +
+            '<button class="btn" onclick="claimDailyReward()">Claim Reward 🎁</button>' +
+        '</div>' +
         '<div class="card">' +
             '<div style="display:flex;justify-content:space-around;text-align:center">' +
                 '<div><h2 style="color:var(--gold)">' + (u.coins || 0) + '</h2><small>💰 Coins</small></div>' +
@@ -133,9 +108,36 @@ function renderHome(c) {
             '</div>' +
         '</div>' +
         '<div class="card">' +
-            '<h3 style="color:var(--gold);margin-bottom:12px">🎁 Daily Reward</h3>' +
-            '<p style="color:rgba(255,255,255,0.6);text-align:center">Coming soon!</p>' +
+            '<h3 style="color:var(--gold);margin-bottom:10px">Quick Links</h3>' +
+            '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">' +
+                '<button class="btn-out" onclick="navigate(\'games\')">🎮 Games Hub</button>' +
+                '<button class="btn-out" onclick="navigate(\'chats\')">💬 Messages</button>' +
+                '<button class="btn-out" onclick="navigate(\'search\')">🔍 Discover</button>' +
+                '<button class="btn-out" onclick="navigate(\'profile\')">👤 Profile</button>' +
+            '</div>' +
         '</div>';
 }
 
-console.log('✅ App loaded - simple version');
+function claimDailyReward() {
+    var u = currentUserData;
+    var today = new Date().toDateString();
+    var lastReward = u.lastDailyReward ? new Date(u.lastDailyReward).toDateString() : '';
+    
+    if (today === lastReward) {
+        showToast('Already claimed today! Come back tomorrow.', 'error');
+        return;
+    }
+    
+    var reward = 20;
+    db.collection('users').doc(currentUser.uid).update({
+        coins: firebase.firestore.FieldValue.increment(reward),
+        lastDailyReward: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function() {
+        currentUserData.coins = (currentUserData.coins || 0) + reward;
+        currentUserData.lastDailyReward = new Date().toISOString();
+        showToast('🎁 +' + reward + ' coins claimed!');
+        navigate('home');
+    });
+}
+
+console.log('✅ App loaded');
