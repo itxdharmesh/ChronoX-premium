@@ -1,70 +1,7 @@
 var flappyData;
-
-function startFlappy() {
-    openGameScreen('🐦 Flappy Bird');
-    gameCanvas.style.display = 'block';
-    flappyData = {
-        bird: {x:100, y:gameCanvas.height/2, r:18, vy:0, angle:0},
-        pipes: [], score: 0, bestScore: 0, particles: [],
-        clouds: [], frame: 0, groundOffset: 0, speed: 3
-    };
-    flappyData.bestScore = parseInt(localStorage.getItem('flappyBest') || '0');
-    for (var i=0;i<5;i++) flappyData.clouds.push({x:Math.random()*gameCanvas.width,y:Math.random()*gameCanvas.height*0.5,w:Math.random()*80+40,h:Math.random()*30+15,speed:Math.random()*0.5+0.3});
-    currentGameRestart = startFlappy;
-    gameAnimation = requestAnimationFrame(flappyLoop);
-}
-
-function flappyLoop() {
-    if (!gameActive) return;
-    var c=gameCanvas, ctx=gameCtx, b=flappyData.bird, gs=flappyData.speed;
-    flappyData.frame++; flappyData.groundOffset = (flappyData.groundOffset+gs)%40;
-    
-    // Sky
-    var sky=ctx.createLinearGradient(0,0,0,c.height);
-    sky.addColorStop(0,'#1a3a5c'); sky.addColorStop(0.5,'#2d5a87'); sky.addColorStop(1,'#4a90d9');
-    ctx.fillStyle=sky; ctx.fillRect(0,0,c.width,c.height);
-    
-    // Clouds
-    flappyData.clouds.forEach(function(cl){cl.x-=cl.speed;if(cl.x<-cl.w)cl.x=c.width+cl.w;ctx.fillStyle='rgba(255,255,255,0.15)';ctx.beginPath();ctx.ellipse(cl.x,cl.y,cl.w/2,cl.h/2,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(cl.x+cl.w*0.3,cl.y-cl.h*0.2,cl.w*0.3,cl.h*0.3,0,0,Math.PI*2);ctx.fill();});
-    
-    // Bird physics
-    b.vy+=0.6; b.y+=b.vy; b.angle=Math.min(Math.max(b.vy*0.08,-0.5),1.2);
-    
-    // Pipes
-    if(flappyData.frame%80===0){var gap=150;flappyData.pipes.push({x:c.width,y:Math.random()*(c.height-gap-150)+75,gap:gap,scored:false});}
-    flappyData.pipes.forEach(function(p){p.x-=gs;}); flappyData.pipes=flappyData.pipes.filter(function(p){return p.x>-80;});
-    
-    // Draw pipes
-    flappyData.pipes.forEach(function(p){
-        var pg=ctx.createLinearGradient(p.x,0,p.x+60,0); pg.addColorStop(0,'#2ED573');pg.addColorStop(0.5,'#7bed9f');pg.addColorStop(1,'#2ED573');
-        ctx.fillStyle=pg; ctx.fillRect(p.x,0,60,p.y); ctx.fillStyle='#1e8e3e'; ctx.fillRect(p.x-5,p.y-25,70,25); ctx.fillRect(p.x-2,p.y-30,64,8);
-        ctx.fillStyle=pg; ctx.fillRect(p.x,p.y+p.gap,60,c.height); ctx.fillStyle='#1e8e3e'; ctx.fillRect(p.x-5,p.y+p.gap,70,25); ctx.fillRect(p.x-2,p.y+p.gap+22,64,8);
-        if(!p.scored&&p.x+60<b.x){p.scored=true;flappyData.score++;updateGameScore(flappyData.score);if(flappyData.score>flappyData.bestScore){flappyData.bestScore=flappyData.score;localStorage.setItem('flappyBest',flappyData.bestScore);}}
-    });
-    
-    // Collision
-    if(b.y-b.r<0||b.y+b.r>c.height-50){endGame('🐦 Score: '+flappyData.score+' | Best: '+flappyData.bestScore);return;}
-    flappyData.pipes.forEach(function(p){if(b.x+b.r>p.x&&b.x-b.r<p.x+60&&(b.y-b.r<p.y||b.y+b.r>p.y+p.gap)){endGame('🐦 Score: '+flappyData.score+' | Best: '+flappyData.bestScore);}});
-    
-    // Draw bird
-    ctx.save(); ctx.translate(b.x,b.y); ctx.rotate(b.angle);
-    var bg=ctx.createLinearGradient(0,-b.r,0,b.r); bg.addColorStop(0,'#FFD700');bg.addColorStop(0.5,'#FFA500');bg.addColorStop(1,'#FF8C00');
-    ctx.fillStyle=bg; ctx.beginPath(); ctx.arc(0,0,b.r,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#FFC107'; ctx.beginPath(); ctx.ellipse(-5,-5,12,8,-0.3,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(8,-4,7,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#000'; ctx.beginPath(); ctx.arc(10,-4,3.5,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(11,-5,1.5,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#FF5722'; ctx.beginPath(); ctx.moveTo(15,2);ctx.lineTo(25,0);ctx.lineTo(15,-2);ctx.fill();
-    ctx.restore();
-    
-    // Ground
-    var gg=ctx.createLinearGradient(0,c.height-50,0,c.height); gg.addColorStop(0,'#8B5E3C');gg.addColorStop(1,'#5D3A1A');
-    ctx.fillStyle=gg; ctx.fillRect(0,c.height-50,c.width,50);
-    ctx.fillStyle='#7A5230'; for(var i=flappyData.groundOffset;i<c.width;i+=40)ctx.fillRect(i,c.height-48,20,5);
-    
-    ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='bold 13px Poppins'; ctx.textAlign='right'; ctx.fillText('Best: '+flappyData.bestScore,c.width-15,25);
-    gameAnimation=requestAnimationFrame(flappyLoop);
-}
-
-document.addEventListener('click',function(e){if(flappyData&&flappyData.bird&&gameActive)flappyData.bird.vy=-9;});
+function startFlappy(){openGameScreen('🐦 Flappy Bird');gameCanvas.style.display='block';flappyData={bird:{x:100,y:gameCanvas.height/2,r:18,vy:0,angle:0},pipes:[],score:0,bestScore:0,particles:[],clouds:[],frame:0,groundOffset:0,speed:2};flappyData.bestScore=parseInt(localStorage.getItem('flappyBest')||'0');for(var i=0;i<5;i++)flappyData.clouds.push({x:Math.random()*gameCanvas.width,y:Math.random()*gameCanvas.height*0.5,w:Math.random()*80+40,h:Math.random()*30+15,speed:Math.random()*0.5+0.3});currentGameRestart=startFlappy;gameAnimation=requestAnimationFrame(flappyLoop);}
+function flappyLoop(){if(!gameActive)return;var c=gameCanvas,ctx=gameCtx,b=flappyData.bird,gs=flappyData.speed;flappyData.frame++;flappyData.groundOffset=(flappyData.groundOffset+gs)%40;var sky=ctx.createLinearGradient(0,0,0,c.height);sky.addColorStop(0,'#1a3a5c');sky.addColorStop(0.5,'#2d5a87');sky.addColorStop(1,'#4a90d9');ctx.fillStyle=sky;ctx.fillRect(0,0,c.width,c.height);flappyData.clouds.forEach(function(cl){cl.x-=cl.speed;if(cl.x<-cl.w)cl.x=c.width+cl.w;ctx.fillStyle='rgba(255,255,255,0.15)';ctx.beginPath();ctx.ellipse(cl.x,cl.y,cl.w/2,cl.h/2,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(cl.x+cl.w*0.3,cl.y-cl.h*0.2,cl.w*0.3,cl.h*0.3,0,0,Math.PI*2);ctx.fill();});b.vy+=0.6;b.y+=b.vy;b.angle=Math.min(Math.max(b.vy*0.08,-0.5),1.2);if(flappyData.frame%80===0){var gap=150;flappyData.pipes.push({x:c.width,y:Math.random()*(c.height-gap-150)+75,gap:gap,scored:false});}flappyData.pipes.forEach(function(p){p.x-=gs;});flappyData.pipes=flappyData.pipes.filter(function(p){return p.x>-80;});flappyData.pipes.forEach(function(p){var pg=ctx.createLinearGradient(p.x,0,p.x+60,0);pg.addColorStop(0,'#2ED573');pg.addColorStop(0.5,'#7bed9f');pg.addColorStop(1,'#2ED573');ctx.fillStyle=pg;ctx.fillRect(p.x,0,60,p.y);ctx.fillStyle='#1e8e3e';ctx.fillRect(p.x-5,p.y-25,70,25);ctx.fillRect(p.x-2,p.y-30,64,8);ctx.fillStyle=pg;ctx.fillRect(p.x,p.y+p.gap,60,c.height);ctx.fillStyle='#1e8e3e';ctx.fillRect(p.x-5,p.y+p.gap,70,25);ctx.fillRect(p.x-2,p.y+p.gap+22,64,8);if(!p.scored&&p.x+60<b.x){p.scored=true;flappyData.score++;updateGameScore(flappyData.score);if(flappyData.score>flappyData.bestScore){flappyData.bestScore=flappyData.score;localStorage.setItem('flappyBest',flappyData.bestScore);}}});if(b.y-b.r<0||b.y+b.r>c.height-50){endGame('🐦 Score: '+flappyData.score+' | Best: '+flappyData.bestScore);return;}flappyData.pipes.forEach(function(p){if(b.x+b.r>p.x&&b.x-b.r<p.x+60&&(b.y-b.r<p.y||b.y+b.r>p.y+p.gap)){endGame('🐦 Score: '+flappyData.score+' | Best: '+flappyData.bestScore);}});ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.angle);var bg2=ctx.createLinearGradient(0,-b.r,0,b.r);bg2.addColorStop(0,'#FFD700');bg2.addColorStop(0.5,'#FFA500');bg2.addColorStop(1,'#FF8C00');ctx.fillStyle=bg2;ctx.beginPath();ctx.arc(0,0,b.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#FFC107';ctx.beginPath();ctx.ellipse(-5,-5,12,8,-0.3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(8,-4,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#000';ctx.beginPath();ctx.arc(10,-4,3.5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(11,-5,1.5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#FF5722';ctx.beginPath();ctx.moveTo(15,2);ctx.lineTo(25,0);ctx.lineTo(15,-2);ctx.fill();ctx.restore();var gg=ctx.createLinearGradient(0,c.height-50,0,c.height);gg.addColorStop(0,'#8B5E3C');gg.addColorStop(1,'#5D3A1A');ctx.fillStyle=gg;ctx.fillRect(0,c.height-50,c.width,50);ctx.fillStyle='#7A5230';for(var i=flappyData.groundOffset;i<c.width;i+=40)ctx.fillRect(i,c.height-48,20,5);ctx.fillStyle='rgba(255,255,255,0.5)';ctx.font='bold 13px Poppins';ctx.textAlign='right';ctx.fillText('Best: '+flappyData.bestScore,c.width-15,25);gameAnimation=requestAnimationFrame(flappyLoop);}
+function flapBird(){if(flappyData&&flappyData.bird&&gameActive)flappyData.bird.vy=-9;}
+document.addEventListener('click',flapBird);
+document.addEventListener('touchstart',function(e){flapBird();e.preventDefault();},{passive:false});
 document.addEventListener('keydown',function(e){if((e.key===' '||e.key==='ArrowUp')&&flappyData&&flappyData.bird&&gameActive){flappyData.bird.vy=-9;e.preventDefault();}});
