@@ -2,7 +2,6 @@
 var chatId = null;
 var chatUser = null;
 var chatListener = null;
-var typingTimeout = null;
 
 function renderChats(c) {
     c.innerHTML = '<h2 style="color:var(--gold);margin-bottom:15px">💬 Messages</h2><div id="chatList">Loading...</div>';
@@ -22,22 +21,6 @@ function loadChats() {
         h += '<div class="chat-item" onclick="openChat(\'ai_' + currentUser.uid + '_' + x.id + '\',\'' + x.id + '\',\'' + x.n + '\',\'' + x.a + '\',true)"><div class="av">' + x.a + '</div><div style="flex:1"><b>' + x.n + ' <span class="blue-tick">✓</span></b><br><small style="color:rgba(255,255,255,0.5)">Tap to chat</small></div><small style="color:#2ED573">● Online</small></div>';
     });
     
-    db.collection('chats').where('participants', 'array-contains', currentUser.uid).orderBy('lastMessageTime', 'desc').onSnapshot(function(snap) {
-        snap.forEach(function(doc) {
-            var chat = doc.data();
-            var oid = chat.participants.find(function(id) { return id !== currentUser.uid; });
-            if (['annaya_ai', 'tarun_ai', 'chronox_ai'].includes(oid)) return;
-            
-            db.collection('users').doc(oid).get().then(function(ud) {
-                var u = ud.data();
-                if (!u || (currentUserData.blockedUsers || []).indexOf(oid) !== -1) return;
-                
-                h += '<div class="chat-item" onclick="openChat(\'' + doc.id + '\',\'' + oid + '\',\'' + u.name + '\',\'' + (u.avatar || '') + '\')"><img src="' + (u.avatar || defaultAvatar(u.name)) + '" class="chat-avatar-img" onerror="this.src=\'' + defaultAvatar(u.name) + '\'"><div style="flex:1"><b>' + u.name + '</b><br><small style="color:rgba(255,255,255,0.5)">' + (chat.lastMessage || '') + '</small></div><small style="color:var(--gold-light)">' + (chat.lastMessageTime ? formatTime(chat.lastMessageTime.toDate()) : '') + '</small></div>';
-                document.getElementById('chatList').innerHTML = h;
-            });
-        });
-    });
-    
     document.getElementById('chatList').innerHTML = h || '<p style="text-align:center;color:rgba(255,255,255,0.6);padding:30px">No chats yet</p>';
 }
 
@@ -50,11 +33,13 @@ function openChat(cid, uid, name, avt, ai) {
     document.getElementById('chatMessages').innerHTML = '';
     document.getElementById('msgInput').value = '';
     document.getElementById('typingIndicator').textContent = '';
+    document.getElementById('msgInput').focus();
     
     if (chatListener) chatListener();
     
     chatListener = db.collection('chats').doc(cid).collection('messages').orderBy('timestamp', 'asc').onSnapshot(function(snap) {
         var mc = document.getElementById('chatMessages');
+        if (!mc) return;
         mc.innerHTML = '';
         snap.forEach(function(doc) {
             var m = doc.data();
@@ -64,7 +49,7 @@ function openChat(cid, uid, name, avt, ai) {
                 m.text +
                 '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">' +
                     '<small style="opacity:0.7">' + (m.timestamp ? formatTime(m.timestamp.toDate()) : '') + '</small>' +
-                    (isSent ? '<small style="color:rgba(255,255,255,0.4)">' + (m.seen ? '✓✓ Seen' : '✓ Sent') + '</small>' : '') +
+                    (isSent ? '<small style="color:rgba(255,255,255,0.4)">' + (m.seen ? '✓✓' : '✓') + '</small>' : '') +
                 '</div>' +
                 '</div>';
         });
@@ -72,11 +57,15 @@ function openChat(cid, uid, name, avt, ai) {
     });
     
     // Mark messages as seen
-    db.collection('chats').doc(cid).collection('messages').where('senderId', '==', uid).where('seen', '==', false).get().then(function(snap) {
-        snap.forEach(function(doc) {
-            doc.ref.update({ seen: true, seenAt: firebase.firestore.FieldValue.serverTimestamp() });
+    db.collection('chats').doc(cid).collection('messages')
+        .where('senderId', '==', uid)
+        .where('seen', '==', false)
+        .get()
+        .then(function(snap) {
+            snap.forEach(function(doc) {
+                doc.ref.update({ seen: true, seenAt: firebase.firestore.FieldValue.serverTimestamp() });
+            });
         });
-    });
 }
 
 function closeChat() {
@@ -88,9 +77,11 @@ function closeChat() {
 }
 
 function sendMessage() {
-    var t = document.getElementById('msgInput').value.trim();
+    var input = document.getElementById('msgInput');
+    var t = input.value.trim();
     if (!t || !chatId || !chatUser) return;
     
+    // Save user message
     db.collection('chats').doc(chatId).collection('messages').add({
         senderId: currentUser.uid,
         text: t,
@@ -104,14 +95,19 @@ function sendMessage() {
         lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
     
-    document.getElementById('msgInput').value = '';
+    // Clear input
+    input.value = '';
+    input.focus();
     
-    // XP for messages
+    // Update message count for XP
     if (t.split(' ').length >= 3) {
+        db.collection('users').doc(currentUser.uid).update({
+            'stats.totalMessages': firebase.firestore.FieldValue.increment(1)
+        });
         addXP(5);
     }
     
-    // AI REPLY
+    // AI Auto-Reply
     if (chatUser.ai) {
         document.getElementById('typingIndicator').textContent = chatUser.name + ' is typing...';
         
@@ -119,58 +115,62 @@ function sendMessage() {
             document.getElementById('typingIndicator').textContent = '';
             var reply;
             
-            if (typeof GEMINI_KEY !== 'undefined' && GEMINI_KEY) {
+            if (typeof GEMINI_KEY !== 'undefined' && GEMINI_KEY && GEMINI_KEY.length > 5) {
                 var personality = '';
                 if (chatUser.uid === 'annaya_ai') {
-                    personality = 'You are Annaya, a 22-year-old female artist. Be warm and friendly.';
+                    personality = 'You are Annaya, a 22-year-old female artist. Be warm, friendly, and use emojis. Reply in 1-2 sentences.';
                 } else if (chatUser.uid === 'tarun_ai') {
-                    personality = 'You are Tarun, a 24-year-old male coder and gamer. Be cool and casual.';
+                    personality = 'You are Tarun, a 24-year-old male coder and gamer. Be cool, casual. Reply in 1-2 sentences.';
                 } else if (chatUser.uid === 'chronox_ai') {
-                    personality = 'You are ChronoX AI, app assistant. Be helpful and professional.';
+                    personality = 'You are ChronoX AI, helpful app assistant. Be professional. Reply in 1-2 sentences.';
                 }
                 
                 fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + GEMINI_KEY, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: personality + '\n\nReply in 1-2 sentences to: "' + t + '"' }] }]
+                        contents: [{ parts: [{ text: personality + '\n\nUser says: "' + t + '"\nYour natural reply:' }] }]
                     })
                 })
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
-                    reply = data.candidates[0].content.parts[0].text;
-                    saveMessage(chatUser.uid, reply);
+                    if (data.candidates && data.candidates[0]) {
+                        reply = data.candidates[0].content.parts[0].text;
+                    } else {
+                        reply = getFallbackReply(chatUser.uid);
+                    }
+                    saveAIReply(reply);
                 })
                 .catch(function() {
                     reply = getFallbackReply(chatUser.uid);
-                    saveMessage(chatUser.uid, reply);
+                    saveAIReply(reply);
                 });
             } else {
                 reply = getFallbackReply(chatUser.uid);
-                saveMessage(chatUser.uid, reply);
+                saveAIReply(reply);
             }
         }, 1000 + Math.random() * 2000);
     }
 }
 
-function saveMessage(senderId, text) {
+function saveAIReply(reply) {
     db.collection('chats').doc(chatId).collection('messages').add({
-        senderId: senderId,
-        text: text,
+        senderId: chatUser.uid,
+        text: reply,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         seen: true
     });
     db.collection('chats').doc(chatId).update({
-        lastMessage: text,
+        lastMessage: reply,
         lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
     });
 }
 
 function getFallbackReply(uid) {
     var replies = {
-        annaya_ai: ["Hey! How are you? 😊", "That's interesting! Tell me more 💫", "I was just painting something 🎨"],
-        tarun_ai: ["Yo! What's up? 👋", "Coding all day bro 💻", "That's cool! Tell me more"],
-        chronox_ai: ["How can I help? 🕷️", "ChronoX has many features!", "Ask me anything!"]
+        annaya_ai: ["Hey! How are you? 😊", "That's interesting! Tell me more 💫", "I was just painting something 🎨", "Life's good! What about you?"],
+        tarun_ai: ["Yo! What's up? 👋", "Coding all day bro 💻", "That's cool! Tell me more", "What games do you play? 🎮"],
+        chronox_ai: ["How can I help? 🕷️", "ChronoX has many features! Ask me anything.", "I'm here to assist you with the app!"]
     };
     var r = replies[uid] || replies.chronox_ai;
     return r[Math.floor(Math.random() * r.length)];
@@ -180,22 +180,44 @@ function attachMedia() {
     var input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    input.onchange = function(e) {
-        var file = e.target.files[0];
-        if (!file) return;
+    input.onchange = function() {
+        var file = input.files[0];
+        if (!file || !chatId) return;
         var reader = new FileReader();
-        reader.onload = function(ev) {
+        reader.onload = function(e) {
             db.collection('chats').doc(chatId).collection('messages').add({
                 senderId: currentUser.uid,
                 text: '📷 Image',
-                mediaUrl: ev.target.result,
+                mediaUrl: e.target.result,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                 seen: false
             });
+            db.collection('chats').doc(chatId).set({
+                lastMessage: '📷 Image',
+                lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
         };
         reader.readAsDataURL(file);
     };
     input.click();
 }
 
-console.log('✅ Chat loaded');
+// Enter key to send
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        var chatWin = document.getElementById('chatWindow');
+        if (chatWin && chatWin.classList.contains('show')) {
+            e.preventDefault();
+            sendMessage();
+        }
+    }
+});
+
+// Close modal on outside click
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal')) {
+        e.target.classList.remove('show');
+    }
+});
+
+console.log('✅ Chat system loaded');
