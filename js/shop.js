@@ -3,7 +3,8 @@ var SHOP_ITEMS = [
     { id: 'coin_boost', name: 'Coin Boost 2x', desc: 'Double coins for 1 hour', icon: '💰', price: 150, type: 'boost' },
     { id: 'avatar_frame_gold', name: 'Gold Frame', desc: 'Premium gold avatar frame', icon: '🖼️', price: 500, type: 'cosmetic' },
     { id: 'badge_vip', name: 'VIP Badge', desc: 'Show off VIP status', icon: '👑', price: 1000, type: 'badge' },
-    { id: 'username_color_gold', name: 'Gold Username', desc: 'Your name in gold color', icon: '✨', price: 600, type: 'cosmetic' }
+    { id: 'username_color_gold', name: 'Gold Username', desc: 'Your name in gold color', icon: '✨', price: 600, type: 'cosmetic' },
+    { id: 'chat_theme_neon', name: 'Neon Chat Theme', desc: 'Glowing chat bubbles', icon: '💜', price: 350, type: 'theme' }
 ];
 
 function openShop() {
