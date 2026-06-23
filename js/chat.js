@@ -1,23 +1,11 @@
 var chatId = null;
 var chatUser = null;
 var chatListener = null;
-var activeTab = 'chats';
 
 function renderChats(c) {
     c.innerHTML = 
         '<h2 style="color:#D4AF37;margin-bottom:10px">💬 Messages</h2>' +
-        '<div style="display:flex;gap:5px;margin-bottom:12px">' +
-            '<button id="tabChats" class="btn-out" style="flex:1;background:rgba(212,175,55,0.2)" onclick="switchTab(\'chats\')">💬 Chats</button>' +
-            '<button id="tabRequests" class="btn-out" style="flex:1" onclick="switchTab(\'requests\')">📩 Requests</button>' +
-        '</div>' +
         '<div id="chatListContainer"></div>';
-    loadChatList();
-}
-
-function switchTab(tab) {
-    activeTab = tab;
-    document.getElementById('tabChats').style.background = tab==='chats'?'rgba(212,175,55,0.2)':'';
-    document.getElementById('tabRequests').style.background = tab==='requests'?'rgba(212,175,55,0.2)':'';
     loadChatList();
 }
 
@@ -26,240 +14,166 @@ function loadChatList() {
     if (!container) return;
     container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:20px">Loading...</p>';
     
-    if (activeTab === 'requests') {
-        container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:30px">No pending requests</p>';
-        return;
-    }
-    
     var html = '';
     
-    // AI BOTS - ALWAYS SHOW
-    var ai = [
-        { id: 'annaya_ai', name: 'Annaya', avatar: '👩‍🦰' },
-        { id: 'tarun_ai', name: 'Tarun', avatar: '👨‍💻' },
-        { id: 'chronox_ai', name: 'ChronoX AI', avatar: '🕷️' }
-    ];
-    
-    ai.forEach(function(x) {
-        html += '<div class="chat-item" onclick="openChatWindow(\'ai_' + currentUser.uid + '_' + x.id + '\',\'' + x.id + '\',\'' + x.name + '\',\'' + x.avatar + '\',true)">' +
-            '<div class="av">' + x.avatar + '</div>' +
-            '<div style="flex:1"><b>' + x.name + ' <span class="blue-tick">✓</span></b><br><small style="color:rgba(255,255,255,0.5)">Tap to chat</small></div>' +
-            '<small style="color:#2ED573">● Online</small>' +
-            '</div>';
-    });
-    
-    // MUTUAL FRIENDS
+    // GET MUTUAL FRIENDS (Both follow each other)
     var mutualIds = (currentUserData.following || []).filter(function(id) {
         return (currentUserData.followers || []).indexOf(id) !== -1;
     });
     
-    if (mutualIds.length > 0) {
-        var loaded = 0;
-        mutualIds.forEach(function(id) {
-            db.collection('users').doc(id).get().then(function(doc) {
-                loaded++;
-                var u = doc.data();
-                if (!u) return;
-                var isOnline = u.onlineStatus === 'online';
-                var cid = 'dm_' + [currentUser.uid, id].sort().join('_');
-                html += '<div class="chat-item" onclick="openChatWindow(\'' + cid + '\',\'' + id + '\',\'' + u.name + '\',\'' + (u.avatar || '') + '\',false)">' +
-                    '<div style="position:relative;flex-shrink:0">' +
-                        '<img src="' + (u.avatar || defaultAvatar(u.name)) + '" style="width:48px;height:48px;border-radius:50%;border:2px solid #D4AF37;object-fit:cover" onerror="this.src=\'' + defaultAvatar(u.name) + '\'">' +
-                        '<span style="position:absolute;bottom:2px;right:2px;width:12px;height:12px;background:' + (isOnline?'#2ED573':'#888') + ';border-radius:50%;border:2px solid #0A0E27"></span>' +
-                    '</div>' +
-                    '<div style="flex:1"><b>' + u.name + '</b><br><small style="color:rgba(255,255,255,0.5)">Tap to chat</small></div>' +
-                    '<small style="color:' + (isOnline?'#2ED573':'rgba(255,255,255,0.5)') + '">' + (isOnline?'● Online':'Offline') + '</small>' +
-                    '</div>';
-                container.innerHTML = html;
-            });
-        });
-    }
-    
-    container.innerHTML = html || '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:30px">No chats yet. Follow someone mutual!</p>';
-}
-
-function openChatWindow(cid, uid, name, avt, ai) {
-    chatId = cid;
-    chatUser = { uid: uid, name: name, avt: avt, ai: ai || false };
-    
-    document.getElementById('chatWindow').classList.add('show');
-    document.getElementById('chatName').textContent = name;
-    document.getElementById('chatMessages').innerHTML = '';
-    document.getElementById('msgInput').value = '';
-    document.getElementById('typingIndicator').textContent = '';
-    
-    setTimeout(function() { document.getElementById('msgInput').focus(); }, 300);
-    
-    var ai2 = document.getElementById('chatAvatar');
-    var ae = document.getElementById('chatAvatarEmoji');
-    
-    if (ai) {
-        ai2.style.display = 'none';
-        ae.style.display = 'inline';
-        ae.textContent = avt;
-        document.getElementById('chatStatus').textContent = '● Active now';
-        document.getElementById('chatStatus').style.color = '#2ED573';
-    } else {
-        ae.style.display = 'none';
-        ai2.style.display = 'inline';
-        ai2.src = avt || defaultAvatar(name);
-        ai2.onerror = function() { this.src = defaultAvatar(name); };
-        updateStatus(uid);
-    }
-    
-    if (chatListener) chatListener();
-    
-    chatListener = db.collection('chats').doc(cid).collection('messages')
-        .orderBy('timestamp', 'asc')
-        .onSnapshot(function(snap) {
-            var mc = document.getElementById('chatMessages');
-            if (!mc) return;
-            mc.innerHTML = '';
-            snap.forEach(function(doc) {
-                var m = doc.data();
-                var sent = m.senderId === currentUser.uid;
-                mc.innerHTML += '<div class="' + (sent ? 'msg-sent' : 'msg-rec') + '">' +
-                    (m.mediaUrl ? '<img src="' + m.mediaUrl + '" style="max-width:180px;border-radius:10px;margin-bottom:4px">' : '') +
-                    m.text +
-                    '<div style="margin-top:3px;display:flex;justify-content:space-between">' +
-                        '<small style="opacity:0.7;font-size:10px">' + (m.timestamp ? formatTime(m.timestamp.toDate()) : '') + '</small>' +
-                        (sent ? '<small style="font-size:10px;color:rgba(255,255,255,0.4)">' + (m.seen ? '✓✓ Seen' : '✓ Sent') + '</small>' : '') +
-                    '</div></div>';
-            });
-            mc.scrollTop = mc.scrollHeight;
-        });
-    
-    // Mark as seen
-    if (!ai) {
-        db.collection('chats').doc(cid).collection('messages')
-            .where('senderId', '==', uid)
-            .where('seen', '==', false)
-            .get()
-            .then(function(snap) {
-                snap.forEach(function(doc) { doc.ref.update({ seen: true }); });
-            });
-    }
-}
-
-function updateStatus(uid) {
-    db.collection('users').doc(uid).onSnapshot(function(doc) {
-        var u = doc.data();
-        var el = document.getElementById('chatStatus');
-        if (!el) return;
-        if (u && u.onlineStatus === 'online') {
-            el.textContent = '● Active now'; el.style.color = '#2ED573';
-        } else {
-            el.textContent = 'Offline'; el.style.color = '#888';
-        }
-    });
-}
-
-function closeChat() {
-    document.getElementById('chatWindow').classList.remove('show');
-    if (chatListener) chatListener();
-    chatListener = null; chatId = null; chatUser = null;
-}
-
-function sendMessage() {
-    var input = document.getElementById('msgInput');
-    if (!input) return;
-    var t = input.value.trim();
-    if (!t || !chatId || !chatUser) return;
-    
-    // For new DM chats
-    if (chatId.startsWith('dm_')) {
-        var ref = db.collection('chats').doc(chatId);
-        ref.get().then(function(doc) {
-            if (!doc.exists) {
-                ref.set({
-                    participants: [currentUser.uid, chatUser.uid],
-                    lastMessage: t,
-                    lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            }
-            ref.collection('messages').add({
-                senderId: currentUser.uid, text: t,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(), seen: false
-            });
-            ref.set({
-                lastMessage: t,
-                lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-            input.value = ''; input.focus();
-        });
+    if (mutualIds.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:30px">No chats yet.<br>Follow someone and ask them to follow back!</p>';
         return;
     }
     
-    // Normal chat
-    db.collection('chats').doc(chatId).collection('messages').add({
-        senderId: currentUser.uid, text: t,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(), seen: false
+    var loaded = 0;
+    mutualIds.forEach(function(uid) {
+        db.collection('users').doc(uid).get().then(function(doc) {
+            loaded++;
+            var u = doc.data();
+            if (!u) return;
+            
+            var isOnline = u.onlineStatus === 'online';
+            var dp = u.avatar || getDefaultAvatar(u.name);
+            var cid = [currentUser.uid, uid].sort().join('_');
+            
+            html += '<div class="chat-item" onclick="openChatWindow(\'' + cid + '\',\'' + uid + '\',\'' + u.name + '\',\'' + (u.avatar||'') + '\')">' +
+                '<div style="position:relative;flex-shrink:0">' +
+                    '<img src="' + dp + '" style="width:52px;height:52px;border-radius:50%;border:2px solid #D4AF37;object-fit:cover" onerror="this.style.display=\'none\'">' +
+                    '<span style="position:absolute;bottom:2px;right:2px;width:13px;height:13px;background:' + (isOnline?'#2ED573':'#888') + ';border-radius:50%;border:2px solid #0A0E27"></span>' +
+                '</div>' +
+                '<div style="flex:1;min-width:0">' +
+                    '<b>' + u.name + '</b><br>' +
+                    '<small style="color:rgba(255,255,255,0.5);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Tap to chat</small>' +
+                '</div>' +
+                '<div style="text-align:right;flex-shrink:0">' +
+                    '<small style="color:' + (isOnline?'#2ED573':'rgba(255,255,255,0.5)') + ';font-size:11px">' + (isOnline?'● Online':'Offline') + '</small>' +
+                '</div>' +
+            '</div>';
+            
+            if (loaded === mutualIds.length) {
+                container.innerHTML = html;
+            }
+        });
     });
-    db.collection('chats').doc(chatId).set({
-        participants: [currentUser.uid, chatUser.uid],
-        lastMessage: t,
-        lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-    
-    input.value = ''; input.focus();
-    
-    // AI Reply
-    if (chatUser.ai) {
-        document.getElementById('typingIndicator').textContent = chatUser.name + ' is typing...';
-        setTimeout(function() {
-            document.getElementById('typingIndicator').textContent = '';
-            var replies = {
-                annaya_ai: ["Hey! How are you? 😊", "That's cool! 💫", "Just painting 🎨", "Life's good!"],
-                tarun_ai: ["Yo! 👋", "Nice bro! 💻", "What games? 🎮", "Coding all day!"],
-                chronox_ai: ["How can I help? 🕷️", "Ask me anything!", "ChronoX is awesome!"]
-            };
-            var r = replies[chatUser.uid] || replies.chronox_ai;
-            var reply = r[Math.floor(Math.random() * r.length)];
-            db.collection('chats').doc(chatId).collection('messages').add({
-                senderId: chatUser.uid, text: reply,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(), seen: true
-            });
-            db.collection('chats').doc(chatId).update({
-                lastMessage: reply, lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        }, 1000 + Math.random() * 2000);
-    }
 }
 
-function attachMedia() {
-    var inp = document.createElement('input');
-    inp.type = 'file'; inp.accept = 'image/*';
-    inp.onchange = function() {
-        var f = inp.files[0];
-        if (!f || !chatId) return;
-        showToast('Uploading...');
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            db.collection('chats').doc(chatId).collection('messages').add({
-                senderId: currentUser.uid, text: '📷 Photo',
-                mediaUrl: e.target.result,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(), seen: false
+function openChatWindow(cid, uid, name, avt) {
+    chatId = cid;
+    chatUser = { uid: uid, name: name, avt: avt };
+    
+    var chatWin = document.getElementById('chatWindow');
+    if (!chatWin) {
+        chatWin = document.createElement('div');
+        chatWin.id = 'chatWindow';
+        chatWin.className = 'chat-window';
+        chatWin.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#0A0E27;z-index:500;display:flex;flex-direction:column';
+        chatWin.innerHTML = 
+            '<div style="display:flex;align-items:center;padding:15px;background:rgba(19,24,66,0.9);border-bottom:1px solid rgba(212,175,55,0.2);gap:12px">' +
+                '<button id="chatBackBtn" style="background:none;border:none;color:#D4AF37;font-size:24px;cursor:pointer;padding:5px">←</button>' +
+                '<img id="chatAvatarImg" src="" style="width:40px;height:40px;border-radius:50%;border:2px solid #D4AF37;object-fit:cover">' +
+                '<div style="flex:1"><div style="font-weight:600" id="chatNameText"></div><div style="font-size:11px" id="chatStatusText"></div></div>' +
+            '</div>' +
+            '<div id="chatMessagesList" style="flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:8px"></div>' +
+            '<div style="display:flex;padding:12px 15px;background:rgba(19,24,66,0.9);border-top:1px solid rgba(212,175,55,0.2);gap:10px;align-items:center">' +
+                '<input id="chatMsgInput" placeholder="Type a message..." style="flex:1;padding:12px 18px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:25px;color:#fff;outline:none;font-size:16px" autocomplete="off">' +
+                '<button id="chatSendBtn" style="width:44px;height:44px;background:linear-gradient(135deg,#D4AF37,#00D4FF);border:none;border-radius:50%;color:#0A0E27;font-size:20px;cursor:pointer">➤</button>' +
+            '</div>';
+        document.body.appendChild(chatWin);
+        
+        document.getElementById('chatBackBtn').addEventListener('click', closeChat);
+        document.getElementById('chatSendBtn').addEventListener('click', sendMessage);
+        document.getElementById('chatMsgInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+    }
+    
+    chatWin.style.display = 'flex';
+    document.getElementById('chatNameText').textContent = name;
+    document.getElementById('chatAvatarImg').src = avt || getDefaultAvatar(name);
+    document.getElementById('chatAvatarImg').onerror = function() { this.src = getDefaultAvatar(name); };
+    document.getElementById('chatMessagesList').innerHTML = '';
+    document.getElementById('chatMsgInput').value = '';
+    
+    // Update status
+    db.collection('users').doc(uid).get().then(function(doc) {
+        var u = doc.data();
+        var statusEl = document.getElementById('chatStatusText');
+        if (u && u.onlineStatus === 'online') {
+            statusEl.textContent = '● Active now';
+            statusEl.style.color = '#2ED573';
+        } else {
+            statusEl.textContent = 'Offline';
+            statusEl.style.color = '#888';
+        }
+    });
+    
+    // Load messages
+    if (chatListener) chatListener();
+    chatListener = db.collection('chats').doc(cid).collection('messages')
+        .orderBy('timestamp', 'asc')
+        .onSnapshot(function(snap) {
+            var msgContainer = document.getElementById('chatMessagesList');
+            if (!msgContainer) return;
+            msgContainer.innerHTML = '';
+            snap.forEach(function(doc) {
+                var m = doc.data();
+                var isSent = m.senderId === currentUser.uid;
+                msgContainer.innerHTML += '<div style="align-self:' + (isSent?'flex-end':'flex-start') + ';background:' + (isSent?'linear-gradient(135deg,#D4AF37,#00D4FF)':'rgba(19,24,66,0.8)') + ';color:' + (isSent?'#0A0E27':'#fff') + ';padding:10px 16px;border-radius:' + (isSent?'20px 20px 4px 20px':'20px 20px 20px 4px') + ';max-width:75%;font-size:14px;word-wrap:break-word">' + m.text + '<div style="margin-top:3px;font-size:10px;opacity:0.7">' + (m.timestamp ? formatTime(m.timestamp.toDate()) : '') + (isSent ? ' · ' + (m.seen ? '✓✓' : '✓') : '') + '</div></div>';
             });
-            db.collection('chats').doc(chatId).set({
-                lastMessage: '📷 Photo',
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+        });
+    
+    // Mark as seen
+    db.collection('chats').doc(cid).collection('messages')
+        .where('senderId', '==', uid)
+        .where('seen', '==', false)
+        .get().then(function(snap) {
+            snap.forEach(function(doc) { doc.ref.update({ seen: true }); });
+        });
+}
+
+function closeChat() {
+    var chatWin = document.getElementById('chatWindow');
+    if (chatWin) chatWin.style.display = 'none';
+    if (chatListener) chatListener();
+    chatListener = null;
+    chatId = null;
+    chatUser = null;
+}
+
+function sendMessage() {
+    var input = document.getElementById('chatMsgInput');
+    if (!input) return;
+    var text = input.value.trim();
+    if (!text || !chatId || !chatUser) return;
+    
+    var ref = db.collection('chats').doc(chatId);
+    ref.get().then(function(doc) {
+        if (!doc.exists) {
+            ref.set({
+                participants: [currentUser.uid, chatUser.uid],
+                lastMessage: text,
                 lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-            showToast('Photo sent! 📸');
-        };
-        reader.readAsDataURL(f);
-    };
-    inp.click();
+            });
+        }
+        ref.collection('messages').add({
+            senderId: currentUser.uid,
+            text: text,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            seen: false
+        });
+        ref.update({
+            lastMessage: text,
+            lastMessageTime: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    });
+    
+    input.value = '';
+    input.focus();
 }
 
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        var w = document.getElementById('chatWindow');
-        if (w && w.classList.contains('show')) { e.preventDefault(); sendMessage(); }
-    }
-});
-
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal')) e.target.classList.remove('show');
-});
-
-console.log('✅ Chat loaded');
+function getDefaultAvatar(name) {
+    var letter = (name || 'U')[0].toUpperCase();
+    return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%231a1f4e" width="100" height="100"/><text x="50" y="62" text-anchor="middle" fill="%23D4AF37" font-size="45" font-family="Arial">' + letter + '</text></svg>');
+                         }
