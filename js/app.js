@@ -35,9 +35,7 @@ function showApp() {
     
     var btns = document.querySelectorAll('#bottomNav .nav-btn');
     for (var i = 0; i < btns.length; i++) {
-        btns[i].onclick = function() {
-            navigate(this.dataset.page);
-        };
+        btns[i].onclick = function() { navigate(this.dataset.page); };
     }
     
     navigate('home');
@@ -59,22 +57,27 @@ function navigate(p) {
             c.innerHTML = 
                 '<div class="card" style="text-align:center">' +
                     '<div style="font-size:60px">🕷️</div>' +
-                    '<h1 style="color:#D4AF37;font-size:26px;font-weight:900">ChronoX</h1>' +
+                    '<h1 style="color:#D4AF37;font-size:26px;font-weight:900;letter-spacing:3px">ChronoX</h1>' +
                     '<p style="color:rgba(255,255,255,0.6)">Welcome, ' + n + '</p>' +
+                '</div>' +
+                '<div class="card" style="display:flex;align-items:center;gap:15px">' +
+                    '<span style="font-size:45px">🔥</span>' +
+                    '<div><h1 style="color:#D4AF37">' + (u.streak||0) + ' Days</h1><small style="color:rgba(255,255,255,0.6)">Streak</small></div>' +
                 '</div>' +
                 '<div class="card">' +
                     '<div style="display:flex;justify-content:space-around;text-align:center">' +
-                        '<div><h2 style="color:#D4AF37">' + (u.coins || 0) + '</h2><small>💰 Coins</small></div>' +
-                        '<div><h2 style="color:#00D4FF">' + (u.xp || 0) + '</h2><small>⚡ XP</small></div>' +
+                        '<div><h2 style="color:#D4AF37">' + (u.coins||0) + '</h2><small>💰 Coins</small></div>' +
+                        '<div><h2 style="color:#00D4FF">' + (u.xp||0) + '</h2><small>⚡ XP</small></div>' +
+                        '<div><h2 style="color:#2ED573">' + (u.stats?.achievements||0) + '</h2><small>🏆</small></div>' +
                     '</div>' +
                 '</div>' +
                 '<div class="card">' +
                     '<h3 style="color:#D4AF37;margin-bottom:10px">Quick Links</h3>' +
                     '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">' +
-                        '<button class="btn-out" onclick="navigate(\'games\')">🎮 Games</button>' +
-                        '<button class="btn-out" onclick="navigate(\'chats\')">💬 Chats</button>' +
-                        '<button class="btn-out" onclick="navigate(\'search\')">🔍 Search</button>' +
-                        '<button class="btn-out" onclick="openShop()">🛍️ Shop</button>' +
+                        '<button class="btn-out" onclick="navigate(\'games\')">🎮 Games Hub</button>' +
+                        '<button class="btn-out" onclick="navigate(\'chats\')">💬 Messages</button>' +
+                        '<button class="btn-out" onclick="navigate(\'search\')">🔍 Discover</button>' +
+                        '<button class="btn-out" onclick="navigate(\'profile\')">👤 Profile</button>' +
                     '</div>' +
                 '</div>';
         } else if (p === 'chats') {
@@ -85,7 +88,7 @@ function navigate(p) {
             else c.innerHTML = '<h2 style="color:#D4AF37;text-align:center;padding:30px">🔍 Search</h2>';
         } else if (p === 'games') {
             if (typeof openGames === 'function') openGames();
-            else c.innerHTML = '<h2 style="color:#D4AF37;text-align:center;padding:30px">🎮 Games</h2>';
+            else c.innerHTML = '<h2 style="color:#D4AF37;text-align:center;padding:30px">🎮 Games Hub</h2>';
         } else if (p === 'profile') {
             if (typeof renderProfile === 'function') renderProfile(c);
             else c.innerHTML = '<h2 style="color:#D4AF37;text-align:center;padding:30px">👤 Profile</h2>';
@@ -97,8 +100,7 @@ function navigate(p) {
 
 function showLogin() {
     document.getElementById('mainApp').classList.remove('show');
-    var c = document.getElementById('authScreen');
-    c.classList.add('show');
+    var c = document.getElementById('authScreen'); c.classList.add('show');
     c.innerHTML = 
         '<div class="auth-box">' +
             '<div style="font-size:55px">🕷️</div>' +
@@ -107,7 +109,7 @@ function showLogin() {
             '<input class="inp" id="lemail" placeholder="Email">' +
             '<input class="inp" id="lpass" placeholder="Password" type="password">' +
             '<button class="btn" onclick="login()">Sign In</button>' +
-            '<span class="link" onclick="showSignup()">Create Account</span>' +
+            '<span class="link" onclick="showSignup()">Create New Account</span>' +
         '</div>';
 }
 
@@ -156,9 +158,7 @@ function signup() {
                 stats: { achievements: 0, totalMessages: 0 }, inventory: [],
                 onlineStatus: 'online', lastSeen: null
             });
-        }).then(function() {
-            showToast('Account created! Welcome to ChronoX 🎉');
-        }).catch(function(x) { showToast(x.message, 'error'); });
+        }).then(function() { showToast('Account created! 🎉'); }).catch(function(x) { showToast(x.message, 'error'); });
     });
 }
 
@@ -170,6 +170,4 @@ function logout() {
     currentUser = null; currentUserData = null;
     document.getElementById('mainApp').classList.remove('show');
     showLogin();
-}
-
-console.log('✅ App loaded');
+        }
