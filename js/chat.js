@@ -1,16 +1,39 @@
 var chatId = null, chatUser = null, chatListener = null;
+var activeTab = 'chats';
 
 function renderChats(c) {
-    c.innerHTML = '<h2 style="color:#D4AF37;margin-bottom:15px">💬 Messages</h2><div id="clist"></div>';
-    var container = document.getElementById('clist');
+    c.innerHTML = 
+        '<h2 style="color:#D4AF37;margin-bottom:10px">💬 Messages</h2>' +
+        '<div style="display:flex;gap:5px;margin-bottom:12px">' +
+            '<button id="tabChats" class="btn-out" style="flex:1;background:rgba(212,175,55,0.2)" onclick="switchChatTab(\'chats\')">💬 Chats</button>' +
+            '<button id="tabRequests" class="btn-out" style="flex:1" onclick="switchChatTab(\'requests\')">📩 Requests</button>' +
+        '</div>' +
+        '<div id="chatListContainer"></div>';
+    loadChatList();
+}
+
+function switchChatTab(tab) {
+    activeTab = tab;
+    document.getElementById('tabChats').style.background = tab === 'chats' ? 'rgba(212,175,55,0.2)' : '';
+    document.getElementById('tabRequests').style.background = tab === 'requests' ? 'rgba(212,175,55,0.2)' : '';
+    loadChatList();
+}
+
+function loadChatList() {
+    var container = document.getElementById('chatListContainer');
     if (!container) return;
+    
+    if (activeTab === 'requests') {
+        loadRequests(container);
+        return;
+    }
     
     var mutualIds = (currentUserData.following || []).filter(function(id) {
         return (currentUserData.followers || []).indexOf(id) !== -1;
     });
     
     if (mutualIds.length === 0) {
-        container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:30px">No chats yet.</p>';
+        container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:30px">No chats yet.<br>Follow someone and ask them to follow back!</p>';
         return;
     }
     
@@ -35,6 +58,48 @@ function renderChats(c) {
             if (loaded === mutualIds.length) container.innerHTML = html;
         });
     });
+}
+
+function loadRequests(container) {
+    db.collection('chat_requests').where('to', '==', currentUser.uid).where('status', '==', 'pending').get().then(function(snap) {
+        if (snap.empty) {
+            container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:30px">No pending requests</p>';
+            return;
+        }
+        var html = '';
+        snap.forEach(function(doc) {
+            var req = doc.data();
+            db.collection('users').doc(req.from).get().then(function(ud) {
+                var u = ud.data();
+                if (!u) return;
+                html += '<div class="card" style="padding:15px;margin-bottom:10px">' +
+                    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">' +
+                        '<img src="' + (u.avatar || defaultAvatar(u.name)) + '" style="width:40px;height:40px;border-radius:50%;border:2px solid #D4AF37;object-fit:cover;background:#1a1f4e">' +
+                        '<div><b>' + u.name + '</b><br><small style="color:#D4AF37">' + u.username + '</small></div>' +
+                    '</div>' +
+                    '<p style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:10px">💬 ' + (req.message || 'No message') + '</p>' +
+                    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">' +
+                        '<button class="btn" style="font-size:11px;padding:8px" onclick="acceptReq(\'' + doc.id + '\')">✅ Accept</button>' +
+                        '<button class="btn-out" style="font-size:11px;padding:8px;color:#FF4757;border-color:#FF4757" onclick="rejectReq(\'' + doc.id + '\')">❌ Reject</button>' +
+                    '</div>' +
+                '</div>';
+                container.innerHTML = html;
+            });
+        });
+    });
+}
+
+function acceptReq(rid) {
+    db.collection('chat_requests').doc(rid).update({ status: 'accepted' });
+    showToast('Accepted! ✅');
+    activeTab = 'chats';
+    loadChatList();
+}
+
+function rejectReq(rid) {
+    db.collection('chat_requests').doc(rid).update({ status: 'rejected' });
+    showToast('Rejected ❌');
+    loadChatList();
 }
 
 function openChatWindow(cid, uid, name, avt) {
