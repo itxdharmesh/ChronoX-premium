@@ -4,18 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0A0E27">
-    <title>ChronoX</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ChronoX - Premium Social Network</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 </head>
 <body>
 
+<div class="stars-container" id="starsContainer"></div>
+<div class="clouds-container" id="cloudsContainer"></div>
+<div class="nebula nebula-1"></div>
+<div class="nebula nebula-2"></div>
+<div class="nebula nebula-3"></div>
+<div class="shooting-star"></div>
+<div class="shooting-star"></div>
+<div class="shooting-star"></div>
+
 <div id="splashScreen">
-    <div style="font-size:80px">🕷️</div>
-    <div style="font-size:38px;font-weight:900;color:#D4AF37;letter-spacing:5px;margin:15px 0;text-transform:uppercase">ChronoX</div>
-    <div style="width:150px;height:3px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;margin-top:20px"><div style="width:40%;height:100%;background:linear-gradient(90deg,#D4AF37,#00D4FF);border-radius:10px;animation:load 1.2s infinite"></div></div>
+    <div class="chronox-logo"><div class="logo-c"></div><div class="logo-dot"></div><div class="logo-dot"></div><div class="logo-dot"></div></div>
+    <div class="splash-brand">ChronoX</div>
+    <p style="color:rgba(255,255,255,0.5);letter-spacing:3px;text-transform:uppercase;font-size:12px">Premium Social Network</p>
+    <div class="splash-loader"><div></div></div>
 </div>
 
 <div id="authScreen"></div>
@@ -31,8 +45,8 @@
     </nav>
 </div>
 
-<div id="chatWindow" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0A0E27;z-index:500;display:none;flex-direction:column">
-    <div style="display:flex;align-items:center;padding:15px;background:rgba(19,24,66,0.9);border-bottom:1px solid rgba(212,175,55,0.2);gap:12px">
+<div id="chatWindow">
+    <div id="chatHeader">
         <button onclick="closeChat()" style="background:none;border:none;color:#D4AF37;font-size:24px;cursor:pointer;padding:5px">←</button>
         <img id="chatAvatarImg" src="" style="width:40px;height:40px;border-radius:50%;border:2px solid #D4AF37;object-fit:cover;background:#1a1f4e" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect fill=%22%231a1f4e%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2262%22 text-anchor=%22middle%22 fill=%22%23D4AF37%22 font-size=%2245%22>U</text></svg>'">
         <div style="flex:1"><div style="font-weight:600" id="chatNameText"></div><div style="font-size:11px" id="chatStatusText"></div></div>
@@ -46,21 +60,55 @@
 </div>
 
 <div class="modal" id="genericModal"><div class="modal-box" id="genericContent"></div></div>
+<div class="modal" id="gamesModal"><div class="modal-box" id="gamesContent"></div></div>
 
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/app.js"></script>
 <script src="js/chat.js"></script>
-<script src="js/search.js"></script>
 <script src="js/profile.js"></script>
+<script src="js/search.js"></script>
 <script src="js/shop.js"></script>
+<script src="js/achievements.js"></script>
+<script src="js/notifications.js"></script>
 
-<style>
-@keyframes load{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
-#splashScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#0A0E27;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999;transition:0.5s}
-#splashScreen.hidden{opacity:0;visibility:hidden;pointer-events:none}
-</style>
+<script src="js/games/games-main.js"></script>
+<script src="js/games/tictactoe.js"></script>
+<script src="js/games/snake.js"></script>
+<script src="js/games/pong.js"></script>
+<script src="js/games/flappy.js"></script>
+<script src="js/games/invaders.js"></script>
+<script src="js/games/breakout.js"></script>
+<script src="js/games/tower.js"></script>
+<script src="js/games/runner.js"></script>
+<script src="js/games/memory.js"></script>
+<script src="js/games/quiz.js"></script>
+<script src="js/games/rps.js"></script>
+<script src="js/games/number.js"></script>
+<script src="js/games/pacman.js"></script>
+<script src="js/games/tetris.js"></script>
+<script src="js/games/2048.js"></script>
+<script src="js/games/sudoku.js"></script>
+<script src="js/games/wordle.js"></script>
+<script src="js/games/minesweeper.js"></script>
+<script src="js/games/connect4.js"></script>
+<script src="js/games/doodle.js"></script>
+<script src="js/games/slots.js"></script>
+<script src="js/games/blackjack.js"></script>
+<script src="js/games/bubble.js"></script>
+<script src="js/games/racing.js"></script>
+<script src="js/games/ludo.js"></script>
+<script src="js/games/basketball.js"></script>
+<script src="js/games/football.js"></script>
+<script src="js/games/traffic.js"></script>
+<script src="js/games/match3.js"></script>
+<script src="js/games/chess.js"></script>
 
+<script>
+(function(){var c=document.getElementById('starsContainer');if(!c)return;for(var i=0;i<150;i++){var s=document.createElement('div');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';var sz=Math.random()*3+1;s.style.width=sz+'px';s.style.height=sz+'px';s.style.setProperty('--duration',(Math.random()*3+2)+'s');s.style.setProperty('--delay',Math.random()*4+'s');c.appendChild(s);}})();
+(function(){var c=document.getElementById('cloudsContainer');if(!c)return;var cf=[{w:200,h:80,t:5,s:60},{w:280,h:100,t:15,s:80},{w:180,h:70,t:30,s:55},{w:320,h:110,t:50,s:90},{w:220,h:85,t:65,s:65},{w:260,h:95,t:80,s:75},{w:190,h:75,t:90,s:50}];cf.forEach(function(x){var cl=document.createElement('div');cl.className='cloud';cl.style.width=x.w+'px';cl.style.height=x.h+'px';cl.style.top=x.t+'%';cl.style.left='-'+x.w+'px';cl.style.setProperty('--speed',x.s+'s');c.appendChild(cl);});})();
+if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js');}
+</script>
 </body>
-</html>
+    </html>
