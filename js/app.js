@@ -2,7 +2,7 @@ var currentUser = null;
 var currentUserData = null;
 
 setTimeout(function() {
-    document.getElementById('splashScreen').classList.add('hidden');
+    try { document.getElementById('splashScreen').classList.add('hidden'); } catch(e) {}
     
     auth.onAuthStateChanged(function(user) {
         if (user) {
@@ -36,8 +36,7 @@ function showApp() {
     
     document.querySelectorAll('.nav-btn').forEach(function(b) {
         b.addEventListener('click', function() {
-            var page = this.dataset.page;
-            navigate(page);
+            navigate(this.dataset.page);
         });
     });
     
@@ -48,35 +47,37 @@ function navigate(p) {
     document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
     var btn = document.querySelector('[data-page="' + p + '"]');
     if (btn) btn.classList.add('active');
-    
     var c = document.getElementById('contentArea');
     var u = currentUserData || {};
     var name = (u.name && u.name !== 'undefined') ? u.name : 'User';
     
-    try {
-        if (p === 'home') {
-            c.innerHTML = '<div class="card" style="text-align:center"><div style="font-size:60px">🕷️</div><h1 style="color:#D4AF37;font-size:26px;font-weight:900">ChronoX</h1><p style="color:rgba(255,255,255,0.6)">Welcome, ' + name + '</p></div><div class="card"><div style="display:flex;justify-content:space-around;text-align:center"><div><h2 style="color:#D4AF37">' + (u.coins||0) + '</h2><small>💰 Coins</small></div><div><h2 style="color:#00D4FF">' + (u.xp||0) + '</h2><small>⚡ XP</small></div></div></div>';
-        } else if (p === 'chats' && typeof renderChats === 'function') {
-            renderChats(c);
-        } else if (p === 'search' && typeof renderSearch === 'function') {
-            renderSearch(c);
-        } else if (p === 'games' && typeof openGames === 'function') {
-            openGames();
-        } else if (p === 'profile' && typeof renderProfile === 'function') {
-            renderProfile(c);
-        } else {
-            c.innerHTML = '<h2 style="color:#D4AF37;text-align:center;padding:30px">Coming Soon!</h2>';
-        }
-    } catch(e) {
-        c.innerHTML = '<div class="card" style="text-align:center"><div style="font-size:60px">🕷️</div><h1 style="color:#D4AF37">ChronoX</h1><p>Welcome!</p></div>';
+    if (p === 'home') {
+        c.innerHTML = '<div class="card" style="text-align:center"><div style="font-size:60px">🕷️</div><h1 style="color:#D4AF37;font-size:26px;font-weight:900">ChronoX</h1><p style="color:rgba(255,255,255,0.6)">Welcome, ' + name + '</p></div><div class="card"><div style="display:flex;justify-content:space-around;text-align:center"><div><h2 style="color:#D4AF37">' + (u.coins||0) + '</h2><small>💰 Coins</small></div><div><h2 style="color:#00D4FF">' + (u.xp||0) + '</h2><small>⚡ XP</small></div><div><h2 style="color:#2ED573">' + (u.stats?.achievements||0) + '</h2><small>🏆</small></div></div></div>';
+        return;
     }
+    
+    try {
+        if (p === 'chats' && typeof renderChats === 'function') { renderChats(c); }
+        else if (p === 'search' && typeof renderSearch === 'function') { renderSearch(c); }
+        else if (p === 'games') { c.innerHTML = '<h2 style="color:#D4AF37;text-align:center;padding:30px">🎮 Games Hub</h2><p style="text-align:center;color:rgba(255,255,255,0.6)">Coming Soon!</p>'; }
+        else if (p === 'profile' && typeof renderProfile === 'function') { renderProfile(c); }
+        else { c.innerHTML = '<h2 style="color:#D4AF37;text-align:center;padding:30px">Coming Soon!</h2>'; }
+    } catch(e) {
+        c.innerHTML = '<div class="card" style="text-align:center"><h1 style="color:#D4AF37">ChronoX</h1><p>Welcome!</p></div>';
+    }
+}
+
+function renderHome(c) {
+    var u = currentUserData || {};
+    var name = (u.name && u.name !== 'undefined') ? u.name : 'User';
+    c.innerHTML = '<div class="card" style="text-align:center"><div style="font-size:60px">🕷️</div><h1 style="color:#D4AF37;font-size:26px;font-weight:900">ChronoX</h1><p style="color:rgba(255,255,255,0.6)">Welcome, ' + name + '</p></div><div class="card"><div style="display:flex;justify-content:space-around;text-align:center"><div><h2 style="color:#D4AF37">' + (u.coins||0) + '</h2><small>💰 Coins</small></div><div><h2 style="color:#00D4FF">' + (u.xp||0) + '</h2><small>⚡ XP</small></div><div><h2 style="color:#2ED573">' + (u.stats?.achievements||0) + '</h2><small>🏆</small></div></div></div>';
 }
 
 function showLogin() {
     document.getElementById('mainApp').classList.remove('show');
     var c = document.getElementById('authScreen');
     c.classList.add('show');
-    c.innerHTML = '<div class="auth-box"><div style="font-size:55px">🕷️</div><h1 class="auth-title">ChronoX</h1><p class="auth-subtitle">PREMIUM SOCIAL NETWORK</p><input class="inp" id="lemail" placeholder="Email" type="email"><input class="inp" id="lpass" placeholder="Password" type="password"><button class="btn" onclick="login()">Sign In</button><span class="link" onclick="showSignup()">Create New Account</span></div>';
+    c.innerHTML = '<div class="auth-box"><div style="font-size:55px">🕷️</div><h1 class="auth-title">ChronoX</h1><p class="auth-subtitle">PREMIUM SOCIAL NETWORK</p><input class="inp" id="lemail" placeholder="Email" type="email"><input class="inp" id="lpass" placeholder="Password" type="password"><button class="btn" onclick="login()">Sign In</button><span class="link" onclick="showSignup()">Create Account</span></div>';
 }
 
 function showSignup() {
