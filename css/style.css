@@ -77,3 +77,10 @@ body{background:#0A0E27;color:var(--text);height:100vh;overflow:hidden}
 ::-webkit-scrollbar{width:2px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#D4AF37;border-radius:10px}
+#contentArea {
+    flex: 1;
+    overflow-y: auto !important;
+    padding: 20px 15px 90px;
+    -webkit-overflow-scrolling: touch !important;
+    height: calc(100vh - 60px);
+}
