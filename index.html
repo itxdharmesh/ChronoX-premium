@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0A0E27">
-    <title>ChronoX</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ChronoX - Premium Social Network</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -13,9 +16,24 @@
 </head>
 <body>
 
+<div class="stars-container" id="starsContainer"></div>
+<div class="clouds-container" id="cloudsContainer"></div>
+<div class="nebula nebula-1"></div>
+<div class="nebula nebula-2"></div>
+<div class="nebula nebula-3"></div>
+<div class="shooting-star"></div>
+<div class="shooting-star"></div>
+<div class="shooting-star"></div>
+
 <div id="splashScreen">
-    <div class="splash-logo">🕷️</div>
+    <div class="chronox-logo">
+        <div class="logo-c"></div>
+        <div class="logo-dot"></div>
+        <div class="logo-dot"></div>
+        <div class="logo-dot"></div>
+    </div>
     <div class="splash-brand">ChronoX</div>
+    <p style="color:rgba(255,255,255,0.5);letter-spacing:3px;text-transform:uppercase;font-size:12px">Premium Social Network</p>
     <div class="splash-loader"><div></div></div>
 </div>
 
@@ -60,5 +78,10 @@
 <script src="js/achievements.js"></script>
 <script src="js/notifications.js"></script>
 
+<script>
+(function(){var c=document.getElementById('starsContainer');if(!c)return;for(var i=0;i<200;i++){var s=document.createElement('div');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';var sz=Math.random()*3+1;s.style.width=sz+'px';s.style.height=sz+'px';s.style.setProperty('--duration',(Math.random()*3+2)+'s');s.style.setProperty('--delay',Math.random()*4+'s');c.appendChild(s);}})();
+(function(){var c=document.getElementById('cloudsContainer');if(!c)return;var cf=[{w:220,h:85,t:5,s:55},{w:300,h:110,t:15,s:75},{w:190,h:75,t:28,s:50},{w:340,h:120,t:48,s:85},{w:240,h:90,t:62,s:60},{w:280,h:100,t:78,s:70},{w:200,h:80,t:90,s:48}];cf.forEach(function(x){var cl=document.createElement('div');cl.className='cloud';cl.style.width=x.w+'px';cl.style.height=x.h+'px';cl.style.top=x.t+'%';cl.style.left='-'+x.w+'px';cl.style.setProperty('--speed',x.s+'s');c.appendChild(cl);});})();
+if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js');}
+</script>
 </body>
 </html>
