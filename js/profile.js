@@ -11,49 +11,52 @@ function renderProfile(c) {
     var level = (u.level && u.level.current) ? u.level.current : 1;
     var title = (u.level && u.level.title) ? u.level.title : 'Explorer';
     var achievements = (u.stats && u.stats.achievements) ? u.stats.achievements : 0;
-    var progress = (u.level && u.level.progress) ? (u.level.progress % 200) : 0;
     
     c.innerHTML = 
-        '<div class="profile-container">' +
-            '<div class="profile-header">' +
-                '<div class="profile-avatar-wrap">' +
-                    '<img src="' + avatar + '" class="profile-avatar" onerror="this.src=\'' + defaultAvatar(name) + '\'">' +
-                    '<label for="dpUpload" class="profile-avatar-edit">📷</label>' +
-                    '<input type="file" id="dpUpload" accept="image/*" hidden onchange="uploadDP()">' +
-                '</div>' +
-                '<div class="profile-stats">' +
-                    '<div class="profile-stat" onclick="showFollowList(\'followers\')">' +
-                        '<span class="profile-stat-num">' + followers + '</span>' +
-                        '<span class="profile-stat-label">Followers</span>' +
-                    '</div>' +
-                    '<div class="profile-stat" onclick="showFollowList(\'following\')">' +
-                        '<span class="profile-stat-num">' + following + '</span>' +
-                        '<span class="profile-stat-label">Following</span>' +
-                    '</div>' +
-                '</div>' +
+        // DP + NAME + USERNAME
+        '<div style="text-align:center;margin-bottom:20px">' +
+            '<div style="position:relative;display:inline-block">' +
+                '<img src="' + avatar + '" style="width:90px;height:90px;border-radius:50%;border:3px solid #D4AF37;object-fit:cover;background:#1a1f4e" onerror="this.src=\'' + defaultAvatar(name) + '\'">' +
+                '<label for="dpUpload" style="position:absolute;bottom:0;right:0;width:30px;height:30px;background:#D4AF37;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;border:2px solid #0A0E27">📷</label>' +
+                '<input type="file" id="dpUpload" accept="image/*" hidden onchange="uploadDP()">' +
             '</div>' +
-            '<div class="profile-info">' +
-                '<h2 class="profile-name">' + name + '</h2>' +
-                '<p class="profile-username">' + username + '</p>' +
-                '<p class="profile-bio">' + bio + '</p>' +
+            '<h2 style="color:#fff;margin-top:10px;font-size:20px">' + name + '</h2>' +
+            '<p style="color:#D4AF37;font-size:14px">' + username + '</p>' +
+            '<p style="color:rgba(255,255,255,0.6);font-size:13px;margin-top:5px">' + bio + '</p>' +
+        '</div>' +
+        
+        // FOLLOW STATS
+        '<div class="card" style="display:flex;justify-content:space-around;text-align:center;padding:15px">' +
+            '<div onclick="showFollowList(\'followers\')" style="cursor:pointer">' +
+                '<div style="font-size:22px;font-weight:700;color:#D4AF37">' + followers + '</div>' +
+                '<div style="font-size:11px;color:rgba(255,255,255,0.6)">Followers</div>' +
             '</div>' +
-            '<div class="profile-stats-card">' +
-                '<div class="profile-stats-row">' +
-                    '<div class="profile-stat-item"><span class="ps-value gold">💰 ' + coins + '</span><span class="ps-label">Coins</span></div>' +
-                    '<div class="profile-stat-item"><span class="ps-value blue">⚡ ' + xp + '</span><span class="ps-label">XP</span></div>' +
-                    '<div class="profile-stat-item"><span class="ps-value green">Lv.' + level + '</span><span class="ps-label">' + title + '</span></div>' +
-                    '<div class="profile-stat-item"><span class="ps-value gold">' + achievements + '</span><span class="ps-label">🏆</span></div>' +
-                '</div>' +
-                '<div class="profile-progress"><div class="profile-progress-fill" style="width:' + progress + '%"></div></div>' +
+            '<div onclick="showFollowList(\'following\')" style="cursor:pointer">' +
+                '<div style="font-size:22px;font-weight:700;color:#D4AF37">' + following + '</div>' +
+                '<div style="font-size:11px;color:rgba(255,255,255,0.6)">Following</div>' +
             '</div>' +
-            '<div class="profile-actions">' +
-                '<button class="profile-btn" onclick="editProfile()">✏️ Edit</button>' +
-                '<button class="profile-btn" onclick="openShop()">🛍️ Shop</button>' +
-                '<button class="profile-btn" onclick="openPrivacy()">🔒 Privacy</button>' +
-                '<button class="profile-btn" onclick="shareProfile()">📤 Share</button>' +
+        '</div>' +
+        
+        // COINS + XP + LEVEL + ACHIEVEMENTS
+        '<div class="card" style="padding:15px">' +
+            '<div style="display:grid;grid-template-columns:repeat(4,1fr);text-align:center;gap:10px">' +
+                '<div><div style="font-size:18px;font-weight:700;color:#D4AF37">💰</div><div style="font-size:14px;font-weight:700;color:#D4AF37">' + coins + '</div><div style="font-size:10px;color:rgba(255,255,255,0.5)">Coins</div></div>' +
+                '<div><div style="font-size:18px;font-weight:700;color:#00D4FF">⚡</div><div style="font-size:14px;font-weight:700;color:#00D4FF">' + xp + '</div><div style="font-size:10px;color:rgba(255,255,255,0.5)">XP</div></div>' +
+                '<div><div style="font-size:18px;font-weight:700;color:#2ED573">🆙</div><div style="font-size:14px;font-weight:700;color:#2ED573">Lv.' + level + '</div><div style="font-size:10px;color:rgba(255,255,255,0.5)">' + title + '</div></div>' +
+                '<div><div style="font-size:18px;font-weight:700;color:#FFA502">🏆</div><div style="font-size:14px;font-weight:700;color:#FFA502">' + achievements + '</div><div style="font-size:10px;color:rgba(255,255,255,0.5)">Badges</div></div>' +
             '</div>' +
-            '<button class="profile-logout" onclick="logout()">🚪 Logout</button>' +
-        '</div>';
+        '</div>' +
+        
+        // ACTION BUTTONS
+        '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px">' +
+            '<button class="btn-out" onclick="editProfile()">✏️ Edit Profile</button>' +
+            '<button class="btn-out" onclick="openShop()">🛍️ Shop</button>' +
+            '<button class="btn-out" onclick="openPrivacy()">🔒 Privacy</button>' +
+            '<button class="btn-out" onclick="shareProfile()">📤 Share</button>' +
+        '</div>' +
+        
+        // LOGOUT
+        '<button class="btn-out" onclick="logout()" style="color:#FF4757;border-color:#FF4757">🚪 Logout</button>';
 }
 
 function uploadDP() {
@@ -75,7 +78,7 @@ function uploadDP() {
 function editProfile() {
     openModal('genericModal');
     document.getElementById('genericContent').innerHTML = 
-        '<h2 style="color:#D4AF37;margin-bottom:15px">✏️ Edit Profile</h2>' +
+        '<h2 style="color:#D4AF37;margin-bottom:15px">✏️ Edit</h2>' +
         '<input class="inp" id="editName" value="' + (currentUserData.name || '') + '" placeholder="Name">' +
         '<input class="inp" id="editBio" value="' + (currentUserData.bio || '') + '" placeholder="Bio">' +
         '<button class="btn" onclick="saveProfile()">Save</button>' +
@@ -176,4 +179,4 @@ function showFollowList(type) {
             });
         });
     }
-    }
+}
