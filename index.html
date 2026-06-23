@@ -64,7 +64,6 @@
 <div class="modal" id="genericModal"><div class="modal-box" id="genericContent"></div></div>
 <div class="modal" id="gamesModal"><div class="modal-box" id="gamesContent"></div></div>
 
-<!-- CORE SCRIPTS -->
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
@@ -73,8 +72,6 @@
 <script src="js/profile.js"></script>
 <script src="js/search.js"></script>
 <script src="js/shop.js"></script>
-
-<!-- GAMES SCRIPTS -->
 <script src="js/games/games-main.js"></script>
 <script src="js/games/tictactoe.js"></script>
 <script src="js/games/snake.js"></script>
@@ -89,11 +86,19 @@
 <script src="js/games/rps.js"></script>
 <script src="js/games/number.js"></script>
 
-<!-- BACKGROUND -->
 <script>
 (function(){var c=document.getElementById('starsContainer');if(!c)return;for(var i=0;i<150;i++){var s=document.createElement('div');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';var sz=Math.random()*3+1;s.style.width=sz+'px';s.style.height=sz+'px';s.style.setProperty('--duration',(Math.random()*3+2)+'s');s.style.setProperty('--delay',Math.random()*4+'s');c.appendChild(s);}})();
 (function(){var c=document.getElementById('cloudsContainer');if(!c)return;var cf=[{w:200,h:80,t:5,s:60},{w:280,h:100,t:15,s:80},{w:180,h:70,t:30,s:55},{w:320,h:110,t:50,s:90},{w:220,h:85,t:65,s:65},{w:260,h:95,t:80,s:75},{w:190,h:75,t:90,s:50}];cf.forEach(function(x){var cl=document.createElement('div');cl.className='cloud';cl.style.width=x.w+'px';cl.style.height=x.h+'px';cl.style.top=x.t+'%';cl.style.left='-'+x.w+'px';cl.style.setProperty('--speed',x.s+'s');c.appendChild(cl);});})();
-if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js');}
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        registrations.forEach(function(reg) { reg.unregister(); });
+    }).then(function() {
+        navigator.serviceWorker.register('/sw.js');
+    });
+}
 </script>
 </body>
 </html>
