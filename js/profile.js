@@ -2,51 +2,54 @@ function renderProfile(c) {
     var u = currentUserData || {};
     var name = (u.name && u.name !== 'undefined') ? u.name : 'User';
     var username = u.username || '@user';
-    var bio = u.bio || 'No bio yet';
+    var bio = u.bio || '';
     var avatar = u.avatar || defaultAvatar(name);
     var followers = (u.followers || []).length;
     var following = (u.following || []).length;
     var posts = u.posts || 0;
-    var coins = u.coins || 0;
-    var xp = u.xp || 0;
-    var level = (u.level && u.level.current) ? u.level.current : 1;
-    var achievements = (u.stats && u.stats.achievements) ? u.stats.achievements : 0;
     
     c.innerHTML = 
-        '<div style="text-align:center;padding:10px 0">' +
-            '<div style="position:relative;display:inline-block">' +
-                '<img src="' + avatar + '" style="width:85px;height:85px;border-radius:50%;border:3px solid #D4AF37;object-fit:cover;background:#1a1f4e" onerror="this.src=\'' + defaultAvatar(name) + '\'">' +
-                '<label for="dpUpload" style="position:absolute;bottom:0;right:0;width:26px;height:26px;background:#D4AF37;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;border:2px solid #0A0E27">📷</label>' +
+        // HEADER - DP + STATS IN ONE ROW
+        '<div style="display:flex;align-items:center;padding:10px 0;gap:20px">' +
+            // DP
+            '<div style="position:relative;flex-shrink:0">' +
+                '<img src="' + avatar + '" style="width:80px;height:80px;border-radius:50%;border:2px solid #D4AF37;object-fit:cover;background:#1a1f4e" onerror="this.src=\'' + defaultAvatar(name) + '\'">' +
+                '<label for="dpUpload" style="position:absolute;bottom:0;right:0;width:24px;height:24px;background:#D4AF37;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;border:2px solid #0A0E27">📷</label>' +
                 '<input type="file" id="dpUpload" accept="image/*" hidden onchange="uploadDP()">' +
+            '</div>' +
+            // STATS
+            '<div style="display:flex;gap:25px;flex:1;justify-content:center">' +
+                '<div style="text-align:center"><b style="font-size:18px;color:#fff">' + posts + '</b><br><span style="font-size:11px;color:rgba(255,255,255,0.6)">Posts</span></div>' +
+                '<div style="text-align:center;cursor:pointer" onclick="showFollowList(\'followers\')"><b style="font-size:18px;color:#fff">' + followers + '</b><br><span style="font-size:11px;color:rgba(255,255,255,0.6)">Followers</span></div>' +
+                '<div style="text-align:center;cursor:pointer" onclick="showFollowList(\'following\')"><b style="font-size:18px;color:#fff">' + following + '</b><br><span style="font-size:11px;color:rgba(255,255,255,0.6)">Following</span></div>' +
             '</div>' +
         '</div>' +
         
-        '<div style="display:flex;justify-content:space-around;text-align:center;margin:15px 0">' +
-            '<div><b style="font-size:18px;color:#fff">' + posts + '</b><br><small style="color:rgba(255,255,255,0.6)">Posts</small></div>' +
-            '<div onclick="showFollowList(\'followers\')" style="cursor:pointer"><b style="font-size:18px;color:#fff">' + followers + '</b><br><small style="color:rgba(255,255,255,0.6)">Followers</small></div>' +
-            '<div onclick="showFollowList(\'following\')" style="cursor:pointer"><b style="font-size:18px;color:#fff">' + following + '</b><br><small style="color:rgba(255,255,255,0.6)">Following</small></div>' +
+        // BIO SECTION
+        '<div style="padding:5px 0">' +
+            '<span style="font-size:14px;font-weight:600">' + name + '</span><br>' +
+            '<span style="color:#D4AF37;font-size:13px">' + username + '</span><br>' +
+            (bio ? '<span style="color:rgba(255,255,255,0.8);font-size:13px">' + bio + '</span>' : '') +
         '</div>' +
         
-        '<div style="padding:0 5px">' +
-            '<h3 style="font-size:15px;font-weight:600">' + name + '</h3>' +
-            '<p style="color:#D4AF37;font-size:13px">' + username + '</p>' +
-            '<p style="color:rgba(255,255,255,0.7);font-size:13px;margin:5px 0">' + bio + '</p>' +
-            '<p style="color:rgba(255,255,255,0.4);font-size:11px">💰' + coins + ' • ⚡' + xp + ' • Lv.' + level + ' • 🏆' + achievements + '</p>' +
+        // EDIT + SHARE BUTTONS
+        '<div style="display:flex;gap:8px;margin:12px 0">' +
+            '<button onclick="editProfile()" style="flex:1;padding:7px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Edit Profile</button>' +
+            '<button onclick="shareProfile()" style="flex:1;padding:7px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Share Profile</button>' +
         '</div>' +
         
-        '<div style="display:flex;gap:8px;margin:15px 0">' +
-            '<button onclick="editProfile()" style="flex:1;padding:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:12px;cursor:pointer">Edit Profile</button>' +
-            '<button onclick="shareProfile()" style="flex:1;padding:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:12px;cursor:pointer">Share</button>' +
-        '</div>' +
+        // DISCOVER BUTTON
+        '<button onclick="navigate(\'search\')" style="width:100%;padding:7px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;margin-bottom:8px">🔍 Discover People</button>' +
         
-        '<button onclick="openPrivacy()" class="btn-out">🔒 Privacy</button>' +
-        '<button onclick="openShop()" class="btn-out">🛍️ Shop</button>' +
-        '<button onclick="logout()" class="btn-out" style="color:#FF4757;border-color:#FF4757">🚪 Logout</button>';
+        // MENU OPTIONS
+        '<button onclick="openPrivacy()" class="btn-out" style="font-size:12px">🔒 Privacy & Settings</button>' +
+        '<button onclick="logout()" class="btn-out" style="color:#FF4757;border-color:#FF4757;font-size:12px">🚪 Logout</button>';
 }
 
 function uploadDP() {
     var file = document.getElementById('dpUpload').files[0];
     if (!file) return;
+    showToast('Uploading...');
     var reader = new FileReader();
     reader.onload = function(e) {
         db.collection('users').doc(currentUser.uid).update({ avatar: e.target.result }).then(function() {
@@ -61,8 +64,9 @@ function uploadDP() {
 function editProfile() {
     openModal('genericModal');
     document.getElementById('genericContent').innerHTML = 
-        '<h2 style="color:#D4AF37;margin-bottom:15px">✏️ Edit</h2>' +
+        '<h2 style="color:#D4AF37;margin-bottom:15px">✏️ Edit Profile</h2>' +
         '<input class="inp" id="editName" value="' + (currentUserData.name||'') + '" placeholder="Name">' +
+        '<input class="inp" id="editUsername" value="' + (currentUserData.username||'').replace('@','') + '" placeholder="Username">' +
         '<input class="inp" id="editBio" value="' + (currentUserData.bio||'') + '" placeholder="Bio">' +
         '<button class="btn" onclick="saveProfile()">Save</button>' +
         '<button class="btn-out" onclick="closeModal(\'genericModal\')">Cancel</button>';
@@ -70,12 +74,27 @@ function editProfile() {
 
 function saveProfile() {
     var n = document.getElementById('editName').value.trim();
+    var u = document.getElementById('editUsername').value.trim();
     var b = document.getElementById('editBio').value.trim();
     if (!n) return showToast('Name required', 'error');
-    db.collection('users').doc(currentUser.uid).update({ name: n, bio: b }).then(function() {
-        currentUserData.name = n; currentUserData.bio = b;
-        closeModal('genericModal'); navigate('profile'); showToast('Saved! ✅');
-    });
+    
+    var update = { name: n, bio: b };
+    if (u && u !== (currentUserData.username||'').replace('@','')) {
+        var nu = '@' + u;
+        db.collection('users').where('username','==',nu).get().then(function(snap) {
+            if (!snap.empty && snap.docs[0].id !== currentUser.uid) return showToast('Username taken!','error');
+            update.username = nu;
+            db.collection('users').doc(currentUser.uid).update(update).then(function() {
+                currentUserData.name = n; currentUserData.bio = b; currentUserData.username = nu;
+                closeModal('genericModal'); navigate('profile'); showToast('Saved! ✅');
+            });
+        });
+    } else {
+        db.collection('users').doc(currentUser.uid).update(update).then(function() {
+            currentUserData.name = n; currentUserData.bio = b;
+            closeModal('genericModal'); navigate('profile'); showToast('Saved! ✅');
+        });
+    }
 }
 
 function shareProfile() {
@@ -87,7 +106,6 @@ function openPrivacy() {
     document.getElementById('genericContent').innerHTML = 
         '<h2 style="color:#D4AF37;margin-bottom:15px">🔒 Privacy</h2>' +
         '<button class="btn-out" onclick="showChangePassword()">🔑 Change Password</button>' +
-        '<button class="btn-out" onclick="showBlockedUsers()">🚫 Blocked Users</button>' +
         '<button class="btn-out" onclick="closeModal(\'genericModal\')">Close</button>';
 }
 
@@ -112,23 +130,26 @@ function changePassword() {
     .catch(function() { showToast('Wrong password', 'error'); });
 }
 
-function showBlockedUsers() {
-    var blocked = currentUserData.blockedUsers || [];
-    var h = '<h2 style="color:#D4AF37;margin-bottom:15px">🚫 Blocked</h2>';
-    if (blocked.length === 0) {
-        h += '<p style="text-align:center;color:rgba(255,255,255,0.6);padding:20px">None</p><button class="btn-out" onclick="openPrivacy()">Back</button>';
-        document.getElementById('genericContent').innerHTML = h;
-    }
-}
-
 function showFollowList(type) {
     openModal('genericModal');
     var title = type === 'followers' ? 'Followers' : 'Following';
     var ids = currentUserData[type] || [];
     var h = '<h2 style="color:#D4AF37;margin-bottom:15px">' + title + '</h2>';
     if (ids.length === 0) {
-        h += '<p style="text-align:center;padding:20px">No one</p>';
+        h += '<p style="text-align:center;color:rgba(255,255,255,0.6);padding:20px">No one yet</p>';
+    } else {
+        h += '<div id="flist">Loading...</div>';
+        document.getElementById('genericContent').innerHTML = h + '<button class="btn-out" onclick="closeModal(\'genericModal\')">Close</button>';
+        var items = '', done = 0;
+        ids.forEach(function(id) {
+            db.collection('users').doc(id).get().then(function(doc) {
+                done++; var u = doc.data();
+                if (u) items += '<div class="chat-item"><div style="width:36px;height:36px;border-radius:50%;background:#1a1f4e;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid #D4AF37;flex-shrink:0">' + (u.name||'?')[0] + '</div><div style="flex:1"><b>' + u.name + '</b><br><small style="color:#D4AF37">' + u.username + '</small></div><button class="btn-out" style="width:auto;padding:5px 12px;font-size:10px" onclick="startChatUser(\'' + id + '\');closeModal(\'genericModal\')">Chat</button></div>';
+                if (done === ids.length) document.getElementById('flist').innerHTML = items;
+            });
+        });
+        return;
     }
     h += '<button class="btn-out" onclick="closeModal(\'genericModal\')">Close</button>';
     document.getElementById('genericContent').innerHTML = h;
-}
+                                                      }
