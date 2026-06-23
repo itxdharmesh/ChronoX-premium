@@ -1,3 +1,5 @@
+var chatId = null, chatUser = null, chatListener = null;
+
 function renderChats(c) {
     c.innerHTML = '<h2 style="color:#D4AF37;margin-bottom:15px">💬 Messages</h2><div id="clist"></div>';
     var container = document.getElementById('clist');
@@ -13,8 +15,7 @@ function renderChats(c) {
     }
     
     container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:20px">Loading...</p>';
-    var html = '';
-    var loaded = 0;
+    var html = '', loaded = 0;
     
     mutualIds.forEach(function(uid) {
         db.collection('users').doc(uid).get().then(function(doc) {
@@ -39,43 +40,18 @@ function renderChats(c) {
     });
 }
 
-var chatId = null, chatUser = null, chatListener = null;
-
 function openChatWindow(cid, uid, name, avt) {
     chatId = cid; chatUser = { uid: uid, name: name, avt: avt };
     
     var win = document.getElementById('chatWindow');
-    if (!win) {
-        win = document.createElement('div');
-        win.id = 'chatWindow';
-        win.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#0A0E27;z-index:500;display:none;flex-direction:column';
-        win.innerHTML = 
-            '<div style="display:flex;align-items:center;padding:15px;background:rgba(19,24,66,0.9);border-bottom:1px solid rgba(212,175,55,0.2);gap:12px">' +
-                '<button id="chatBackBtn" style="background:none;border:none;color:#D4AF37;font-size:24px;cursor:pointer;padding:5px">←</button>' +
-                '<img id="chatAvImg" src="" style="width:40px;height:40px;border-radius:50%;border:2px solid #D4AF37;object-fit:cover;background:#1a1f4e">' +
-                '<div style="flex:1"><div style="font-weight:600" id="chatNm"></div><div style="font-size:11px" id="chatSt"></div></div>' +
-            '</div>' +
-            '<div id="chatMsgs" style="flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:8px"></div>' +
-            '<div style="display:flex;padding:12px 15px;background:rgba(19,24,66,0.9);border-top:1px solid rgba(212,175,55,0.2);gap:10px;align-items:center">' +
-                '<input id="chatInput" placeholder="Type a message..." style="flex:1;padding:12px 18px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:25px;color:#fff;outline:none;font-size:16px" autocomplete="off">' +
-                '<button id="chatSendBtn" style="width:44px;height:44px;background:linear-gradient(135deg,#D4AF37,#00D4FF);border:none;border-radius:50%;color:#0A0E27;font-size:20px;cursor:pointer">➤</button>' +
-            '</div>';
-        document.body.appendChild(win);
-        
-        document.getElementById('chatBackBtn').onclick = closeChatWindow;
-        document.getElementById('chatSendBtn').onclick = sendChatMessage;
-        document.getElementById('chatInput').onkeydown = function(e) { if (e.key === 'Enter') sendChatMessage(); };
-    }
-    
     win.style.display = 'flex';
     document.getElementById('chatNm').textContent = name;
     document.getElementById('chatAvImg').src = avt || getDefaultAvatar(name);
     document.getElementById('chatAvImg').onerror = function() { this.src = getDefaultAvatar(name); };
-    document.getElementById('chatSt').textContent = 'Loading...';
     document.getElementById('chatMsgs').innerHTML = '';
     document.getElementById('chatInput').value = '';
-    document.getElementById('chatInput').focus();
     
+    document.getElementById('chatSt').textContent = 'Loading...';
     db.collection('users').doc(uid).get().then(function(doc) {
         var u = doc.data();
         var el = document.getElementById('chatSt');
@@ -118,7 +94,28 @@ function sendChatMessage() {
     input.focus();
 }
 
+function attachMedia() {
+    var inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*';
+    inp.onchange = function() {
+        var f = inp.files[0];
+        if (!f || !chatId) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            db.collection('chats').doc(chatId).collection('messages').add({ senderId: currentUser.uid, text: '📷 Photo', mediaUrl: e.target.result, timestamp: firebase.firestore.FieldValue.serverTimestamp(), seen: false });
+            db.collection('chats').doc(chatId).update({ lastMessage: '📷 Photo', lastMessageTime: firebase.firestore.FieldValue.serverTimestamp() });
+        };
+        reader.readAsDataURL(f);
+    };
+    inp.click();
+}
+
 function getDefaultAvatar(name) {
     var l = (name || 'U')[0].toUpperCase();
     return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%231a1f4e" width="100" height="100"/><text x="50" y="62" text-anchor="middle" fill="%23D4AF37" font-size="45">' + l + '</text></svg>');
 }
+
+// BACK BUTTON - FIXED
+document.getElementById('chatBackBtn').addEventListener('click', closeChatWindow);
+document.getElementById('chatSendBtn').addEventListener('click', sendChatMessage);
+document.getElementById('chatInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') sendChatMessage(); });
