@@ -1,36 +1,27 @@
-// js/games/archery.js
-
-// Window global context par explicitly patch kar dete hain taaki router dhoond sake
+// Direct injection inside main router file to bypass loading issues
 window.startArchery = function() {
     var c = document.getElementById('contentArea');
-    if (!c) {
-        console.error("CRITICAL: #contentArea div nahi mila dashboard par!");
-        return;
-    }
+    if (!c) return;
 
     c.innerHTML = `
-        <div id="archeryContainer" style="position:relative; width:100%; height:100%; min-height: 500px; height: calc(100vh - 120px); overflow:hidden; background: radial-gradient(circle at center, #0f172a 0%, #020617 100%); font-family: 'Poppins', sans-serif; user-select:none; -webkit-user-select:none;">
-            
+        <div id="archeryContainer" style="position:relative; width:100%; height:100%; min-height: 500px; height: calc(100vh - 120px); overflow:hidden; background: radial-gradient(circle at center, #0f172a 0%, #020617 100%); font-family: 'Poppins', sans-serif; user-select:none;">
             <div style="position:absolute; top:15px; left:0; width:100%; display:flex; justify-content:space-between; padding:0 20px; z-index:10; pointer-events:none;">
-                <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid #38bdf8; padding: 6px 14px; border-radius: 10px; backdrop-filter: blur(8px);">
-                    <span style="font-size:9px; color:rgba(255,255,255,0.4); display:block; letter-spacing:1px;">TOTAL SCORE</span>
-                    <span id="arScore" style="color:#38bdf8; font-weight:900; font-size:16px; text-shadow: 0 0 10px rgba(56,189,248,0.4);">0000</span>
+                <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid #38bdf8; padding: 6px 14px; border-radius: 10px;">
+                    <span style="font-size:9px; color:rgba(255,255,255,0.4); display:block;">TOTAL SCORE</span>
+                    <span id="arScore" style="color:#38bdf8; font-weight:900; font-size:16px;">0000</span>
                 </div>
-                <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid #f43f5e; padding: 6px 14px; border-radius: 10px; backdrop-filter: blur(8px); text-align: right;">
-                    <span style="font-size:9px; color:rgba(255,255,255,0.4); display:block; letter-spacing:1px;">WIND VECTOR</span>
+                <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid #f43f5e; padding: 6px 14px; border-radius: 10px; text-align: right;">
+                    <span style="font-size:9px; color:rgba(255,255,255,0.4); display:block;">WIND VECTOR</span>
                     <span id="arWind" style="color:#f43f5e; font-weight:800; font-size:14px;">0.00 m/s ➡️</span>
                 </div>
             </div>
-
             <canvas id="archeryCanvas" style="display:block; width:100%; height:100%; position:absolute; top:0; left:0; z-index:1; cursor:crosshair;"></canvas>
-
-            <button id="arExitBtn" style="position:absolute; bottom:20px; right:20px; background:rgba(244,63,94,0.15); border:1px solid rgba(244,63,94,0.4); color:#f43f5e; padding:8px 16px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; z-index:10; backdrop-filter:blur(5px); letter-spacing:1px;">ABORT GAME</button>
-
-            <div id="arScreen" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background: rgba(15, 23, 42, 0.95); border:1px solid #38bdf8; backdrop-filter:blur(20px); padding:35px 25px; border-radius:24px; text-align:center; width:88%; max-width:340px; box-shadow:0 20px 60px rgba(0,0,0,0.8); z-index:20; display:block;">
+            <button id="arExitBtn" style="position:absolute; bottom:20px; right:20px; background:rgba(244,63,94,0.15); border:1px solid rgba(244,63,94,0.4); color:#f43f5e; padding:8px 16px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; z-index:10;">ABORT GAME</button>
+            <div id="arScreen" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background: rgba(15, 23, 42, 0.95); border:1px solid #38bdf8; backdrop-filter:blur(20px); padding:35px 25px; border-radius:24px; text-align:center; width:88%; max-width:340px; z-index:20; display:block;">
                 <div style="width:60px; height:60px; background: rgba(56,189,248,0.15); border: 2px solid #38bdf8; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:26px;">🏹</div>
-                <h1 style="font-size:22px; font-weight:900; letter-spacing:2px; color:#fff; margin-bottom:5px;">ARCHERY MASTER</h1>
-                <p id="arSub" style="font-size:11px; color:rgba(255,255,255,0.6); margin-bottom:25px; letter-spacing:1px; line-height:1.5;">DRAG, CALIBRATE FOR WIND FORCE <br>& RELEASE TO HIT THE CORE PIP</p>
-                <button id="arBtn" style="background:linear-gradient(135deg,#38bdf8, #818cf8); border:none; padding:12px 30px; font-size:13px; font-weight:800; color:#fff; border-radius:12px; cursor:pointer; text-transform:uppercase; width:100%; box-shadow: 0 5px 15px rgba(56,189,248,0.3);">ENGAGE RANGE</button>
+                <h1 style="font-size:22px; font-weight:900; color:#fff; margin-bottom:5px;">ARCHERY MASTER</h1>
+                <p id="arSub" style="font-size:11px; color:rgba(255,255,255,0.6); margin-bottom:25px;">DRAG, CALIBRATE FOR WIND & RELEASE</p>
+                <button id="arBtn" style="background:linear-gradient(135deg,#38bdf8, #818cf8); border:none; padding:12px 30px; font-size:13px; font-weight:800; color:#fff; border-radius:12px; cursor:pointer; width:100%;">ENGAGE RANGE</button>
             </div>
         </div>
     `;
@@ -52,7 +43,6 @@ window.startArchery = function() {
     let arrow = null, target = {}, particles = [];
     let animationId = null, windX = 0;
     let isDragging = false, dragStart = { x: 0, y: 0 }, dragCurrent = { x: 0, y: 0 };
-    
     const bowPos = { x: 100, y: canvas.height / 2 + 30 };
 
     function generateNewWind() {
@@ -62,11 +52,7 @@ window.startArchery = function() {
     }
 
     function initTargetSpace() {
-        target = {
-            x: canvas.width - 120,
-            y: canvas.height / 2 + (Math.random() * 140 - 70),
-            baseRadius: 38
-        };
+        target = { x: canvas.width - 120, y: canvas.height / 2 + (Math.random() * 140 - 70), baseRadius: 38 };
     }
 
     function createExplosion(x, y, color) {
