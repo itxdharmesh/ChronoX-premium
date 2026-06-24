@@ -4,270 +4,193 @@ function startPongGame() {
     var c = document.getElementById('contentArea');
     if (!c) return;
 
-    // Premium Synthwave Dashboard & Glassmorphism Canvas Layout
     c.innerHTML = `
-        <div id="pongContainer" style="position:relative; width:100%; height:100%; min-height: calc(100vh - 160px); overflow:hidden; background: radial-gradient(circle at center, #0b0726 0%, #02010a 100%); font-family: 'Poppins', sans-serif; user-select:none; -webkit-user-select:none;">
+        <div id="pongContainer" style="position:relative; width:100%; height:100%; min-height: calc(100vh - 90px); background:#020108; font-family:'Poppins', sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px; box-sizing:border-box; user-select:none; -webkit-user-select:none;">
             
-            <div style="position:absolute; top:20px; left:0; width:100%; display:flex; justify-content:center; align-items:center; gap:60px; z-index:10; pointer-events:none;">
+            <div style="width:100%; max-width:500px; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; background:rgba(255,255,255,0.02); padding:10px 25px; border-radius:16px; border:1px solid rgba(255,255,255,0.05); box-sizing:border-box;">
                 <div style="text-align:center;">
-                    <span style="font-size:9px; color:#00f5d4; display:block; letter-spacing:2px; font-weight:700;">USER CORE</span>
-                    <span id="playerScore" style="color:#ffffff; font-weight:900; font-size:32px; text-shadow: 0 0 15px #00f5d4;">0</span>
+                    <span style="font-size:10px; color:#00f5d4; font-weight:800; letter-spacing:1px; display:block;">PLAYER</span>
+                    <span id="playerScore" style="font-size:32px; font-weight:900; color:#fff; text-shadow:0 0 15px #00f5d4;">0</span>
                 </div>
-                <div style="font-size:20px; color:rgba(255,255,255,0.2); font-weight:800; margin-top:15px;">VS</div>
+                <div id="aiTierHUD" style="font-size:11px; color:#fff; background:rgba(123,44,191,0.2); border:1px solid #7b2cbf; padding:4px 14px; border-radius:20px; font-weight:700; letter-spacing:1px;">AI: MEDIUM</div>
                 <div style="text-align:center;">
-                    <span style="font-size:9px; color:#ff006e; display:block; letter-spacing:2px; font-weight:700;">AI MATRIX</span>
-                    <span id="aiScore" style="color:#ffffff; font-weight:900; font-size:32px; text-shadow: 0 0 15px #ff006e;">0</span>
+                    <span style="font-size:10px; color:#ff006e; font-weight:800; letter-spacing:1px; display:block;">AI MATRIX</span>
+                    <span id="aiScore" style="font-size:32px; font-weight:900; color:#fff; text-shadow:0 0 15px #ff006e;">0</span>
                 </div>
             </div>
 
-            <canvas id="pongCanvas" style="display:block; margin: 0 auto; background: rgba(6, 3, 20, 0.5); box-shadow: 0 0 40px rgba(0,0,0,0.6);"></canvas>
-            
-            <button onclick="exitPongGame()" style="position:absolute; bottom:20px; right:20px; background:rgba(255, 0, 110, 0.15); border:1px solid rgba(255, 0, 110, 0.4); color:#ff006e; padding:8px 18px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; z-index:10; backdrop-filter:blur(5px); letter-spacing:1px; transition: 0.3s;">TERMINATE CORE</button>
+            <div style="position:relative; background:#050212; border:2px solid rgba(123,44,191,0.3); border-radius:16px; box-shadow:0 25px 60px rgba(0,0,0,0.85); overflow:hidden; width:100%; max-width:540px;">
+                <canvas id="pongCanvas" width="540" height="320" style="display:block; width:100%; height:auto; box-sizing:border-box; background:#04020f;"></canvas>
+                
+                <div id="pongScreen" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(4,2,15,0.96); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; box-sizing:border-box;">
+                    <div style="font-size:45px; margin-bottom:5px; filter:drop-shadow(0 0 12px #ff006e);">🏓</div>
+                    <h2 id="pongTitle" style="color:#fff; font-size:24px; font-weight:900; letter-spacing:3px; margin:0 0 5px 0;">CYBER PONG</h2>
+                    <p id="pongSub" style="color:rgba(255,255,255,0.5); font-size:11px; margin:0 0 25px 0; max-width:280px;">MOVE MOUSE OR SLIDE ON CANVAS TO DEFEND MATRIX FIELD</p>
+                    
+                    <div style="display:flex; gap:10px; margin-bottom:25px; width:100%; max-width:280px;">
+                        <button class="diff-btn" data-diff="easy" style="flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:8px; border-radius:10px; font-size:11px; font-weight:700; cursor:pointer; transition:0.2s;">EASY</button>
+                        <button class="diff-btn active-diff" data-diff="medium" style="flex:1; background:rgba(0,245,212,0.15); border:1px solid #00f5d4; color:#00f5d4; padding:8px; border-radius:10px; font-size:11px; font-weight:700; cursor:pointer; transition:0.2s;">MEDIUM</button>
+                        <button class="diff-btn" data-diff="hard" style="flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:8px; border-radius:10px; font-size:11px; font-weight:700; cursor:pointer; transition:0.2s;">HARD</button>
+                    </div>
 
-            <div id="pongScreen" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background: linear-gradient(135deg, rgba(16, 9, 43, 0.92) 0%, rgba(4, 2, 12, 0.98) 100%); border:2px solid #ff006e; backdrop-filter:blur(25px); padding:45px 35px; border-radius:24px; text-align:center; width:88%; max-width:350px; box-shadow:0 25px 60px rgba(0,0,0,0.85); z-index:20;">
-                <div style="font-size:42px; margin-bottom:15px; animation: glitchFloat 2.5s infinite alternate;">🏓</div>
-                <h1 style="font-size:26px; font-weight:900; color:#ffffff; letter-spacing:4px; margin-bottom:8px; text-transform:uppercase; text-shadow: 0 0 12px #ff006e;">CYBER PONG</h1>
-                <p id="pongSub" style="font-size:11px; color:rgba(255,255,255,0.55); margin-bottom:35px; letter-spacing:1px; line-height:1.6;">USE MOUSE OR TOUCH TO MOVE YOUR BLUE NEON PADDLE</p>
-                <button id="pongBtn" style="background:linear-gradient(135deg, #ff006e, #00f5d4); border:none; padding:14px 35px; font-size:13px; font-weight:900; color:#03020a; border-radius:14px; cursor:pointer; text-transform:uppercase; letter-spacing:2px; width:100%; box-shadow:0 6px 20px rgba(255,0,110,0.35);">BOOT INTERFACE</button>
+                    <button id="pongBtn" style="background:linear-gradient(135deg, #00f5d4, #ff006e); border:none; color:#000; font-weight:900; font-size:13px; padding:12px 40px; border-radius:12px; cursor:pointer; letter-spacing:2px; text-transform:uppercase; box-shadow:0 0 20px rgba(0,245,212,0.35);">BOOT CONSOLE</button>
+                </div>
             </div>
+
+            <button onclick="exitPongGame()" style="margin-top:20px; background:transparent; border:1px solid rgba(255,0,110,0.3); color:#ff006e; padding:8px 22px; border-radius:11px; font-size:12px; font-weight:700; cursor:pointer;">TERMINATE SYSTEM</button>
         </div>
-        <style>@keyframes glitchFloat{from{transform:translateY(0px);}to{transform:translateY(-8px);}}</style>
+        
+        <style>
+            .active-diff { background: rgba(0,245,212,0.2) !important; border-color:#00f5d4 !important; color:#00f5d4 !important; font-weight:900 !important; }
+            .diff-btn:hover { background: rgba(255,255,255,0.08); }
+        </style>
     `;
 
     const canvas = document.getElementById('pongCanvas');
     const ctx = canvas.getContext('2d');
     const container = document.getElementById('pongContainer');
     const pongScreen = document.getElementById('pongScreen');
+    const pongTitle = document.getElementById('pongTitle');
     const pongSub = document.getElementById('pongSub');
     const pongBtn = document.getElementById('pongBtn');
     const pScoreHUD = document.getElementById('playerScore');
     const aScoreHUD = document.getElementById('aiScore');
+    const aiTierHUD = document.getElementById('aiTierHUD');
 
-    // Canvas Auto Resizing Matrix
-    const cWidth = container.clientWidth;
-    const cHeight = container.clientHeight || (window.innerHeight - 160);
-    canvas.width = Math.min(cWidth - 30, 650);
-    canvas.height = Math.min(cHeight - 120, 400);
+    const pWidth = 12, pHeight = 70;
+    let pScore = 0, aScore = 0;
+    let gameRunning = false, animId = null;
+    let currentDifficulty = 'medium';
+    let aiSpeeds = { easy: 2.5, medium: 4.2, hard: 5.8 };
 
-    // Gameplay Attributes Configurations
-    const paddleWidth = 12;
-    const paddleHeight = 75;
-    
-    let pScore = 0;
-    let aScore = 0;
-    let gameRunning = false;
-    let animationId = null;
-    let particles = [];
+    const player = { x: 15, y: canvas.height/2 - pHeight/2 };
+    const ai = { x: canvas.width - 27, y: canvas.height/2 - pHeight/2 };
+    const ball = { x: canvas.width/2, y: canvas.height/2, r: 7, speed: 5, dx: 5, dy: 3 };
 
-    const player = { x: 15, y: canvas.height / 2 - paddleHeight / 2, score: 0 };
-    const ai = { x: canvas.width - 15 - paddleWidth, y: canvas.height / 2 - paddleHeight / 2, score: 0 };
-    
-    const ball = {
-        x: canvas.width / 2,
-        y: canvas.height / 2,
-        radius: 7,
-        speed: 5,
-        dx: 5,
-        dy: 3
-    };
+    // Setup Interactive Difficulty Selectors
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+        btn.onclick = (e) => {
+            document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active-diff'));
+            e.target.classList.add('active-diff');
+            currentDifficulty = e.target.getAttribute('data-diff');
+            aiTierHUD.innerText = `AI: ${currentDifficulty.toUpperCase()}`;
+        };
+    });
 
-    // Tracker capture handler tracking user mouse movement vectors
-    function trackMouseMove(e) {
+    function trackMove(e) {
         let rect = canvas.getBoundingClientRect();
-        let rootY = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
-        // Anchor tracking center bound target mechanics
-        player.y = Math.max(10, Math.min(canvas.height - paddleHeight - 10, rootY - paddleHeight / 2));
+        let clientY = e.clientY || (e.touches && e.touches[0].clientY) || canvas.height/2;
+        // Proper scale normalization depending on CSS resize adjustments
+        let relativeY = (clientY - rect.top) * (canvas.height / rect.height);
+        player.y = Math.max(5, Math.min(canvas.height - pHeight - 5, relativeY - pHeight/2));
     }
 
-    container.addEventListener('mousemove', trackMouseMove);
-    container.addEventListener('touchmove', trackMouseMove, { passive: true });
+    container.addEventListener('mousemove', trackMove);
+    container.addEventListener('touchmove', trackMove, { passive: true });
 
-    function createExplosionSparks(x, y, color) {
-        for (let i = 0; i < 10; i++) {
-            let angle = Math.random() * Math.PI * 2;
-            let spd = Math.random() * 4 + 1;
-            particles.push({
-                x, y,
-                radius: Math.random() * 2 + 1,
-                dx: Math.cos(angle) * spd,
-                dy: Math.sin(angle) * spd,
-                alpha: 1,
-                color
-            });
-        }
+    function resetBall() {
+        ball.x = canvas.width / 2; ball.y = canvas.height / 2;
+        ball.speed = currentDifficulty === 'hard' ? 7 : 5;
+        ball.dx = -ball.dx; ball.dy = (Math.random() - 0.5) * 5;
     }
 
-    function resetBallVector() {
-        ball.x = canvas.width / 2;
-        ball.y = canvas.height / 2;
-        ball.speed = 5;
-        ball.dx = -ball.dx; // Serve to the scorer
-        ball.dy = (Math.random() - 0.5) * 5;
-    }
+    function update() {
+        ball.x += ball.dx; ball.y += ball.dy;
 
-    function updateLogic() {
-        // Ball Translation Motion Updates
-        ball.x += ball.dx;
-        ball.y += ball.dy;
+        // Smart Tracking AI Interpolation
+        let aiTarget = ai.y + pHeight/2;
+        let speedModifier = aiSpeeds[currentDifficulty];
+        if (aiTarget < ball.y - 10) ai.y += speedModifier;
+        else if (aiTarget > ball.y + 10) ai.y -= speedModifier;
+        ai.y = Math.max(5, Math.min(canvas.height - pHeight - 5, ai.y));
 
-        // Smart Adaptive AI Follow Bot Logic Matrix
-        let aiCenter = ai.y + paddleHeight / 2;
-        let trackingInterpolation = 0.085; // Skill tuning ratio mapping acceleration curves
-        if (aiCenter < ball.y - 10) {
-            ai.y += Math.min(4.5, (ball.y - aiCenter) * trackingInterpolation);
-        } else if (aiCenter > ball.y + 10) {
-            ai.y -= Math.min(4.5, (aiCenter - ball.y) * trackingInterpolation);
-        }
-        ai.y = Math.max(10, Math.min(canvas.height - paddleHeight - 10, ai.y));
+        // Upper & Lower Floor Rebound Collisions
+        if (ball.y - ball.r < 0 || ball.y + ball.r > canvas.height) ball.dy = -ball.dy;
 
-        // Upper & Lower Screen Edge Inversions
-        if (ball.y - ball.radius < 0) {
-            ball.y = ball.radius; ball.dy = -ball.dy;
-            createExplosionSparks(ball.x, ball.y, '#ffffff');
-        }
-        if (ball.y + ball.radius > canvas.height) {
-            ball.y = canvas.height - ball.radius; ball.dy = -ball.dy;
-            createExplosionSparks(ball.x, ball.y, '#ffffff');
+        // Paddle Collision Triggers (Left Player)
+        if (ball.dx < 0 && ball.x - ball.r < player.x + pWidth && ball.y > player.y && ball.y < player.y + pHeight) {
+            let norm = (ball.y - (player.y + pHeight/2)) / (pHeight/2);
+            ball.speed += 0.5; ball.dx = Math.cos(norm * 0.7) * ball.speed; ball.dy = Math.sin(norm * 0.7) * ball.speed;
         }
 
-        // Active Collisions Check - Left Side Player Paddle Box
-        if (ball.dx < 0 && ball.x - ball.radius < player.x + paddleWidth && ball.x + ball.radius > player.x) {
-            if (ball.y > player.y && ball.y < player.y + paddleHeight) {
-                let hitAngle = (ball.y - (player.y + paddleHeight/2)) / (paddleHeight/2);
-                ball.speed = Math.min(12, ball.speed + 0.4);
-                ball.dx = Math.cos(hitAngle * 0.8) * ball.speed;
-                ball.dy = Math.sin(hitAngle * 0.8) * ball.speed;
-                createExplosionSparks(ball.x, ball.y, '#00f5d4');
-            }
+        // Paddle Collision Triggers (Right AI)
+        if (ball.dx > 0 && ball.x + ball.r > ai.x && ball.y > ai.y && ball.y < ai.y + pHeight) {
+            let norm = (ball.y - (ai.y + pHeight/2)) / (pHeight/2);
+            ball.speed += 0.5; ball.dx = -Math.cos(norm * 0.7) * ball.speed; ball.dy = Math.sin(norm * 0.7) * ball.speed;
         }
 
-        // Active Collisions Check - Right Side AI Paddle Box
-        if (ball.dx > 0 && ball.x + ball.radius > ai.x && ball.x - ball.radius < ai.x + paddleWidth) {
-            if (ball.y > ai.y && ball.y < ai.y + paddleHeight) {
-                let hitAngle = (ball.y - (ai.y + paddleHeight/2)) / (paddleHeight/2);
-                ball.speed = Math.min(12, ball.speed + 0.4);
-                ball.dx = -Math.cos(hitAngle * 0.8) * ball.speed;
-                ball.dy = Math.sin(hitAngle * 0.8) * ball.speed;
-                createExplosionSparks(ball.x, ball.y, '#ff006e');
-            }
-        }
-
-        // Processing Out of Bounds Tracking - Point Distribution
+        // Score Distribution Validation
         if (ball.x < 0) {
-            aScore++;
-            aScoreHUD.innerText = aScore;
-            createExplosionSparks(0, ball.y, '#ff006e');
-            if (aScore >= 7) handleGameOver(false);
-            else resetBallVector();
+            aScore++; aScoreHUD.innerText = aScore;
+            if (aScore >= 5) handleGameOver(false); else resetBall();
         } else if (ball.x > canvas.width) {
-            pScore++;
-            pScoreHUD.innerText = pScore;
-            createExplosionSparks(canvas.width, ball.y, '#00f5d4');
-            if (pScore >= 7) handleGameOver(true);
-            else resetBallVector();
-        }
-
-        // Particles Tickers Processing
-        for (let i = particles.length - 1; i >= 0; i--) {
-            let p = particles[i];
-            p.x += p.dx; p.y += p.dy; p.alpha -= 0.04;
-            if (p.alpha <= 0) particles.splice(i, 1);
+            pScore++; pScoreHUD.innerText = pScore;
+            if (pScore >= 5) handleGameOver(true); else resetBall();
         }
     }
 
-    function renderPipeline() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function draw() {
+        ctx.fillStyle = '#04020f';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // A. Synthwave Field Centered Net Divide Line
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-        ctx.lineWidth = 4;
-        ctx.setLineDash([10, 10]);
-        ctx.beginPath(); ctx.moveTo(canvas.width / 2, 0); ctx.lineTo(canvas.width / 2, canvas.height); ctx.stroke();
-        ctx.setLineDash([]); // Core Reset
+        // Neon Matrix Center Separator Net
+        ctx.strokeStyle = "rgba(123, 44, 191, 0.15)"; ctx.lineWidth = 2;
+        ctx.setLineDash([8, 8]); ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(canvas.width/2, canvas.height); ctx.stroke(); ctx.setLineDash([]);
 
-        // B. Draw Player Neon Blue Paddle Node
-        ctx.save();
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = "#00f5d4";
-        ctx.fillStyle = "#00f5d4";
-        ctx.beginPath(); ctx.roundRect(player.x, player.y, paddleWidth, paddleHeight, 6); ctx.fill();
-        ctx.restore();
+        // Player Paddle Node
+        ctx.fillStyle = '#00f5d4'; ctx.shadowBlur = 15; ctx.shadowColor = '#00f5d4';
+        ctx.fillRect(player.x, player.y, pWidth, pHeight);
 
-        // C. Draw AI Neon Pink Paddle Node
-        ctx.save();
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = "#ff006e";
-        ctx.fillStyle = "#ff006e";
-        ctx.beginPath(); ctx.roundRect(ai.x, ai.y, paddleWidth, paddleHeight, 6); ctx.fill();
-        ctx.restore();
+        // AI Paddle Node
+        ctx.fillStyle = '#ff006e'; ctx.shadowBlur = 15; ctx.shadowColor = '#ff006e';
+        ctx.fillRect(ai.x, ai.y, pWidth, pHeight);
 
-        // D. Render Active Energy Core Ball
-        ctx.save();
-        ctx.shadowBlur = 18;
-        ctx.shadowColor = ball.dx > 0 ? "#00f5d4" : "#ff006e";
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2); ctx.fill();
-        ctx.restore();
-
-        // E. Render Exploding Burst Layer Sparks
-        particles.forEach(p => {
-            ctx.save();
-            ctx.globalAlpha = p.alpha;
-            ctx.fillStyle = p.color;
-            ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
-            ctx.restore();
-        });
+        // Plasma Ball Core Ball
+        ctx.fillStyle = '#ffffff'; ctx.shadowBlur = 12; ctx.shadowColor = '#fff';
+        ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
+        ctx.shadowBlur = 0; // cleanup
     }
 
-    function engineLoop() {
+    function loop() {
         if (!gameRunning) return;
-        updateLogic();
-        renderPipeline();
-        animationId = requestAnimationFrame(engineLoop);
+        update(); draw();
+        animId = requestAnimationFrame(loop);
     }
 
-    function bootSequence() {
-        pongScreen.style.opacity = '0';
-        pongScreen.style.visibility = 'hidden';
-        
+    function boot() {
+        pongScreen.style.display = 'none';
         pScore = 0; aScore = 0;
-        pScoreHUD.innerText = "0";
-        aScoreHUD.innerText = "0";
-        particles = [];
-        
-        player.y = canvas.height / 2 - paddleHeight / 2;
-        ai.y = canvas.height / 2 - paddleHeight / 2;
-        
-        resetBallVector();
+        pScoreHUD.innerText = "0"; aScoreHUD.innerText = "0";
+        player.y = canvas.height/2 - pHeight/2; ai.y = canvas.height/2 - pHeight/2;
+        resetBall();
         gameRunning = true;
-        engineLoop();
+        loop();
     }
 
     function handleGameOver(userWon) {
-        gameRunning = false;
-        cancelAnimationFrame(animationId);
-        pongScreen.style.opacity = '1';
-        pongScreen.style.visibility = 'visible';
-        pongScreen.style.borderColor = userWon ? '#00f5d4' : '#ff006e';
-        
+        gameRunning = false; cancelAnimationFrame(animId);
+        pongScreen.style.display = 'flex';
+        pongTitle.innerText = userWon ? "VICTORY ATTAINED" : "AI CORE OVERLOAD";
         pongSub.innerHTML = userWon ? 
-            `<span style="color:#00f5d4; font-weight:800; font-size:16px; text-shadow: 0 0 8px #00f5d4;">MATRIX CONQUERED!</span><br>YOU DOMINATED THE SYSTEM.` : 
-            `<span style="color:#ff006e; font-weight:800; font-size:16px; text-shadow: 0 0 8px #ff006e;">AI CORE OVERLOAD!</span><br>THE MATRIX BREACHED YOUR GRID.`;
-        
-        pongBtn.innerText = "REBOOT CONSOLE CORE";
+            `<span style="color:#00f5d4; font-size:16px; font-weight:800;">YOU WIN THE MATCH!</span>` : 
+            `<span style="color:#ff006e; font-size:16px; font-weight:800;">AI DEFEATED YOU.</span>`;
+        pongBtn.innerText = "REBOOT MATRIX";
+
+        // Global Game Over Hook for games-main.js Interceptor
+        if (typeof window.handleGameOver === 'function') {
+            window.handleGameOver(userWon ? 'win' : 'lose');
+        }
     }
 
-    pongBtn.onclick = bootSequence;
+    pongBtn.onclick = boot;
 
-    // Safety clear handler anchor
     window.pongCancelRef = () => {
-        gameRunning = false;
-        cancelAnimationFrame(animationId);
-        container.removeEventListener('mousemove', trackMouseMove);
+        gameRunning = false; cancelAnimationFrame(animId);
+        container.removeEventListener('mousemove', trackMove);
     };
 }
 
 function exitPongGame() {
     if (typeof window.pongCancelRef === 'function') window.pongCancelRef();
-    if (typeof openGames === 'function') openGames();
+    if (typeof openChronoxGamesHub === 'function') openChronoxGamesHub();
 }
