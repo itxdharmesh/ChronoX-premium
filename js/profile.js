@@ -153,3 +153,90 @@ function showFollowList(type) {
     h += '<button class="btn-out" onclick="closeModal(\'genericModal\')">Close</button>';
     document.getElementById('genericContent').innerHTML = h;
                                                       }
+/* ==========================
+   USER PROFILE VIEWER
+========================== */
+
+function openUserProfile(uid) {
+    if (!uid) return;
+
+    db.collection('users').doc(uid).get().then(function(doc) {
+
+        if (!doc.exists) {
+            showToast('User not found', 'error');
+            return;
+        }
+
+        var u = doc.data();
+
+        openModal('genericModal');
+
+        document.getElementById('genericContent').innerHTML =
+        '<div style="text-align:center">' +
+
+            '<img src="' + (u.avatar || defaultAvatar(u.name)) + '" ' +
+            'style="width:90px;height:90px;border-radius:50%;border:3px solid #D4AF37;object-fit:cover;background:#1a1f4e">' +
+
+            '<h2 style="margin-top:10px;color:#fff">' +
+            (u.name || 'User') +
+            '</h2>' +
+
+            '<div style="color:#D4AF37">' +
+            (u.username || '@user') +
+            '</div>' +
+
+            '<p style="margin-top:10px;color:rgba(255,255,255,0.8)">' +
+            (u.bio || 'No bio yet') +
+            '</p>' +
+
+        '</div>' +
+
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px">' +
+
+            '<div class="card" style="padding:10px;text-align:center">' +
+            '<b>' + (u.coins || 0) + '</b><br>' +
+            '<small>Coins</small>' +
+            '</div>' +
+
+            '<div class="card" style="padding:10px;text-align:center">' +
+            '<b>' + (u.xp || 0) + '</b><br>' +
+            '<small>XP</small>' +
+            '</div>' +
+
+            '<div class="card" style="padding:10px;text-align:center">' +
+            '<b>Lv.' +
+            ((u.level && u.level.current) || 1) +
+            '</b><br>' +
+            '<small>Level</small>' +
+            '</div>' +
+
+        '</div>' +
+
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px">' +
+
+            '<div class="card" style="padding:10px;text-align:center">' +
+            '<b>' + ((u.followers || []).length) + '</b><br>' +
+            '<small>Followers</small>' +
+            '</div>' +
+
+            '<div class="card" style="padding:10px;text-align:center">' +
+            '<b>' + ((u.following || []).length) + '</b><br>' +
+            '<small>Following</small>' +
+            '</div>' +
+
+            '<div class="card" style="padding:10px;text-align:center">' +
+            '<b>' + (u.streak || 0) + '</b><br>' +
+            '<small>Streak</small>' +
+            '</div>' +
+
+        '</div>' +
+
+        '<button class="btn" style="margin-top:15px" onclick="startChatUser(\'' + uid + '\')">' +
+        '💬 Message' +
+        '</button>' +
+
+        '<button class="btn-out" onclick="closeModal(\'genericModal\')">' +
+        'Close' +
+        '</button>';
+    });
+}
