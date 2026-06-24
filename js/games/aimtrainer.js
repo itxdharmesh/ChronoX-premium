@@ -4,35 +4,38 @@ function startAimTrainer() {
     var c = document.getElementById('contentArea');
     if (!c) return;
 
-    // Premium Cyber HTML Structure Injection
+    // Premium UI Overlays with Glassmorphism & Cyber Neon Accents
     c.innerHTML = `
-        <div id="atContainer" style="position:relative; width:100%; height:100%; min-height: 500px; height: calc(100vh - 120px); overflow:hidden; background: #050716; font-family: 'Poppins', sans-serif; user-select:none; -webkit-user-select:none;">
+        <div id="atContainer" style="position:relative; width:100%; height:100%; min-height: 500px; height: calc(100vh - 120px); overflow:hidden; background: radial-gradient(circle at center, #0b0f2b 0%, #03040d 100%); font-family: 'Poppins', sans-serif; user-select:none; -webkit-user-select:none;">
             
             <div style="position:absolute; top:15px; left:0; width:100%; display:flex; justify-content:space-between; padding:0 20px; z-index:10; pointer-events:none;">
-                <div style="background: rgba(6, 9, 25, 0.85); border: 1px solid rgba(46, 213, 115, 0.4); padding: 6px 14px; border-radius: 10px; backdrop-filter: blur(8px);">
-                    <span style="font-size:9px; color:rgba(255,255,255,0.4); display:block; letter-spacing:1px;">SCORE METRIC</span>
-                    <span id="atScore" style="color:#2ED573; font-weight:900; font-size:16px; text-shadow: 0 0 10px #2ED573;">0000</span>
+                <div style="background: rgba(4, 6, 18, 0.8); border: 1px solid rgba(0, 212, 255, 0.4); padding: 8px 16px; border-radius: 12px; backdrop-filter: blur(10px); box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);">
+                    <span style="font-size:9px; color:rgba(255,255,255,0.4); display:block; letter-spacing:1px; font-weight:600;">SCORE MATRIX</span>
+                    <span id="atScore" style="color:#00D4FF; font-weight:900; font-size:18px; text-shadow: 0 0 10px rgba(0,212,255,0.5);">0000</span>
                 </div>
-                <div style="background: rgba(6, 9, 25, 0.85); border: 1px solid rgba(255, 165, 2, 0.3); padding: 6px 14px; border-radius: 10px; backdrop-filter: blur(8px);">
-                    <span style="font-size:9px; color:rgba(255,255,255,0.4); display:block; letter-spacing:1px;">TIME REMAINING</span>
-                    <span id="atTimer" style="color:#FFA502; font-weight:800; font-size:16px; text-shadow: 0 0 10px #FFA502;">30s</span>
+                <div style="background: rgba(4, 6, 18, 0.8); border: 1px solid rgba(255, 165, 2, 0.3); padding: 8px 16px; border-radius: 12px; backdrop-filter: blur(10px); box-shadow: 0 0 20px rgba(255, 165, 2, 0.15);">
+                    <span style="font-size:9px; color:rgba(255,255,255,0.4); display:block; letter-spacing:1px; font-weight:600;">TIME REMAINING</span>
+                    <span id="atTimer" style="color:#FFA502; font-weight:800; font-size:18px; text-shadow: 0 0 10px rgba(255,165,2,0.5);">30s</span>
                 </div>
             </div>
 
-            <canvas id="atCanvas" style="display:block; width:100%; height:100%; position:absolute; top:0; left:0; z-index:1; background:#050716; cursor:crosshair;"></canvas>
+            <canvas id="atCanvas" style="display:block; width:100%; height:100%; position:absolute; top:0; left:0; z-index:1; cursor:crosshair;"></canvas>
 
-            <button id="atExitBtn" style="position:absolute; bottom:20px; right:20px; background:rgba(255,71,87,0.2); border:1px solid rgba(255,71,87,0.5); color:#ff4757; padding:8px 16px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; z-index:10; backdrop-filter:blur(5px); letter-spacing:1px;">ABORT TRAINING</button>
+            <button id="atExitBtn" style="position:absolute; bottom:20px; right:20px; background:rgba(255,71,87,0.15); border:1px solid rgba(255,71,87,0.5); color:#ff4757; padding:10px 20px; border-radius:12px; font-size:11px; font-weight: 700; cursor:pointer; z-index:10; backdrop-filter:blur(5px); letter-spacing:1px; box-shadow: 0 0 15px rgba(255,71,87,0.1); transition: 0.2s;">ABORT TRAINING</button>
 
-            <div id="atScreen" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background: rgba(14, 20, 45, 0.95); border:1px solid rgba(46, 213, 115, 0.4); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); padding:35px 25px; border-radius:24px; text-align:center; width:88%; max-width:340px; box-shadow:0 20px 60px rgba(0,0,0,0.8); z-index:20; display:block;">
-                <div style="width:60px; height:60px; background: rgba(46,213,115,0.2); border: 2px solid #2ED573; border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:28px;">🎯</div>
-                <h1 style="font-size:22px; font-weight:900; letter-spacing:2px; color:#fff; margin-bottom:5px; text-transform:uppercase;">AIM TRAINER</h1>
-                <p id="atSub" style="font-size:11px; color:rgba(255,255,255,0.6); margin-bottom:25px; letter-spacing:1px; line-height:1.5;">REFLEX & ACCURACY STIMULUS <br><span style="color:#2ED573;">HIT THE TARGET CORES RAPIDLY</span></p>
-                <button id="atBtn" style="background:linear-gradient(135deg,#2ED573, #FFA502); border:none; padding:14px 30px; font-size:13px; font-weight:800; color:#fff; border-radius:12px; cursor:pointer; text-transform:uppercase; letter-spacing:1px; width:100%; box-shadow: 0 5px 15px rgba(46,213,115,0.4);">START SIMULATION</button>
+            <div id="atScreen" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background: linear-gradient(135deg, rgba(14, 20, 45, 0.9) 0%, rgba(5, 7, 18, 0.95) 100%); border:1px solid rgba(0, 212, 255, 0.3); backdrop-filter:blur(25px); -webkit-backdrop-filter:blur(25px); padding:40px 30px; border-radius:24px; text-align:center; width:88%; max-width:340px; box-shadow:0 25px 60px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,212,255,0.05); z-index:20; display:block;">
+                <div style="width:65px; height:65px; background: rgba(0,212,255,0.15); border: 2px dashed #00D4FF; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:28px; animation: pulseGlow 2s infinite alternate;">🎯</div>
+                <h1 style="font-size:24px; font-weight:900; letter-spacing:3px; background: linear-gradient(135deg, #00D4FF, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom:5px; text-transform:uppercase;">AIM TRAINER</h1>
+                <p id="atSub" style="font-size:11px; color:rgba(255,255,255,0.6); margin-bottom:30px; letter-spacing:1px; line-height:1.6;">REFLEX & ACCURACY STIMULUS <br><span style="color:#00D4FF; font-weight:bold;">LOCK ONTO TARGET CORES RAPIDLY</span></p>
+                <button id="atBtn" style="background:linear-gradient(135deg, #00D4FF, #7C3AED); border:none; padding:14px 30px; font-size:13px; font-weight:800; color:#fff; border-radius:14px; cursor:pointer; text-transform:uppercase; letter-spacing:1.5px; width:100%; box-shadow: 0 8px 25px rgba(0,212,255,0.35); transition: 0.2s;">START SIMULATION</button>
             </div>
         </div>
+        <style>
+            @keyframes pulseGlow { 0% { box-shadow: 0 0 10px rgba(0,212,255,0.2); } 100% { box-shadow: 0 0 25px rgba(0,212,255,0.5); } }
+            #atExitBtn:hover { background: rgba(255,71,87,0.3) !important; box-shadow: 0 0 20px rgba(255,71,87,0.3) !important; }
+        </style>
     `;
 
-    // Grabbing Dynamic Layout DOM Handles
     const canvas = document.getElementById('atCanvas');
     const ctx = canvas.getContext('2d');
     const container = document.getElementById('atContainer');
@@ -43,42 +46,43 @@ function startAimTrainer() {
     const atScore = document.getElementById('atScore');
     const atTimer = document.getElementById('atTimer');
 
-    // Safe Canvas Bounds Calculations
+    // Force strict dimensions sync on the layout viewport bounding boxes
     canvas.width = container.clientWidth || window.innerWidth;
     canvas.height = container.clientHeight || (window.innerHeight - 120);
 
     let score = 0, timeLeft = 30, gameRunning = false;
     let targets = [], particles = [];
     let clockInterval = null, animationId = null, frameCount = 0;
+    let missFlash = 0; // Miss feedback tracker
 
     function spawnTarget() {
-        // Maximum 4 active core nodes inside view grid bounds
         if (targets.length < 4) {
             let colors = ['#00D4FF', '#7C3AED', '#FF4757', '#2ED573', '#FFA502'];
             targets.push({
-                id: Math.random(),
-                x: Math.random() * (canvas.width - 80) + 40,
+                x: Math.random() * (canvas.width - 100) + 50,
                 y: Math.random() * (canvas.height - 180) + 90,
                 radius: 2,
-                maxRadius: Math.random() * 12 + 18,
+                maxRadius: Math.random() * 10 + 16,
                 growing: true,
-                speed: Math.random() * 0.3 + 0.35,
-                color: colors[Math.floor(Math.random() * colors.length)]
+                speed: Math.random() * 0.25 + 0.3,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                rotation: Math.random() * Math.PI
             });
         }
     }
 
-    function createExplosion(x, y, color) {
-        for (let i = 0; i < 12; i++) {
+    function createExplosion(x, y, color, isHit = true) {
+        let count = isHit ? 15 : 6;
+        for (let i = 0; i < count; i++) {
             let angle = Math.random() * Math.PI * 2;
-            let speed = Math.random() * 3.5 + 1.5;
+            let speed = isHit ? (Math.random() * 4 + 2) : (Math.random() * 2 + 0.5);
             particles.push({
                 x, y,
-                radius: Math.random() * 2 + 1,
+                radius: isHit ? (Math.random() * 3 + 1) : (Math.random() * 1.5 + 0.5),
                 dx: Math.cos(angle) * speed,
                 dy: Math.sin(angle) * speed,
                 alpha: 1,
-                decay: Math.random() * 0.04 + 0.02,
+                decay: Math.random() * 0.03 + 0.02,
                 color
             });
         }
@@ -100,12 +104,12 @@ function startAimTrainer() {
             let t = targets[i];
             let distance = Math.hypot(t.x - clickX, t.y - clickY);
 
-            // Generous mobile hit bounding box padding (adds 8px dynamic tap area)
-            if (distance <= t.radius + 8) {
-                createExplosion(t.x, t.y, t.color);
+            // Generous bounding area calculation (+10px padding for mobile fingers)
+            if (distance <= t.radius + 10) {
+                createExplosion(t.x, t.y, t.color, true);
                 
-                // Bonus Score Calculation: Smarter precise tiny targets fetch massive multipliers
-                let precisionFactor = Math.max(10, Math.floor((1 - (t.radius / t.maxRadius)) * 50));
+                // Score based on size precision (smaller target = much more points)
+                let precisionFactor = Math.max(10, Math.floor((1 - (t.radius / t.maxRadius)) * 40));
                 score += precisionFactor;
                 
                 atScore.innerText = String(score).padStart(4, '0');
@@ -119,7 +123,8 @@ function startAimTrainer() {
 
         // Tactical missed penalizer flash
         if (!hitRegister) {
-            createExplosion(clickX, clickY, 'rgba(255,255,255,0.2)');
+            missFlash = 0.25; // Trigger red border warning flash
+            createExplosion(clickX, clickY, 'rgba(255, 71, 87, 0.4)', false);
             if (score > 5) score -= 5;
             atScore.innerText = String(score).padStart(4, '0');
         }
@@ -131,28 +136,30 @@ function startAimTrainer() {
     function updateFrameLogic() {
         frameCount++;
 
-        // Lifecycle loops inside expanding node targets arrays
+        if (missFlash > 0) missFlash -= 0.02;
+
+        // Lifecycles of targets
         for (let i = targets.length - 1; i >= 0; i--) {
             let t = targets[i];
+            t.rotation += 0.02; // Rotate target crosshair lines
+            
             if (t.growing) {
                 t.radius += t.speed;
                 if (t.radius >= t.maxRadius) t.growing = false;
             } else {
-                t.radius -= t.speed * 0.8;
-                // Target completely shriveled and expired without manual clicks
-                if (t.radius <= 2) {
+                t.radius -= t.speed * 0.9;
+                if (t.radius <= 3) {
                     targets.splice(i, 1);
                     continue;
                 }
             }
         }
 
-        // Continuous automatic node structural stream refills
-        if (frameCount % 45 === 0 || targets.length === 0) {
+        if (frameCount % 40 === 0 || targets.length === 0) {
             spawnTarget();
         }
 
-        // Decay micro fragments inside explosion particle loops
+        // Particle Decay
         for (let i = particles.length - 1; i >= 0; i--) {
             let p = particles[i];
             p.x += p.dx; p.y += p.dy; p.alpha -= p.decay;
@@ -163,38 +170,61 @@ function startAimTrainer() {
     function drawRenderPipeline() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // 1. Draw Geometric Targets Layers with Double Outer Bloom Ring Blurs
+        // 1. Tactical Targets Render with Reticle Overlay
         targets.forEach(t => {
             ctx.save();
             ctx.shadowBlur = 15;
             ctx.shadowColor = t.color;
             
-            // Outer Concentric Circle Ring
+            // Outer Concentric Target Ring
             ctx.strokeStyle = t.color;
-            ctx.lineWidth = 2.5;
+            ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Inner Quantum White Tracking Core Eye
+            // Tactical Crosshair Overlay Lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.translate(t.x, t.y);
+            ctx.rotate(t.rotation);
+            
+            ctx.beginPath();
+            ctx.moveTo(-t.radius - 6, 0); ctx.lineTo(-t.radius + 2, 0);
+            ctx.moveTo(t.radius - 2, 0); ctx.lineTo(t.radius + 6, 0);
+            ctx.moveTo(0, -t.radius - 6); ctx.lineTo(0, -t.radius + 2);
+            ctx.moveTo(0, t.radius - 2); ctx.lineTo(0, t.radius + 6);
+            ctx.stroke();
+            
+            // Solid Center Core Pip
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            ctx.arc(t.x, t.y, Math.max(1.5, t.radius * 0.35), 0, Math.PI * 2);
+            ctx.arc(0, 0, Math.max(2, t.radius * 0.3), 0, Math.PI * 2);
             ctx.fill();
             
             ctx.restore();
         });
 
-        // 2. Render Burst Fragments Matrix
+        // 2. Render Burst Particles
         particles.forEach(p => {
             ctx.save();
             ctx.globalAlpha = p.alpha;
             ctx.fillStyle = p.color;
+            ctx.shadowBlur = 5;
+            ctx.shadowColor = p.color;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
             ctx.fill();
             ctx.restore();
         });
+
+        // 3. Tactical Screen Miss vignette flash
+        if (missFlash > 0) {
+            ctx.save();
+            ctx.fillStyle = `rgba(255, 71, 87, ${missFlash * 0.4})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
+        }
     }
 
     function engineLoop() {
@@ -205,26 +235,20 @@ function startAimTrainer() {
     }
 
     function bootSequence() {
-        // Clear UI states layers cleanly
         atScreen.style.display = 'none';
 
-        score = 0; timeLeft = 30; targets = []; particles = [];
+        score = 0; timeLeft = 30; targets = []; particles = []; missFlash = 0;
         atScore.innerText = "0000";
         atTimer.innerText = "30s";
 
         gameRunning = true;
         
-        // Populate view grid blocks instantly
         spawnTarget(); spawnTarget(); spawnTarget();
 
-        // Safe Clock Countdown Engine 
         clockInterval = setInterval(() => {
             timeLeft--;
             atTimer.innerText = timeLeft + "s";
-            
-            if (timeLeft <= 0) {
-                handleGameOver();
-            }
+            if (timeLeft <= 0) handleGameOver();
         }, 1000);
 
         engineLoop();
@@ -236,11 +260,10 @@ function startAimTrainer() {
         cancelAnimationFrame(animationId);
 
         atScreen.style.display = 'block';
-        atSub.innerHTML = `TRAINING MATRICES FINALIZED! <br><span style="color:#2ED573; font-weight:900; font-size:15px; text-shadow:0 0 10px #2ED573;">EFFICIENCY SCORE: ${score}</span>`;
-        atBtn.innerText = "RE-ENGAGE TARGET SECTORS";
+        atSub.innerHTML = `TRAINING MATRICES FINALIZED! <br><span style="color:#00D4FF; font-weight:900; font-size:15px; text-shadow:0 0 10px #00D4FF;">EFFICIENCY SCORE: ${score}</span>`;
+        atBtn.innerText = "RE-ENGAGE SECTORS";
     }
 
-    // Attach click triggers cleanly to inner button instances
     atBtn.onclick = bootSequence;
 
     // Window global tracker destruction cleanup handling leaks 
