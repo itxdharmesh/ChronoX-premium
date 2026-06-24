@@ -1,84 +1,106 @@
 // js/games/games-main.js - FULL MASTER BUILD
 
-// 1. SYSTEM INITIALIZATION & UI RENDER
-function openChronoxGamesHub() {
-    if (!navigator.onLine) { renderOfflineUI(); return; }
+// 1. INITIALIZATION
+if (!localStorage.getItem('recentlyPlayedGames')) {
+    localStorage.setItem('recentlyPlayedGames', JSON.stringify(['spaceshooter', 'neondrift']));
+}
 
+// 2. MAIN HUB RENDER
+function openChronoxGamesHub() {
     var c = document.getElementById('contentArea');
     if (!c) return;
 
     c.innerHTML = `
-        <div id="gamesHubWrapper" style="padding: 20px; background: #03020a; min-height: 100vh; font-family: 'Poppins', sans-serif; color: #ffffff;">
-            <h1 style="text-align: center; color: #D4AF37; margin-bottom: 25px;">🎮 CHRONOX GAMES HUB</h1>
-            <div id="mainHubContent" style="max-width: 800px; margin: auto;">
-                <button onclick="renderMultiplayerSelector()" style="width: 100%; padding: 20px; background: #8B5CF6; border: none; border-radius: 12px; color: white; font-weight: 800; margin-bottom: 20px; cursor: pointer;">🌐 MULTIPLAYER ARENA</button>
-                <div id="arcadeGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
-                    ${generateArcadeCards()}
+        <div id="gamesHubWrapper" style="padding: 20px; background: radial-gradient(circle at top, #0f0a2a 0%, #03020a 100%); min-height: 100vh; font-family: 'Poppins', sans-serif; color: #ffffff;">
+            <div style="background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(124, 58, 237, 0.05) 100%); border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 24px; padding: 22px; margin-bottom: 25px;">
+                <h1 style="margin: 0; font-size: 28px; text-align:center; color: #D4AF37;">🎮 GAMES HUB</h1>
+            </div>
+            
+            <button onclick="renderMultiplayerSelector()" style="width: 100%; padding: 15px; background: #8B5CF6; border: none; border-radius: 12px; color: white; font-weight: 800; cursor: pointer; margin-bottom: 20px;">🌐 MULTIPLAYER ARENA</button>
+
+            <input id="gameSearchInput" oninput="filterHubGames()" type="text" placeholder="Search games..." style="width: 100%; padding: 15px; background: #111; border: 1px solid #333; border-radius: 12px; color: white; margin-bottom: 20px;">
+
+            <div id="mainHubContent">
+                <div id="categorizedGamesSection"></div>
+            </div>
+        </div>
+    `;
+    renderAllGames();
+}
+
+// 3. GAME DATABASE & CARD ENGINE
+const GAME_DATABASE_RECORDS = {
+    cyberninja: { icon: "🥷", title: "Cyber Ninja", desc: "Endless Runner", xp: "+40 XP", color: "#8B5CF6" },
+    spaceshooter: { icon: "🚀", title: "Space Shooter", desc: "Space Destroyer", xp: "+50 XP", color: "#00D4FF" },
+    neondrift: { icon: "🏎️", title: "Neon Drift", desc: "Hyper Racer", xp: "+50 XP", color: "#FF9F43" },
+    brickbreaker: { icon: "🧱", title: "Brick Breaker", desc: "Vector Shield", xp: "+30 XP", color: "#FF6B81" },
+    pong: { icon: "🏓", title: "Pong", desc: "Laser Matrix", xp: "+35 XP", color: "#00D4FF" }
+};
+
+function injectCardEngine(icon, title, desc, xp, color, id) {
+    return `
+        <div class="premium-game-card" data-game-title="${title.toLowerCase()}" onclick="safeStart('${id}')" style="cursor:pointer; background: rgba(255,255,255,0.02); border: 1px solid #333; padding: 15px; border-radius: 14px; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:14px">
+                <div style="font-size:32px;">${icon}</div>
+                <div style="flex:1">
+                    <h3 style="color:${color}; font-size:14px; margin:0;">${title}</h3>
+                    <p style="color:rgba(255,255,255,0.4); font-size:10px;">${desc}</p>
                 </div>
+                <span style="color:#FFD700; font-size:9px;">${xp}</span>
             </div>
         </div>
     `;
 }
 
-// 2. ARCADE GAME DATABASE
-const ARCADE_GAMES = [
-    { id: 'spaceshooter', name: 'Space Shooter', icon: '🚀' },
-    { id: 'cyberninja', name: 'Cyber Ninja', icon: '🥷' },
-    { id: 'neondrift', name: 'Neon Drift', icon: '🏎️' },
-    { id: 'brickbreaker', name: 'Brick Breaker', icon: '🧱' },
-    { id: 'pong', name: 'Pong', icon: '🏓' },
-    { id: 'flappy', name: 'Flappy Bird', icon: '🐦' },
-    { id: 'tictactoe', name: 'Tic Tac Toe', icon: '❌' },
-    { id: 'memorymatch', name: 'Memory Match', icon: '🧠' },
-    { id: 'reactionmaster', name: 'Reaction Master', icon: '⚡' },
-    { id: 'aimtrainer', name: 'Aim Trainer', icon: '🎯' }
-];
-
-function generateArcadeCards() {
-    return ARCADE_GAMES.map(g => `
-        <button onclick="safeStart('${g.id}')" style="padding: 15px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 10px; cursor: pointer; text-align: left;">
-            <span style="font-size: 20px;">${g.icon}</span> ${g.name}
-        </button>
-    `).join('');
+function renderAllGames() {
+    const container = document.getElementById('categorizedGamesSection');
+    container.innerHTML = Object.keys(GAME_DATABASE_RECORDS).map(id => {
+        let g = GAME_DATABASE_RECORDS[id];
+        return injectCardEngine(g.icon, g.title, g.desc, g.xp, g.color, id);
+    }).join('');
 }
 
-// 3. MULTIPLAYER SELECTOR
+// 4. MULTIPLAYER LOGIC
 function renderMultiplayerSelector() {
     document.getElementById('mainHubContent').innerHTML = `
-        <div style="background: #0f0a2a; padding: 25px; border-radius: 16px; border: 1px solid #333;">
-            <h2 style="color: #D4AF37;">MULTIPLAYER ARENA</h2>
-            <div style="display: grid; gap: 10px;">
-                <button onclick="createMultiplayerRoom('chess')" style="padding: 15px; background: #222; border: none; color: white; border-radius: 8px;">👑 Chess</button>
-                <button onclick="createMultiplayerRoom('ludo')" style="padding: 15px; background: #222; border: none; color: #00f5d4; border-radius: 8px;">🎲 Ludo</button>
-                <button onclick="createMultiplayerRoom('uno')" style="padding: 15px; background: #222; border: none; color: #ff006e; border-radius: 8px;">🃏 Uno</button>
+        <div style="background:#111; padding:20px; border-radius:16px;">
+            <h2 style="color:#8B5CF6;">MULTIPLAYER</h2>
+            <div style="display:grid; gap:10px; margin-bottom:20px;">
+                <input id="directRoomCodeInput" placeholder="ROOM CODE" style="padding:10px; background:#000; border:1px solid #444; color:#fff;">
+                <button onclick="joinMultiplayerRoom(document.getElementById('directRoomCodeInput').value)" style="padding:10px; background:#8B5CF6; color:white; border:none;">JOIN</button>
             </div>
-            <button onclick="openChronoxGamesHub()" style="width: 100%; margin-top: 20px; background: transparent; color: #666; border: none;">← Back</button>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                <button onclick="createMultiplayerRoom('chess', 2)" style="padding:10px;">👑 Chess</button>
+                <button onclick="createMultiplayerRoom('ludo', 4)" style="padding:10px;">🎲 Ludo</button>
+                <button onclick="createMultiplayerRoom('uno', 4)" style="padding:10px;">🃏 Uno</button>
+            </div>
+            <button onclick="openChronoxGamesHub()" style="margin-top:20px; background:none; border:none; color:#666;">← Back</button>
         </div>
     `;
 }
 
-// 4. REWARD & NOTIFICATION ENGINE
+function bootMultiplayerGameEngine(gameId, roomId) {
+    document.getElementById('contentArea').innerHTML = '<div id="gameCanvas" style="width:100%; height:100vh;"></div>';
+    if (gameId === 'chess') startMultiplayerChess(roomId);
+    else if (gameId === 'ludo') startMultiplayerLudo(roomId);
+    else if (gameId === 'uno') startMultiplayerUno(roomId);
+}
+
+// 5. XP & UTILS
 function rewardChronoxXP(result, gameId) {
     let xp = (result === 'win') ? 25 : 10;
+    if (typeof showToast === 'function') showToast(`⚡ +${xp} XP in ${gameId.toUpperCase()}!`);
     
-    // Notification
-    if (typeof showToast === 'function') {
-        showToast(`⚡ XP GAINED: +${xp} XP [${gameId.toUpperCase()}]`);
-    }
-
-    // Firestore Sync
-    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+    if (firebase.auth().currentUser) {
         firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid)
             .update({ xp: firebase.firestore.FieldValue.increment(xp) });
     }
 }
 
-// 5. SAFE START & HOOKS
 function safeStart(name) {
     interceptAndHookGameOver(name);
     if(name === 'spaceshooter') startSpaceShooter();
     else if(name === 'cyberninja') startCyberNinja();
-    // ... baaki games ke starts yahan add kar le
 }
 
 function interceptAndHookGameOver(gameId) {
@@ -92,12 +114,17 @@ function interceptAndHookGameOver(gameId) {
     }
 }
 
-// 6. OFFLINE UI
-function renderOfflineUI() {
-    document.getElementById('contentArea').innerHTML = `
-        <div style="padding: 50px; text-align: center; color: white;">
-            <h2>🚫 SYSTEM OFFLINE</h2>
-            <button onclick="location.reload()" style="padding: 10px 20px; background: #D4AF37; border:none;">RETRY</button>
-        </div>
-    `;
+function filterHubGames() {
+    let query = document.getElementById('gameSearchInput').value.toLowerCase();
+    document.querySelectorAll('.premium-game-card').forEach(card => {
+        card.style.display = card.getAttribute('data-game-title').includes(query) ? 'block' : 'none';
+    });
+}
+
+function utilHexToRgb(hex) {
+    hex = hex.replace('#', '');
+    let r = parseInt(hex.substring(0, 2), 16);
+    let g = parseInt(hex.substring(2, 4), 16);
+    let b = parseInt(hex.substring(4, 6), 16);
+    return `${r}, ${g}, ${b}`;
 }
