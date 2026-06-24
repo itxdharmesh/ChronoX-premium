@@ -1,5 +1,66 @@
 // js/games/games-main.js
 
+function openChronoxGamesHub() {
+    var c = document.getElementById('contentArea');
+    if (!c) return;
+
+    // Base UI Shell
+    c.innerHTML = `
+        <div id="gamesHubWrapper" style="padding: 20px; background: radial-gradient(circle at top, #0f0a2a 0%, #03020a 100%); min-height: calc(100vh - 70px); font-family: 'Poppins', sans-serif; color: #ffffff;">
+            <h1 style="font-size: 28px; font-weight: 900; margin-bottom: 25px; text-align: center; color: #D4AF37;">🎮 CHRONOX COMMAND</h1>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;">
+                <button onclick="renderMultiplayerSection()" style="padding: 18px; background: linear-gradient(135deg, #8B5CF6, #6366f1); border: none; border-radius: 16px; color: white; font-weight: 800; cursor: pointer; box-shadow: 0 10px 20px rgba(139,92,246,0.3);">🌐 MULTIPLAYER</button>
+                <button onclick="renderArcadeSection()" style="padding: 18px; background: linear-gradient(135deg, #00D4FF, #0ea5e9); border: none; border-radius: 16px; color: black; font-weight: 800; cursor: pointer; box-shadow: 0 10px 20px rgba(0,212,255,0.3);">🕹️ ARCADE</button>
+            </div>
+
+            <div id="subSectionContent">
+                <div style="text-align: center; padding: 50px; opacity: 0.5;">Select an arena to begin...</div>
+            </div>
+        </div>
+    `;
+}
+
+function renderMultiplayerSection() {
+    const sub = document.getElementById('subSectionContent');
+    sub.innerHTML = `
+        <h2 style="color: #8B5CF6; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;">🌐 Multiplayer Arena</h2>
+        <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+            <input id="directRoomCodeInput" type="text" placeholder="ENTER 4-DIGIT CODE..." style="width: 100%; padding: 12px; background: #000; border: 1px solid #444; color: white; border-radius: 10px; margin-bottom: 10px; box-sizing: border-box;">
+            <button onclick="joinMultiplayerRoom(document.getElementById('directRoomCodeInput').value)" style="width: 100%; padding: 12px; background: #8B5CF6; border: none; color: white; border-radius: 10px; cursor: pointer;">JOIN DEPLOYMENT</button>
+        </div>
+        <div style="display: grid; gap: 10px;">
+            <button onclick="createMultiplayerRoom('chess', 2)" style="padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid #333; color: white; border-radius: 12px; text-align: left;">👑 Quantum Chess (2P)</button>
+            <button onclick="createMultiplayerRoom('ludo', 4)" style="padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid #333; color: #00f5d4; border-radius: 12px; text-align: left;">🎲 Chrono Ludo (4P)</button>
+            <button onclick="createMultiplayerRoom('uno', 4)" style="padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid #333; color: #ff006e; border-radius: 12px; text-align: left;">🃏 Neon Uno (4P)</button>
+        </div>
+    `;
+}
+
+function renderArcadeSection() {
+    const sub = document.getElementById('subSectionContent');
+    sub.innerHTML = `
+        <h2 style="color: #00D4FF; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px;">🕹️ Arcade Terminal</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            ${generateArcadeBtn('🚀', 'Space Shooter', 'spaceshooter')}
+            ${generateArcadeBtn('🥷', 'Cyber Ninja', 'cyberninja')}
+            ${generateArcadeBtn('🎯', 'Aim Trainer', 'aimtrainer')}
+            ${generateArcadeBtn('🏎️', 'Neon Drift', 'neondrift')}
+            ${generateArcadeBtn('🧱', 'Brick Break', 'brickbreaker')}
+            ${generateArcadeBtn('🏓', 'Pong', 'pong')}
+        </div>
+    `;
+}
+
+function generateArcadeBtn(icon, name, id) {
+    return `<button onclick="safeStart('${id}')" style="padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid #333; color: white; border-radius: 12px; cursor: pointer;">${icon} ${name}</button>`;
+}
+
+// Keep all your original Multiplayer logic functions (createMultiplayerRoom, joinMultiplayerRoom, etc.) below this line...
+// [COPY YOUR EXISTING LOBBY LOGIC HERE]
+
+// js/games/games-main.js
+
 // Active Storage Cache for Telemetry Realtime Queue
 if (!localStorage.getItem('recentlyPlayedGames')) {
     localStorage.setItem('recentlyPlayedGames', JSON.stringify(['spaceshooter', 'neondrift']));
