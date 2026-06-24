@@ -47,11 +47,10 @@ function openChronoxGamesHub() {
             <div id="recentlyPlayedSection" style="margin-bottom: 25px;">
                 <h2 style="font-size: 12px; font-weight: 800; letter-spacing: 2px; color: rgba(255,255,255,0.4); margin-bottom: 12px; text-transform: uppercase;">⏳ RECENT ACCESS LOGS</h2>
                 <div id="recentGamesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;">
-                    </div>
+                </div>
             </div>
 
             <div id="categorizedGamesSection">
-                
                 <div class="category-block" style="margin-bottom: 25px;">
                     <h2 style="font-size: 12px; font-weight: 800; letter-spacing: 2px; color: #8B5CF6; margin-bottom: 12px; text-transform: uppercase; border-left: 3px solid #8B5CF6; padding-left: 8px;">⚡ ACTION CHANNELS</h2>
                     <div class="game-grid-cluster" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;">
@@ -86,31 +85,16 @@ function openChronoxGamesHub() {
         </div>
 
         <style>
-            .premium-game-card {
-                position: relative; overflow: hidden; z-index: 1; transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-            }
-            .premium-game-card:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 10px 20px rgba(0,0,0,0.6), 0 0 12px var(--glow-color);
-                border-color: var(--glow-border) !important;
-                background: rgba(255,255,255,0.05) !important;
-            }
-            .premium-hover-node:hover {
-                transform: scale(1.01);
-                box-shadow: 0 15px 30px rgba(0,212,255,0.4);
-            }
-            #gameSearchInput:focus {
-                border-color: #00D4FF !important;
-                background: rgba(255,255,255,0.06) !important;
-                box-shadow: 0 0 15px rgba(0,212,255,0.25), inset 0 2px 8px rgba(0,0,0,0.5) !important;
-            }
+            .premium-game-card { position: relative; overflow: hidden; z-index: 1; transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
+            .premium-game-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.6), 0 0 12px var(--glow-color); border-color: var(--glow-border) !important; background: rgba(255,255,255,0.05) !important; }
+            .premium-hover-node:hover { transform: scale(1.01); box-shadow: 0 15px 30px rgba(0,212,255,0.4); }
+            #gameSearchInput:focus { border-color: #00D4FF !important; background: rgba(255,255,255,0.06) !important; box-shadow: 0 0 15px rgba(0,212,255,0.25), inset 0 2px 8px rgba(0,0,0,0.5) !important; }
         </style>
     `;
 
     renderRecentGamesQueue();
 }
 
-// Global Dictionary Mapping Metadata
 const GAME_DATABASE_RECORDS = {
     cyberninja: { icon: "🥷", title: "Cyber Ninja", desc: "Endless Runner Run Matrix", xp: "+40 XP", color: "#8B5CF6" },
     spaceshooter: { icon: "🚀", title: "Space Shooter", desc: "Quantum Space Destroyer", xp: "+50 XP", color: "#00D4FF" },
@@ -149,7 +133,7 @@ function renderRecentGamesQueue() {
 
     let queue = JSON.parse(localStorage.getItem('recentlyPlayedGames')) || [];
     if (queue.length === 0) {
-        recentSection.style.style.display = 'none';
+        recentSection.style.display = 'none';
         return;
     }
 
@@ -164,12 +148,10 @@ function renderRecentGamesQueue() {
 function filterHubGames() {
     let query = document.getElementById('gameSearchInput').value.toLowerCase();
     let cards = document.querySelectorAll('.premium-game-card');
-
     cards.forEach(card => {
         let title = card.getAttribute('data-game-title');
         card.style.display = title.includes(query) ? 'block' : 'none';
     });
-
     let blocks = document.querySelectorAll('.category-block');
     blocks.forEach(block => {
         let hasVisible = Array.from(block.querySelectorAll('.premium-game-card')).some(c => c.style.display !== 'none');
@@ -182,15 +164,15 @@ function updateRecentQueue(id) {
     let queue = JSON.parse(localStorage.getItem('recentlyPlayedGames')) || [];
     queue = queue.filter(x => x !== id);
     queue.unshift(id);
-    if (queue.length > 3) queue.pop(); // Max 3 items in recent queue
+    if (queue.length > 3) queue.pop();
     localStorage.setItem('recentlyPlayedGames', JSON.stringify(queue));
 }
 
 function safeStart(name) {
     try {
         updateRecentQueue(name);
-        
-        // Dynamic Matrix Core Routing Resolvers
+        interceptAndHookGameOver(name); // Intercept and attach global game over state monitor
+
         if (name === 'tictactoe' && typeof startTicTacToe === 'function') startTicTacToe();
         else if (name === 'tictactoe' && typeof startTTT === 'function') startTTT();
         else if (name === 'snake' && typeof startSnakeGame === 'function') startSnakeGame();
@@ -216,6 +198,39 @@ function safeStart(name) {
     }
 }
 
+// =================================================================
+// CENTRALIZED RUNTIME INTERCEPTOR FOR XP DISTRIBUTION
+// =================================================================
+function interceptAndHookGameOver(gameId) {
+    // Override window system handles instantly
+    setTimeout(() => {
+        // 1. Intercept Tic Tac Toe Matrix
+        if (typeof window.endGame === 'function' && !window.endGame.hooked) {
+            let originalEndGame = window.endGame;
+            window.endGame = function(winner) {
+                if (winner === 'human' || winner === 'player' || winner === true) rewardChronoxXP('win', gameId);
+                else if (winner === 'ai' || winner === 'computer' || winner === false) rewardChronoxXP('lose', gameId);
+                else rewardChronoxXP('draw', gameId);
+                originalEndGame.apply(this, arguments);
+            };
+            window.endGame.hooked = true;
+        }
+
+        // 2. Intercept Pong Matrix / Universal handleGameOver functions
+        if (typeof window.handleGameOver === 'function' && !window.handleGameOver.hooked) {
+            let originalHandleGameOver = window.handleGameOver;
+            window.handleGameOver = function(status) {
+                // If status is true or score wins -> 'win' else -> 'lose'
+                if (status === true || status === 'win') rewardChronoxXP('win', gameId);
+                else if (status === 'draw') rewardChronoxXP('draw', gameId);
+                else rewardChronoxXP('lose', gameId);
+                originalHandleGameOver.apply(this, arguments);
+            };
+            window.handleGameOver.hooked = true;
+        }
+    }, 400); // 400ms delay safely awaits file scope execution bindings
+}
+
 function utilHexToRgb(hex) {
     hex = hex.replace('#', '');
     if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
@@ -223,72 +238,36 @@ function utilHexToRgb(hex) {
     return `${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}`;
 }
 
-// Global Legacy Alias protection anchor
 window.openGames = openChronoxGamesHub;
 
 // =================================================================
 // CHRONOX NEURAL REWARD ENGINE (FIREBASE SYNC)
 // =================================================================
-
-/**
- * Handles real-time XP accumulation based on match results.
- * @param {string} result - 'win', 'draw', or 'lose'
- * @param {string} gameId - Unique identifier of the simulation
- */
 function rewardChronoxXP(result, gameId) {
     let xpEarned = 0;
-
-    // Strict Rule Matrix Setup
     if (result === 'win') xpEarned = 25;
     else if (result === 'draw') xpEarned = 10;
     else if (result === 'lose') xpEarned = 0;
 
     console.log(`[Reward Engine] Game: ${gameId} | Result: ${result} | XP Earned: ${xpEarned}`);
+    if (xpEarned <= 0) return;
 
-    // If score is 0, no need to update database node to save bandwidth
-    if (xpEarned <= 0) {
-        if (typeof showToast === 'function') showToast('Simulation terminated. 0 XP added.');
-        return;
-    }
-
-    // Check if Firebase Auth and Firestore are active on client device
     if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
         const user = firebase.auth().currentUser;
-        
         if (user) {
             const userRef = firebase.firestore().collection('users').doc(user.uid);
-
-            // Atomic Increment Pattern ensuring zero duplication or loss during connection drops
-            userRef.update({
-                xp: firebase.firestore.FieldValue.increment(xpEarned)
-            })
+            userRef.update({ xp: firebase.firestore.FieldValue.increment(xpEarned) })
             .then(() => {
-                console.log(`[Database Sync] Successfully pushed +${xpEarned} XP to user profile.`);
-                if (typeof showToast === 'function') {
-                    showToast(`⚡ +${xpEarned} XP Secured in Matrix!`);
-                }
-                
-                // Optional: Re-render profile HUD if active on the layout screen right now
+                if (typeof showToast === 'function') showToast(`⚡ +${xpEarned} XP Secured in Matrix!`);
                 if (typeof updateProfileHUD === 'function') updateProfileHUD();
-            })
-            .catch((error) => {
-                console.error("[Database Sync Error] Failed to update XP node: ", error);
-            });
-        } else {
-            console.warn("[Reward Engine] No active firebase user session detected. XP cached locally.");
-            fallbackLocalXPAccumulator(xpEarned);
-        }
-    } else {
-        // Fallback for offline sandbox mode testing environment
-        fallbackLocalXPAccumulator(xpEarned);
-    }
+            }).catch(e => console.error(e));
+        } else { fallbackLocalXPAccumulator(xpEarned); }
+    } else { fallbackLocalXPAccumulator(xpEarned); }
 }
 
 function fallbackLocalXPAccumulator(amount) {
     let currentLocalXP = parseInt(localStorage.getItem('chronox_sandbox_xp')) || 0;
     currentLocalXP += amount;
     localStorage.setItem('chronox_sandbox_xp', currentLocalXP);
-    if (typeof showToast === 'function') {
-        showToast(`⚡ Offline Mode: +${amount} XP Cached locally (${currentLocalXP} Total)`);
-    }
+    if (typeof showToast === 'function') showToast(`⚡ Offline Mode: +${amount} XP Cached!`);
 }
