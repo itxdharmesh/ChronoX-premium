@@ -5,7 +5,7 @@ function startBrickBreaker() {
     if (!c) return;
 
     c.innerHTML = `
-        <div id="bbContainer" style="position:relative; width:100%; height:100%; min-height: 500px; height: calc(100vh - 120px); overflow:hidden; background: #070913; font-family: 'Poppins', sans-serif; user-select:none; -webkit-user-select:none;">
+        <div id="bbContainer" style="position:relative; width:100%; height:100%; min-height: 500px; height: calc(100vh - 120px); overflow:hidden; background: #070913; font-family: 'Poppins', sans-serif; user-select:none; -webkit-user-select:none; touch-action: none;">
             
             <div style="position:absolute; top:15px; left:0; width:100%; display:flex; justify-content:space-between; padding:0 20px; z-index:10; pointer-events:none;">
                 <div style="background: rgba(10, 15, 30, 0.85); border: 1px solid #00F5D4; padding: 6px 14px; border-radius: 10px; backdrop-filter: blur(8px);">
@@ -18,7 +18,7 @@ function startBrickBreaker() {
                 </div>
             </div>
 
-            <canvas id="bbCanvas" style="display:block; width:100%; height:100%; position:absolute; top:0; left:0; z-index:1; cursor:none;"></canvas>
+            <canvas id="bbCanvas" style="display:block; width:100%; height:100%; position:absolute; top:0; left:0; z-index:1; cursor:none; touch-action: none;"></canvas>
 
             <button id="bbExitBtn" style="position:absolute; bottom:20px; right:20px; background:rgba(255,0,127,0.15); border:1px solid rgba(255,0,127,0.4); color:#FF007F; padding:8px 16px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; z-index:10; backdrop-filter:blur(5px); letter-spacing:1px;">ABORT GAME</button>
 
@@ -48,19 +48,16 @@ function startBrickBreaker() {
     let ball = {}, paddle = {}, bricks = [], particles = [];
     let animationId = null;
 
-    // Config parameters
-    const paddleWidth = 90;
+    const paddleWidth = 100;
     const paddleHeight = 12;
     const ballRadius = 7;
     
-    // Dynamic Responsive Brick Blueprint Layout
     const brickRows = 4;
     const brickCols = 6;
-    const brickPadding = 10;
-    const brickOffsetTop = 75;
-    const brickOffsetLeft = 15;
+    const brickPadding = 8;
+    const brickOffsetTop = 80;
+    const brickOffsetLeft = 12;
     
-    // Calculate precise width grids dynamic values
     let calculatedBrickWidth = (canvas.width - (brickOffsetLeft * 2) - (brickPadding * (brickCols - 1))) / brickCols;
 
     function initGameObjects() {
@@ -75,13 +72,12 @@ function startBrickBreaker() {
         ball = {
             x: canvas.width / 2,
             y: paddle.y - ballRadius - 5,
-            vx: 3.5 * (Math.random() > 0.5 ? 1 : -1),
+            vx: 3,
             vy: -4,
             radius: ballRadius,
             color: '#FFFFFF'
         };
 
-        // Create colorful Matrix of Bricks
         bricks = [];
         let rowColors = ['#FF007F', '#7B2CBF', '#00F5D4', '#FFA502'];
         for (let r = 0; r < brickRows; r++) {
@@ -105,51 +101,54 @@ function startBrickBreaker() {
             let angle = Math.random() * Math.PI * 2;
             let speed = Math.random() * 2 + 1;
             particles.push({
-                x, y,
-                radius: Math.random() * 2 + 0.5,
-                dx: Math.cos(angle) * speed,
-                dy: Math.sin(angle) * speed,
-                alpha: 1,
-                decay: Math.random() * 0.05 + 0.03,
-                color
+                x, y, radius: Math.random() * 2 + 0.5,
+                dx: Math.cos(angle) * speed, dy: Math.sin(angle) * speed,
+                alpha: 1, decay: Math.random() * 0.05 + 0.03, color
             });
         }
     }
 
-    // Input Controller Mechanism (Canvas Centered Only)
+    // Input Movement Handler (With Strict Page Scroll Block)
     function handleMove(e) {
         if (!gameRunning) return;
+        
+        // Prevent default browser scrolling entirely inside game container
+        if (e.cancelable) e.preventDefault();
+
         let rect = canvas.getBoundingClientRect();
         let clientX = e.touches ? e.touches[0].clientX : e.clientX;
         let relativeX = clientX - rect.left;
 
-        // Position paddle center lock
         paddle.x = relativeX - paddle.width / 2;
 
-        // Map boundary collision boxes
         if (paddle.x < 0) paddle.x = 0;
         if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
     }
 
     canvas.addEventListener('mousemove', handleMove);
-    canvas.addEventListener('touchmove', handleMove, { passive: true });
+    // passive: false is critical to allow preventDefault()
+    canvas.addEventListener('touchmove', handleMove, { passive: false });
+    canvas.addEventListener('touchstart', (e) => { if (gameRunning && e.cancelable) e.preventDefault(); }, { passive: false });
 
     function updateFrameLogic() {
-        // Move Orb
         ball.x += ball.vx;
         ball.y += ball.vy;
 
         // Wall Reflections
-        if (ball.x - ball.radius <= 0 || ball.x + ball.radius >= canvas.width) {
-            ball.vx = -ball.vx;
-            ball.x = ball.x < canvas.width / 2 ? ball.radius : canvas.width - ball.radius;
+        if (ball.x - ball.radius <= 0) {
+            ball.vx = Math.abs(ball.vx);
+            ball.x = ball.radius;
+        } else if (ball.x + ball.radius >= canvas.width) {
+            ball.vx = -Math.abs(ball.vx);
+            ball.x = canvas.width - ball.radius;
         }
+
         if (ball.y - ball.radius <= 0) {
-            ball.vy = -ball.vy;
+            ball.vy = Math.abs(ball.vy);
             ball.y = ball.radius;
         }
 
-        // Bottom Pit Loss Check
+        // Bottom Fall Check
         if (ball.y + ball.radius >= canvas.height) {
             lives--;
             if (bbLives) bbLives.innerText = "❤️".repeat(lives) + "🖤".repeat(3 - lives);
@@ -158,10 +157,9 @@ function startBrickBreaker() {
                 handleGameOver(false);
                 return;
             } else {
-                // Soft reset orb vectors
                 ball.x = paddle.x + paddle.width / 2;
-                ball.y = paddle.y - ball.radius - 4;
-                ball.vx = 3.5 * (Math.random() > 0.5 ? 1 : -1);
+                ball.y = paddle.y - ball.radius - 5;
+                ball.vx = 3 * (Math.random() > 0.5 ? 1 : -1);
                 ball.vy = -4;
             }
         }
@@ -169,20 +167,20 @@ function startBrickBreaker() {
         // Paddle Collision Box Handler
         if (ball.y + ball.radius >= paddle.y && ball.y - ball.radius <= paddle.y + paddle.height) {
             if (ball.x >= paddle.x && ball.x <= paddle.x + paddle.width) {
-                // Dynamic deflection angles depending on point of impact
                 let hitPoint = (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
-                ball.vx = hitPoint * 4.5;
+                ball.vx = hitPoint * 4;
                 ball.vy = -Math.abs(ball.vy);
-                ball.y = paddle.y - ball.radius; // Clip wrap protection
+                ball.y = paddle.y - ball.radius; 
             }
         }
 
-        // Bricks Intersection Loops
+        // STRICT SOLID COLLISION MATRIX (Prevents Aar-Paar Tunneling)
         let activeCount = 0;
         bricks.forEach(b => {
             if (!b.active) return;
             activeCount++;
 
+            // Check overlap
             if (ball.x + ball.radius >= b.x && ball.x - ball.radius <= b.x + b.w &&
                 ball.y + ball.radius >= b.y && ball.y - ball.radius <= b.y + b.h) {
                 
@@ -191,21 +189,25 @@ function startBrickBreaker() {
                 score += 20;
                 if (bbScore) bbScore.innerText = String(score).padStart(4, '0');
                 
-                // Normal vector reversal inversion
-                ball.vy = -ball.vy;
+                // Determine collision side to bounce correctly
+                let overlapX = Math.min(ball.x + ball.radius - b.x, b.x + b.w - (ball.x - ball.radius));
+                let overlapY = Math.min(ball.y + ball.radius - b.y, b.y + b.h - (ball.y - ball.radius));
+
+                if (overlapX < overlapY) {
+                    ball.vx = ball.x < b.x + b.w / 2 ? -Math.abs(ball.vx) : Math.abs(ball.vx); // Bounce horizontally
+                } else {
+                    ball.vy = ball.y < b.y + b.h / 2 ? -Math.abs(ball.vy) : Math.abs(ball.vy); // Bounce vertically
+                }
             }
         });
 
-        // Win Verification Check
         if (activeCount === 0) {
             handleGameOver(true);
             return;
         }
 
-        // Particle Decay loop iteration
         for (let i = particles.length - 1; i >= 0; i--) {
-            let p = particles[i];
-            p.x += p.dx; p.y += p.dy; p.alpha -= p.decay;
+            let p = particles[i]; p.x += p.dx; p.y += p.dy; p.alpha -= p.decay;
             if (p.alpha <= 0) particles.splice(i, 1);
         }
     }
@@ -213,55 +215,40 @@ function startBrickBreaker() {
     function drawRenderPipeline() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // 1. Render Active Brick Wall Blocks
+        // Bricks
         bricks.forEach(b => {
             if (!b.active) return;
             ctx.save();
-            ctx.shadowBlur = 6;
-            ctx.shadowColor = b.color;
+            ctx.shadowBlur = 4; ctx.shadowColor = b.color;
             ctx.fillStyle = b.color;
-            ctx.beginPath();
-            ctx.roundRect(b.x, b.y, b.w, b.h, 4);
-            ctx.fill();
+            ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 4); ctx.fill();
             ctx.restore();
         });
 
-        // 2. Render Player Glow Paddle
+        // Paddle
         ctx.save();
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = paddle.color;
+        ctx.shadowBlur = 10; ctx.shadowColor = paddle.color;
         ctx.fillStyle = paddle.color;
-        ctx.beginPath();
-        ctx.roundRect(paddle.x, paddle.y, paddle.width, paddle.height, 6);
-        ctx.fill();
+        ctx.beginPath(); ctx.roundRect(paddle.x, paddle.y, paddle.width, paddle.height, 6); ctx.fill();
         ctx.restore();
 
-        // 3. Render Neon Ball Orb Core
+        // Ball
         ctx.save();
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = '#FFFFFF';
+        ctx.shadowBlur = 8; ctx.shadowColor = '#FFFFFF';
         ctx.fillStyle = ball.color;
-        ctx.beginPath();
-        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
 
-        // 4. Render Fragment Burst Particles
+        // Particles
         particles.forEach(p => {
-            ctx.save();
-            ctx.globalAlpha = p.alpha;
-            ctx.fillStyle = p.color;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
+            ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); ctx.restore();
         });
     }
 
     function engineLoop() {
         if (!gameRunning) return;
-        updateFrameLogic();
-        drawRenderPipeline();
+        updateFrameLogic(); drawRenderPipeline();
         animationId = requestAnimationFrame(engineLoop);
     }
 
@@ -271,15 +258,12 @@ function startBrickBreaker() {
         if (bbScore) bbScore.innerText = "0000";
         if (bbLives) bbLives.innerText = "❤️❤️❤️";
         gameRunning = true;
-
-        initGameObjects();
-        engineLoop();
+        initGameObjects(); engineLoop();
     }
 
     function handleGameOver(winStatus) {
         gameRunning = false;
         cancelAnimationFrame(animationId);
-
         bbScreen.style.display = 'block';
         if (winStatus) {
             bbSub.innerHTML = `STAGE CLEARED SUCCESSFULLY! <br><span style="color:#00F5D4; font-weight:900; font-size:15px;">FINAL SCORE: ${score}</span>`;
@@ -291,12 +275,7 @@ function startBrickBreaker() {
     }
 
     bbBtn.onclick = bootSequence;
-
-    window.bbCancelRef = () => {
-        gameRunning = false;
-        cancelAnimationFrame(animationId);
-    };
-
+    window.bbCancelRef = () => { gameRunning = false; cancelAnimationFrame(animationId); };
     bbExitBtn.onclick = function() {
         if (typeof window.bbCancelRef === 'function') window.bbCancelRef();
         if (typeof openGames === 'function') openGames();
