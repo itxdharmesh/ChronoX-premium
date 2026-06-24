@@ -22,7 +22,7 @@ function startBrickBreaker() {
 
             <button id="bbExitBtn" style="position:absolute; bottom:20px; right:20px; background:rgba(255,0,127,0.15); border:1px solid rgba(255,0,127,0.4); color:#FF007F; padding:8px 16px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; z-index:10; backdrop-filter:blur(5px); letter-spacing:1px;">ABORT GAME</button>
 
-            <div id="bbScreen" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background: rgba(7, 11, 26, 0.95); border:1px solid #00F5D4; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); padding:35px 25px; border-radius:24px; text-align:center; width:88%; max-width:340px; box-shadow:0 20px 60px rgba(0,0,0,0.8); z-index:20; display:block;">
+            <div id="bbScreen" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background: rgba(7, 11, 26, 0.95); border:1px solid #00F5D4; backdrop-filter:blur(20px); padding:35px 25px; border-radius:24px; text-align:center; width:88%; max-width:340px; box-shadow:0 20px 60px rgba(0,0,0,0.8); z-index:20; display:block;">
                 <div style="width:60px; height:60px; background: rgba(0,245,212,0.15); border: 2px solid #00F5D4; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:26px;">🎮</div>
                 <h1 style="font-size:22px; font-weight:900; letter-spacing:2px; color:#fff; margin-bottom:5px;">BRICK BREAKER</h1>
                 <p id="bbSub" style="font-size:11px; color:rgba(255,255,255,0.6); margin-bottom:25px; letter-spacing:1px; line-height:1.5;">MOVE PADDLE TO BOUNCE NEON ORB <br>AND CLEAR ALL BREAKABLE WALLS</p>
@@ -48,22 +48,20 @@ function startBrickBreaker() {
     let ball = {}, paddle = {}, bricks = [], particles = [];
     let animationId = null;
 
-    const paddleWidth = 100;
-    const paddleHeight = 12;
-    const ballRadius = 7;
+    const paddleWidth = 110;
+    const paddleHeight = 14;
+    const ballRadius = 8;
     
+    // Grid settings
     const brickRows = 4;
-    const brickCols = 6;
-    const brickPadding = 8;
-    const brickOffsetTop = 80;
-    const brickOffsetLeft = 12;
+    const brickCols = 5; // Columns thodi kam kari taaki bricks badi aur solid rahein
+    const brickHeight = 24;
+    const brickPadding = 10;
     
-    let calculatedBrickWidth = (canvas.width - (brickOffsetLeft * 2) - (brickPadding * (brickCols - 1))) / brickCols;
-
     function initGameObjects() {
         paddle = {
             x: canvas.width / 2 - paddleWidth / 2,
-            y: canvas.height - 45,
+            y: canvas.height - 50,
             width: paddleWidth,
             height: paddleHeight,
             color: '#00F5D4'
@@ -71,24 +69,30 @@ function startBrickBreaker() {
 
         ball = {
             x: canvas.width / 2,
-            y: paddle.y - ballRadius - 5,
+            y: paddle.y - ballRadius - 10,
             vx: 3,
             vy: -4,
             radius: ballRadius,
             color: '#FFFFFF'
         };
 
+        // Precise integer pixel calculation for bricks to prevent gap bypass
         bricks = [];
+        let totalPaddingSpace = brickPadding * (brickCols + 1);
+        let availableWidth = canvas.width - totalPaddingSpace;
+        let singleBrickWidth = Math.floor(availableWidth / brickCols);
+        let offsetLeft = Math.floor((canvas.width - ((singleBrickWidth * brickCols) + (brickPadding * (brickCols - 1)))) / 2);
+
         let rowColors = ['#FF007F', '#7B2CBF', '#00F5D4', '#FFA502'];
         for (let r = 0; r < brickRows; r++) {
             for (let c = 0; c < brickCols; c++) {
-                let brickX = (c * (calculatedBrickWidth + brickPadding)) + brickOffsetLeft;
-                let brickY = (r * (20 + brickPadding)) + brickOffsetTop;
+                let brickX = offsetLeft + (c * (singleBrickWidth + brickPadding));
+                let brickY = 90 + (r * (brickHeight + brickPadding));
                 bricks.push({
                     x: brickX,
                     y: brickY,
-                    w: calculatedBrickWidth,
-                    h: 20,
+                    w: singleBrickWidth,
+                    h: brickHeight,
                     color: rowColors[r],
                     active: true
                 });
@@ -108,11 +112,8 @@ function startBrickBreaker() {
         }
     }
 
-    // Input Movement Handler (With Strict Page Scroll Block)
     function handleMove(e) {
         if (!gameRunning) return;
-        
-        // Prevent default browser scrolling entirely inside game container
         if (e.cancelable) e.preventDefault();
 
         let rect = canvas.getBoundingClientRect();
@@ -126,7 +127,6 @@ function startBrickBreaker() {
     }
 
     canvas.addEventListener('mousemove', handleMove);
-    // passive: false is critical to allow preventDefault()
     canvas.addEventListener('touchmove', handleMove, { passive: false });
     canvas.addEventListener('touchstart', (e) => { if (gameRunning && e.cancelable) e.preventDefault(); }, { passive: false });
 
@@ -148,7 +148,7 @@ function startBrickBreaker() {
             ball.y = ball.radius;
         }
 
-        // Bottom Fall Check
+        // Bottom Pit Death Area
         if (ball.y + ball.radius >= canvas.height) {
             lives--;
             if (bbLives) bbLives.innerText = "❤️".repeat(lives) + "🖤".repeat(3 - lives);
@@ -158,48 +158,65 @@ function startBrickBreaker() {
                 return;
             } else {
                 ball.x = paddle.x + paddle.width / 2;
-                ball.y = paddle.y - ball.radius - 5;
+                ball.y = paddle.y - ball.radius - 10;
                 ball.vx = 3 * (Math.random() > 0.5 ? 1 : -1);
                 ball.vy = -4;
+                return;
             }
         }
 
-        // Paddle Collision Box Handler
+        // Paddle Collision Engine
         if (ball.y + ball.radius >= paddle.y && ball.y - ball.radius <= paddle.y + paddle.height) {
-            if (ball.x >= paddle.x && ball.x <= paddle.x + paddle.width) {
+            if (ball.x + ball.radius >= paddle.x && ball.x - ball.radius <= paddle.x + paddle.width) {
                 let hitPoint = (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
-                ball.vx = hitPoint * 4;
+                ball.vx = hitPoint * 4.5;
                 ball.vy = -Math.abs(ball.vy);
                 ball.y = paddle.y - ball.radius; 
             }
         }
 
-        // STRICT SOLID COLLISION MATRIX (Prevents Aar-Paar Tunneling)
+        // ULTRA-STRICT MATRIX HITBOX SCANNER
         let activeCount = 0;
-        bricks.forEach(b => {
-            if (!b.active) return;
+        for (let i = 0; i < bricks.length; i++) {
+            let b = bricks[i];
+            if (!b.active) continue;
             activeCount++;
 
-            // Check overlap
-            if (ball.x + ball.radius >= b.x && ball.x - ball.radius <= b.x + b.w &&
-                ball.y + ball.radius >= b.y && ball.y - ball.radius <= b.y + b.h) {
-                
+            // Closest edge algorithm detection
+            let closestX = Math.max(b.x, Math.min(ball.x, b.x + b.w));
+            let closestY = Math.max(b.y, Math.min(ball.y, b.y + b.h));
+
+            let distanceX = ball.x - closestX;
+            let distanceY = ball.y - closestY;
+            let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+
+            // If collision verified
+            if (distanceSquared < (ball.radius * ball.radius)) {
                 b.active = false;
-                createExplosion(ball.x, ball.y, b.color);
+                createExplosion(closestX, closestY, b.color);
                 score += 20;
                 if (bbScore) bbScore.innerText = String(score).padStart(4, '0');
-                
-                // Determine collision side to bounce correctly
-                let overlapX = Math.min(ball.x + ball.radius - b.x, b.x + b.w - (ball.x - ball.radius));
-                let overlapY = Math.min(ball.y + ball.radius - b.y, b.y + b.h - (ball.y - ball.radius));
 
-                if (overlapX < overlapY) {
-                    ball.vx = ball.x < b.x + b.w / 2 ? -Math.abs(ball.vx) : Math.abs(ball.vx); // Bounce horizontally
+                // Determine precise impact orientation vector deflection
+                let overlapX = ball.radius - Math.abs(distanceX);
+                let overlapY = ball.radius - Math.abs(distanceY);
+
+                if (closestX === b.x || closestX === b.x + b.w) {
+                    if (closestY === b.y || closestY === b.y + b.h) {
+                        // Corner collision mechanics
+                        ball.vx = distanceX > 0 ? Math.abs(ball.vx) : -Math.abs(ball.vx);
+                        ball.vy = distanceY > 0 ? Math.abs(ball.vy) : -Math.abs(ball.vy);
+                    } else {
+                        ball.vx = -ball.vx; // Side strike hit
+                    }
                 } else {
-                    ball.vy = ball.y < b.y + b.h / 2 ? -Math.abs(ball.vy) : Math.abs(ball.vy); // Bounce vertically
+                    ball.vy = -ball.vy; // Top or bottom face strike hit
                 }
+                
+                // Break after single hit reflection frame to prevent multiple bounces inside single tick
+                break; 
             }
-        });
+        }
 
         if (activeCount === 0) {
             handleGameOver(true);
@@ -215,7 +232,7 @@ function startBrickBreaker() {
     function drawRenderPipeline() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Bricks
+        // Render Bricks
         bricks.forEach(b => {
             if (!b.active) return;
             ctx.save();
@@ -225,24 +242,25 @@ function startBrickBreaker() {
             ctx.restore();
         });
 
-        // Paddle
+        // Render Paddle
         ctx.save();
         ctx.shadowBlur = 10; ctx.shadowColor = paddle.color;
         ctx.fillStyle = paddle.color;
         ctx.beginPath(); ctx.roundRect(paddle.x, paddle.y, paddle.width, paddle.height, 6); ctx.fill();
         ctx.restore();
 
-        // Ball
+        // Render Ball Core Orb
         ctx.save();
         ctx.shadowBlur = 8; ctx.shadowColor = '#FFFFFF';
         ctx.fillStyle = ball.color;
         ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
 
-        // Particles
+        // Render Particles
         particles.forEach(p => {
             ctx.save(); ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color;
-            ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
         });
     }
 
