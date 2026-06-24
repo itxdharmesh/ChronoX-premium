@@ -225,3 +225,70 @@ function utilHexToRgb(hex) {
 
 // Global Legacy Alias protection anchor
 window.openGames = openChronoxGamesHub;
+
+// =================================================================
+// CHRONOX NEURAL REWARD ENGINE (FIREBASE SYNC)
+// =================================================================
+
+/**
+ * Handles real-time XP accumulation based on match results.
+ * @param {string} result - 'win', 'draw', or 'lose'
+ * @param {string} gameId - Unique identifier of the simulation
+ */
+function rewardChronoxXP(result, gameId) {
+    let xpEarned = 0;
+
+    // Strict Rule Matrix Setup
+    if (result === 'win') xpEarned = 25;
+    else if (result === 'draw') xpEarned = 10;
+    else if (result === 'lose') xpEarned = 0;
+
+    console.log(`[Reward Engine] Game: ${gameId} | Result: ${result} | XP Earned: ${xpEarned}`);
+
+    // If score is 0, no need to update database node to save bandwidth
+    if (xpEarned <= 0) {
+        if (typeof showToast === 'function') showToast('Simulation terminated. 0 XP added.');
+        return;
+    }
+
+    // Check if Firebase Auth and Firestore are active on client device
+    if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
+        const user = firebase.auth().currentUser;
+        
+        if (user) {
+            const userRef = firebase.firestore().collection('users').doc(user.uid);
+
+            // Atomic Increment Pattern ensuring zero duplication or loss during connection drops
+            userRef.update({
+                xp: firebase.firestore.FieldValue.increment(xpEarned)
+            })
+            .then(() => {
+                console.log(`[Database Sync] Successfully pushed +${xpEarned} XP to user profile.`);
+                if (typeof showToast === 'function') {
+                    showToast(`⚡ +${xpEarned} XP Secured in Matrix!`);
+                }
+                
+                // Optional: Re-render profile HUD if active on the layout screen right now
+                if (typeof updateProfileHUD === 'function') updateProfileHUD();
+            })
+            .catch((error) => {
+                console.error("[Database Sync Error] Failed to update XP node: ", error);
+            });
+        } else {
+            console.warn("[Reward Engine] No active firebase user session detected. XP cached locally.");
+            fallbackLocalXPAccumulator(xpEarned);
+        }
+    } else {
+        // Fallback for offline sandbox mode testing environment
+        fallbackLocalXPAccumulator(xpEarned);
+    }
+}
+
+function fallbackLocalXPAccumulator(amount) {
+    let currentLocalXP = parseInt(localStorage.getItem('chronox_sandbox_xp')) || 0;
+    currentLocalXP += amount;
+    localStorage.setItem('chronox_sandbox_xp', currentLocalXP);
+    if (typeof showToast === 'function') {
+        showToast(`⚡ Offline Mode: +${amount} XP Cached locally (${currentLocalXP} Total)`);
+    }
+}
