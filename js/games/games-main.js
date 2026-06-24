@@ -105,6 +105,7 @@ function openChronoxGamesHub() {
                         ${injectCardEngine("🧱","Brick Breaker","Reflective Vector Shield","+30 XP","#FF6B81","brickbreaker")}
                         ${injectCardEngine("🏓","Pong","High-Voltage Laser Pong Matrix","+35 XP","#00D4FF","pong")}
                         ${injectCardEngine("🐦","Flappy Bird","Plasma Thrust Grav Infiltrator","+20 XP","#FF6B81","flappy")}
+                        ${injectCardEngine("🐍","Snake","Tron Neon Light Trail Snake","+20 XP","#2ED573","snake")}
                     </div>
                 </div>
 
@@ -112,7 +113,9 @@ function openChronoxGamesHub() {
                     <h2 style="font-size: 12px; font-weight: 800; letter-spacing: 2px; color: #2ED573; margin-bottom: 12px; text-transform: uppercase; border-left: 3px solid #2ED573; padding-left: 8px;">🧠 COGNITIVE MATRIX</h2>
                     <div class="game-grid-cluster" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;">
                         ${injectCardEngine("❌","Tic Tac Toe","Neural Minimax AI Overlord","+25 XP","#D4AF37","tictactoe")}
+                        ${injectCardEngine("🌈","Color Switch","Spectrum Chromatic Match","+25 XP","#FFA502","colorswitch")}
                         ${injectCardEngine("🧠","Memory Match","Synapse Grid Recall","+20 XP","#2ED573","memorymatch")}
+                        ${injectCardEngine("🏹","Archery Master","Kinetic Arrow Projectile","+35 XP","#10B981","archerymaster")}
                         ${injectCardEngine("⚡","Reaction Master","Reflex Latency Trigger","+20 XP","#FFD700","reactionmaster")}
                     </div>
                 </div>
@@ -130,7 +133,7 @@ function openChronoxGamesHub() {
     renderRecentGamesQueue();
 }
 
-// Global Meta Register Database (Cleaned)
+// Global Meta Register Database
 const GAME_DATABASE_RECORDS = {
     cyberninja: { icon: "🥷", title: "Cyber Ninja", desc: "Endless Runner Run Matrix", xp: "+40 XP", color: "#8B5CF6" },
     spaceshooter: { icon: "🚀", title: "Space Shooter", desc: "Quantum Space Destroyer", xp: "+50 XP", color: "#00D4FF" },
@@ -139,8 +142,11 @@ const GAME_DATABASE_RECORDS = {
     brickbreaker: { icon: "🧱", title: "Brick Breaker", desc: "Reflective Vector Shield", xp: "+30 XP", color: "#FF6B81" },
     pong: { icon: "🏓", title: "Pong", desc: "High-Voltage Laser Pong Matrix", xp: "+35 XP", color: "#00D4FF" },
     flappy: { icon: "🐦", title: "Flappy Bird", desc: "Plasma Thrust Grav Infiltrator", xp: "+20 XP", color: "#FF6B81" },
+    snake: { icon: "🐍", title: "Snake", desc: "Tron Neon Light Trail Snake", xp: "+20 XP", color: "#2ED573" },
     tictactoe: { icon: "❌", title: "Tic Tac Toe", desc: "Neural Minimax AI Overlord", xp: "+25 XP", color: "#D4AF37" },
+    colorswitch: { icon: "🌈", title: "Color Switch", desc: "Spectrum Chromatic Match", xp: "+25 XP", color: "#FFA502" },
     memorymatch: { icon: "🧠", title: "Memory Match", desc: "Synapse Grid Recall", xp: "+20 XP", color: "#2ED573" },
+    archerymaster: { icon: "🏹", title: "Archery Master", desc: "Kinetic Arrow Projectile", xp: "+35 XP", color: "#10B981" },
     reactionmaster: { icon: "⚡", title: "Reaction Master", desc: "Reflex Latency Trigger", xp: "+20 XP", color: "#FFD700" }
 };
 
@@ -165,8 +171,6 @@ function renderRecentGamesQueue() {
     if (!container) return;
 
     let queue = JSON.parse(localStorage.getItem('recentlyPlayedGames')) || [];
-    queue = queue.filter(id => GAME_DATABASE_RECORDS[id]); // Filter out removed games
-    
     if (queue.length === 0) {
         recentSection.style.display = 'none';
         return;
@@ -210,13 +214,17 @@ function safeStart(name) {
 
         if (name === 'tictactoe' && typeof startTicTacToe === 'function') startTicTacToe();
         else if (name === 'tictactoe' && typeof startTTT === 'function') startTTT();
+        else if (name === 'snake' && typeof startSnakeGame === 'function') startSnakeGame();
+        else if (name === 'snake' && typeof startSnake === 'function') startSnake();
         else if (name === 'pong' && typeof startPongGame === 'function') startPongGame();
         else if (name === 'pong' && typeof startPong === 'function') startPong();
         else if (name === 'flappy' && typeof startFlappyBird === 'function') startFlappyBird();
         else if (name === 'flappy' && typeof startFlappy === 'function') startFlappy();
         else if (name === 'cyberninja' && typeof startCyberNinja === 'function') startCyberNinja();
         else if (name === 'aimtrainer' && typeof startAimTrainer === 'function') startAimTrainer();
+        else if (name === 'archerymaster' && typeof startArcheryMaster === 'function') startArcheryMaster();
         else if (name === 'brickbreaker' && typeof startBrickBreaker === 'function') startBrickBreaker();
+        else if (name === 'colorswitch' && typeof startColorSwitch === 'function') startColorSwitch();
         else if (name === 'spaceshooter' && typeof startSpaceShooter === 'function') startSpaceShooter();
         else if (name === 'memorymatch' && typeof startMemoryMatch === 'function') startMemoryMatch();
         else if (name === 'reactionmaster' && typeof startReactionMaster === 'function') startReactionMaster();
@@ -229,6 +237,9 @@ function safeStart(name) {
     }
 }
 
+// =================================================================
+// RUNTIME INTERCEPTOR STATE MACHINE FOR CENTRAL XP
+// =================================================================
 function interceptAndHookGameOver(gameId) {
     setTimeout(() => {
         if (typeof window.endGame === 'function' && !window.endGame.hooked) {
@@ -240,6 +251,17 @@ function interceptAndHookGameOver(gameId) {
                 originalEndGame.apply(this, arguments);
             };
             window.endGame.hooked = true;
+        }
+
+        if (typeof window.handleGameOver === 'function' && !window.handleGameOver.hooked) {
+            let originalHandleGameOver = window.handleGameOver;
+            window.handleGameOver = function(status) {
+                if (status === true || status === 'win') rewardChronoxXP('win', gameId);
+                else if (status === 'draw') rewardChronoxXP('draw', gameId);
+                else rewardChronoxXP('lose', gameId);
+                originalHandleGameOver.apply(this, arguments);
+            };
+            window.handleGameOver.hooked = true;
         }
     }, 400);
 }
@@ -254,20 +276,19 @@ function utilHexToRgb(hex) {
 window.openGames = openChronoxGamesHub;
 
 // =================================================================
-// REALTIME MULTIPLAYER LOBBY SUB-ROUTER
+// REALTIME MULTIPLAYER LOBBY SUB-ROUTER (FIREBASE RTDB NODE)
 // =================================================================
 let currentRoomId = null;
 let currentMultiplayerGame = null;
-let roomListenerRef = null;
 
 function createMultiplayerRoom(gameId, maxPlayers) {
     if (typeof firebase === 'undefined') {
-        if (typeof showToast === 'function') showToast('❌ Firebase pipeline offline!');
+        if (typeof showToast === 'function') showToast('❌ Firebase data pipeline offline!');
         return;
     }
     const user = firebase.auth().currentUser;
     if (!user) {
-        if (typeof showToast === 'function') showToast('🔑 Auth session not found.');
+        if (typeof showToast === 'function') showToast('🔑 Auth system session not found.');
         return;
     }
 
@@ -283,7 +304,7 @@ function createMultiplayerRoom(gameId, maxPlayers) {
         hostId: user.uid,
         players: {
             [user.uid]: {
-                name: user.displayName || "Operator One",
+                name: user.displayName || "Player One",
                 icon: "🎮",
                 joinedAt: Date.now()
             }
@@ -306,19 +327,19 @@ function joinMultiplayerRoom(roomId) {
     const roomRef = firebase.database().ref(`rooms/${roomId}`);
     roomRef.once('value').then((snapshot) => {
         if (!snapshot.exists()) {
-            if (typeof showToast === 'function') showToast('❌ Invalid Room Code.');
+            if (typeof showToast === 'function') showToast('❌ Room code matrix invalid.');
             return;
         }
         const room = snapshot.val();
         const playerKeys = Object.keys(room.players || {});
 
         if (playerKeys.length >= room.maxPlayers) {
-            if (typeof showToast === 'function') showToast('🚫 Room Full!');
+            if (typeof showToast === 'function') showToast('🚫 Sector Full!');
             return;
         }
 
         roomRef.child(`players/${user.uid}`).set({
-            name: user.displayName || "Operator Two",
+            name: user.displayName || "Player Two",
             icon: "⚡",
             joinedAt: Date.now()
         }).then(() => {
@@ -331,20 +352,14 @@ function joinMultiplayerRoom(roomId) {
 }
 
 function listenToRoomUpdates(roomId) {
-    if (roomListenerRef) roomListenerRef.off(); // Clean active listener
-    roomListenerRef = firebase.database().ref(`rooms/${roomId}`);
-    
-    roomListenerRef.on('value', (snapshot) => {
+    firebase.database().ref(`rooms/${roomId}`).on('value', (snapshot) => {
         if (!snapshot.exists()) return;
         const room = snapshot.val();
-        
-        // Prevent UI re-renders if game is already up and running
-        if (room.status === 'active') {
-            roomListenerRef.off(); // Turn off lobby updates listener
-            bootMultiplayerGameEngine(room.gameId, roomId);
-            return;
-        }
         updateLobbyPlayersList(room.players, room.maxPlayers);
+
+        if (room.status === 'active') {
+            bootMultiplayerGameEngine(room.gameId, roomId);
+        }
     });
 }
 
@@ -359,7 +374,7 @@ function renderMultiplayerLobbyUI(roomId, gameId, maxPlayers, isHost) {
                 <h2 style="margin:10px 0; font-size:26px; font-weight:900; text-transform:uppercase;">${gameId} MATRIX</h2>
                 
                 <div style="background:rgba(0,0,0,0.4); border:1px dashed rgba(255,255,255,0.1); padding:15px; border-radius:16px; margin:20px 0;">
-                    <span style="font-size:10px; color:rgba(255,255,255,0.4); display:block; font-weight:700;">SHARE ROOM CODE</span>
+                    <span style="font-size:10px; color:rgba(255,255,255,0.4); display:block; font-weight:700;">SHARE ROOM SIGNAL</span>
                     <span style="font-size:36px; font-weight:900; color:#00D4FF; letter-spacing:4px; text-shadow:0 0 15px rgba(0,212,255,0.4); font-family:monospace;">${roomId}</span>
                 </div>
 
@@ -391,7 +406,7 @@ function updateLobbyPlayersList(players, maxPlayers) {
                 <div style="display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:10px 15px; border-radius:12px;">
                     <div style="font-size:20px;">${p.icon || '⚡'}</div>
                     <div style="font-weight:700; font-size:13px; color:#fff; flex:1;">${p.name}</div>
-                    <span style="color:#2ed573; font-size:9px; font-weight:800; background:rgba(46,213,115,0.1); padding:3px 8px; border-radius:6px;">READY</span>
+                    <span style="color:#2ed573; font-size:9px; font-weight:800; background:rgba(46,213,115,0.1); padding:3px 8px; border-radius:6px;">SYNCED</span>
                 </div>
             `;
         } else {
@@ -410,43 +425,22 @@ function triggerGameStart(roomId) {
     firebase.database().ref(`rooms/${roomId}`).update({ status: 'active' });
 }
 
-// FIX: Clean clear area completely before injection to fix routing bug 
-// Apne games-main.js ke bootMultiplayerGameEngine mein ye add kar:
 function bootMultiplayerGameEngine(gameId, roomId) {
-    const c = document.getElementById('contentArea');
-    c.innerHTML = '<div id="gameCanvas" style="width:100%; height:100vh;"></div>';
-    
-    // Check agar roomId 'BOT' hai toh Bot mode chalao
-    if (roomId === 'BOT') {
-        if (gameId === 'chess') startChessVsBot();
-        else if (gameId === 'uno') startUnoVsBot();
-        else if (gameId === 'ludo') startLudoVsBot();
-    } else {
-        // Multi-player logic
-        if (gameId === 'chess') startMultiplayerChess(roomId);
-        else if (gameId === 'ludo') startMultiplayerLudo(roomId);
-        else if (gameId === 'uno') startMultiplayerUno(roomId);
-    }
-}
-
-    c.innerHTML = ''; // Wipe UI clean of lobby interface remnants
-
     if (gameId === 'chess' && typeof startMultiplayerChess === 'function') startMultiplayerChess(roomId);
-    else if (gameId === 'ludo' && typeof startMultiplayerLudo === 'function') startMultiplayerLudo(roomId);
-    else if (gameId === 'uno' && typeof startMultiplayerUno === 'function') startMultiplayerUno(roomId);
-    else {
-        if (typeof showToast === 'function') showToast('❌ Target game canvas module mismatch.');
-    }
+    if (gameId === 'ludo' && typeof startMultiplayerLudo === 'function') startMultiplayerLudo(roomId);
+    if (gameId === 'uno' && typeof startMultiplayerUno === 'function') startMultiplayerUno(roomId);
 }
 
 // =================================================================
-// CHRONOX NEURAL REWARD ENGINE
+// CHRONOX NEURAL REWARD ENGINE (FIREBASE SYNC)
 // =================================================================
 function rewardChronoxXP(result, gameId) {
     let xpEarned = 0;
     if (result === 'win') xpEarned = 25;
     else if (result === 'draw') xpEarned = 10;
+    else if (result === 'lose') xpEarned = 0;
 
+    console.log(`[Reward Engine] Game: ${gameId} | Result: ${result} | XP Earned: ${xpEarned}`);
     if (xpEarned <= 0) return;
 
     if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
@@ -455,7 +449,8 @@ function rewardChronoxXP(result, gameId) {
             const userRef = firebase.firestore().collection('users').doc(user.uid);
             userRef.update({ xp: firebase.firestore.FieldValue.increment(xpEarned) })
             .then(() => {
-                if (typeof showToast === 'function') showToast(`⚡ +${xpEarned} XP Secured!`);
+                if (typeof showToast === 'function') showToast(`⚡ +${xpEarned} XP Secured in Matrix!`);
+                if (typeof updateProfileHUD === 'function') updateProfileHUD();
             }).catch(e => console.error(e));
         } else { fallbackLocalXPAccumulator(xpEarned); }
     } else { fallbackLocalXPAccumulator(xpEarned); }
@@ -465,4 +460,5 @@ function fallbackLocalXPAccumulator(amount) {
     let currentLocalXP = parseInt(localStorage.getItem('chronox_sandbox_xp')) || 0;
     currentLocalXP += amount;
     localStorage.setItem('chronox_sandbox_xp', currentLocalXP);
+    if (typeof showToast === 'function') showToast(`⚡ Offline Mode: +${amount} XP Cached!`);
 }
