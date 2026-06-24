@@ -410,11 +410,24 @@ function triggerGameStart(roomId) {
     firebase.database().ref(`rooms/${roomId}`).update({ status: 'active' });
 }
 
-// FIX: Clean clear area completely before injection to fix routing bug
+// FIX: Clean clear area completely before injection to fix routing bug 
+// Apne games-main.js ke bootMultiplayerGameEngine mein ye add kar:
 function bootMultiplayerGameEngine(gameId, roomId) {
-    console.log(`[Router Activation] Instantiating module: ${gameId} @ node: ${roomId}`);
-    var c = document.getElementById('contentArea');
-    if (!c) return;
+    const c = document.getElementById('contentArea');
+    c.innerHTML = '<div id="gameCanvas" style="width:100%; height:100vh;"></div>';
+    
+    // Check agar roomId 'BOT' hai toh Bot mode chalao
+    if (roomId === 'BOT') {
+        if (gameId === 'chess') startChessVsBot();
+        else if (gameId === 'uno') startUnoVsBot();
+        else if (gameId === 'ludo') startLudoVsBot();
+    } else {
+        // Multi-player logic
+        if (gameId === 'chess') startMultiplayerChess(roomId);
+        else if (gameId === 'ludo') startMultiplayerLudo(roomId);
+        else if (gameId === 'uno') startMultiplayerUno(roomId);
+    }
+}
 
     c.innerHTML = ''; // Wipe UI clean of lobby interface remnants
 
