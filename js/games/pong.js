@@ -1,240 +1,273 @@
-var pongData, pongAnimation, pongActive = false, pongParticles = [];
+// js/games/pong.js
 
-function startPong() {
-    pongActive = true;
-    pongParticles = [];
-    
+function startPongGame() {
     var c = document.getElementById('contentArea');
     if (!c) return;
-    
-    c.innerHTML = 
-        '<div style="text-align:center">' +
-            '<h2 style="color:#D4AF37;margin-bottom:2px;font-size:24px">🏓 Pong</h2>' +
-            '<div style="display:flex;justify-content:center;gap:30px;margin:8px 0">' +
-                '<div style="text-align:center"><span style="font-size:10px;color:rgba(255,255,255,0.5)">YOU</span><br><b style="color:#D4AF37;font-size:22px" id="pScore">0</b></div>' +
-                '<div style="text-align:center"><span style="font-size:10px;color:rgba(255,255,255,0.5)">AI</span><br><b style="color:#FF4757;font-size:22px" id="aScore">0</b></div>' +
-            '</div>' +
-            '<canvas id="pongCanvas" width="360" height="420" style="background:radial-gradient(ellipse at center,#1a1f4e 0%,#0A0E27 100%);border:2px solid rgba(212,175,55,0.3);border-radius:20px;display:block;margin:10px auto;max-width:95%;box-shadow:0 0 40px rgba(0,0,0,0.5)"></canvas>' +
-            '<p style="color:rgba(255,255,255,0.4);font-size:10px;margin:5px 0">Move mouse or finger to control paddle</p>' +
-            '<div style="display:flex;gap:8px;margin-top:8px">' +
-                '<button class="btn-out" onclick="startPong()" style="flex:1">🔄 New Game</button>' +
-                '<button class="btn-out" onclick="navigate(\'games\')" style="flex:1">← Games Hub</button>' +
-            '</div>' +
-        '</div>';
-    
-    setTimeout(function() { initPong(); }, 300);
-}
 
-function initPong() {
-    var canvas = document.getElementById('pongCanvas');
-    if (!canvas) return;
-    var ctx = canvas.getContext('2d');
+    // Premium Synthwave Dashboard & Glassmorphism Canvas Layout
+    c.innerHTML = `
+        <div id="pongContainer" style="position:relative; width:100%; height:100%; min-height: calc(100vh - 160px); overflow:hidden; background: radial-gradient(circle at center, #0b0726 0%, #02010a 100%); font-family: 'Poppins', sans-serif; user-select:none; -webkit-user-select:none;">
+            
+            <div style="position:absolute; top:20px; left:0; width:100%; display:flex; justify-content:center; align-items:center; gap:60px; z-index:10; pointer-events:none;">
+                <div style="text-align:center;">
+                    <span style="font-size:9px; color:#00f5d4; display:block; letter-spacing:2px; font-weight:700;">USER CORE</span>
+                    <span id="playerScore" style="color:#ffffff; font-weight:900; font-size:32px; text-shadow: 0 0 15px #00f5d4;">0</span>
+                </div>
+                <div style="font-size:20px; color:rgba(255,255,255,0.2); font-weight:800; margin-top:15px;">VS</div>
+                <div style="text-align:center;">
+                    <span style="font-size:9px; color:#ff006e; display:block; letter-spacing:2px; font-weight:700;">AI MATRIX</span>
+                    <span id="aiScore" style="color:#ffffff; font-weight:900; font-size:32px; text-shadow: 0 0 15px #ff006e;">0</span>
+                </div>
+            </div>
+
+            <canvas id="pongCanvas" style="display:block; margin: 0 auto; background: rgba(6, 3, 20, 0.5); box-shadow: 0 0 40px rgba(0,0,0,0.6);"></canvas>
+            
+            <button onclick="exitPongGame()" style="position:absolute; bottom:20px; right:20px; background:rgba(255, 0, 110, 0.15); border:1px solid rgba(255, 0, 110, 0.4); color:#ff006e; padding:8px 18px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; z-index:10; backdrop-filter:blur(5px); letter-spacing:1px; transition: 0.3s;">TERMINATE CORE</button>
+
+            <div id="pongScreen" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background: linear-gradient(135deg, rgba(16, 9, 43, 0.92) 0%, rgba(4, 2, 12, 0.98) 100%); border:2px solid #ff006e; backdrop-filter:blur(25px); padding:45px 35px; border-radius:24px; text-align:center; width:88%; max-width:350px; box-shadow:0 25px 60px rgba(0,0,0,0.85); z-index:20;">
+                <div style="font-size:42px; margin-bottom:15px; animation: glitchFloat 2.5s infinite alternate;">🏓</div>
+                <h1 style="font-size:26px; font-weight:900; color:#ffffff; letter-spacing:4px; margin-bottom:8px; text-transform:uppercase; text-shadow: 0 0 12px #ff006e;">CYBER PONG</h1>
+                <p id="pongSub" style="font-size:11px; color:rgba(255,255,255,0.55); margin-bottom:35px; letter-spacing:1px; line-height:1.6;">USE MOUSE OR TOUCH TO MOVE YOUR BLUE NEON PADDLE</p>
+                <button id="pongBtn" style="background:linear-gradient(135deg, #ff006e, #00f5d4); border:none; padding:14px 35px; font-size:13px; font-weight:900; color:#03020a; border-radius:14px; cursor:pointer; text-transform:uppercase; letter-spacing:2px; width:100%; box-shadow:0 6px 20px rgba(255,0,110,0.35);">BOOT INTERFACE</button>
+            </div>
+        </div>
+        <style>@keyframes glitchFloat{from{transform:translateY(0px);}to{transform:translateY(-8px);}}</style>
+    `;
+
+    const canvas = document.getElementById('pongCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('pongContainer');
+    const pongScreen = document.getElementById('pongScreen');
+    const pongSub = document.getElementById('pongSub');
+    const pongBtn = document.getElementById('pongBtn');
+    const pScoreHUD = document.getElementById('playerScore');
+    const aScoreHUD = document.getElementById('aiScore');
+
+    // Canvas Auto Resizing Matrix
+    const cWidth = container.clientWidth;
+    const cHeight = container.clientHeight || (window.innerHeight - 160);
+    canvas.width = Math.min(cWidth - 30, 650);
+    canvas.height = Math.min(cHeight - 120, 400);
+
+    // Gameplay Attributes Configurations
+    const paddleWidth = 12;
+    const paddleHeight = 75;
     
-    var ball = {x: canvas.width/2, y: canvas.height/2, dx: 5, dy: 5, r: 10};
-    var player = {x: 15, y: canvas.height/2 - 55, w: 12, h: 110, score: 0};
-    var ai = {x: canvas.width - 27, y: canvas.height/2 - 55, w: 12, h: 110, score: 0};
-    var trail = [];
+    let pScore = 0;
+    let aScore = 0;
+    let gameRunning = false;
+    let animationId = null;
+    let particles = [];
+
+    const player = { x: 15, y: canvas.height / 2 - paddleHeight / 2, score: 0 };
+    const ai = { x: canvas.width - 15 - paddleWidth, y: canvas.height / 2 - paddleHeight / 2, score: 0 };
     
-    if (pongAnimation) cancelAnimationFrame(pongAnimation);
-    
-    function draw() {
-        if (!pongActive) return;
-        
-        // BG
-        ctx.fillStyle = '#0A0E27';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Center line
-        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-        ctx.setLineDash([8, 15]);
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(canvas.width/2, 0);
-        ctx.lineTo(canvas.width/2, canvas.height);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.lineWidth = 1;
-        
-        // Center circle
-        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-        ctx.beginPath();
-        ctx.arc(canvas.width/2, canvas.height/2, 60, 0, Math.PI*2);
-        ctx.stroke();
-        
-        // Ball trail
-        trail.push({x: ball.x, y: ball.y, life: 10});
-        trail = trail.filter(function(t) {
-            t.life--;
-            ctx.globalAlpha = t.life / 10;
-            ctx.fillStyle = '#00D4FF';
-            ctx.beginPath();
-            ctx.arc(t.x, t.y, ball.r * (t.life/10), 0, Math.PI*2);
-            ctx.fill();
-            return t.life > 0;
-        });
-        ctx.globalAlpha = 1;
-        
-        // Move ball
-        ball.x += ball.dx;
-        ball.y += ball.dy;
-        
-        // Wall bounce
-        if (ball.y <= ball.r || ball.y >= canvas.height - ball.r) {
-            ball.dy *= -1;
-            spawnParticles(ball.x, ball.y, '#fff', 6);
-        }
-        
-        // Player hit
-        if (ball.x - ball.r <= player.x + player.w && ball.y >= player.y && ball.y <= player.y + player.h) {
-            ball.dx = Math.abs(ball.dx) + 0.3;
-            ball.x = player.x + player.w + ball.r;
-            spawnParticles(ball.x, ball.y, '#D4AF37', 10);
-        }
-        
-        // AI hit
-        if (ball.x + ball.r >= ai.x && ball.y >= ai.y && ball.y <= ai.y + ai.h) {
-            ball.dx = -Math.abs(ball.dx) - 0.3;
-            ball.x = ai.x - ball.r;
-            spawnParticles(ball.x, ball.y, '#FF4757', 10);
-        }
-        
-        // Score
-        if (ball.x < 0) { ai.score++; document.getElementById('aScore').textContent = ai.score; resetBall(ball, canvas); }
-        if (ball.x > canvas.width) { player.score++; document.getElementById('pScore').textContent = player.score; resetBall(ball, canvas); }
-        
-        // Game over
-        if (player.score >= 7) {
-            pongActive = false;
-            drawGameOver(ctx, canvas, true, player.score, ai.score);
-            if (typeof addXP === 'function') addXP(35);
-            return;
-        }
-        if (ai.score >= 7) {
-            pongActive = false;
-            drawGameOver(ctx, canvas, false, player.score, ai.score);
-            return;
-        }
-        
-        // AI move
-        var aiCenter = ai.y + ai.h/2;
-        if (ball.x > canvas.width/2) {
-            ai.y += (ball.y - aiCenter) * 0.12;
-        } else {
-            ai.y += (canvas.height/2 - aiCenter) * 0.03;
-        }
-        if (ai.y < 0) ai.y = 0;
-        if (ai.y + ai.h > canvas.height) ai.y = canvas.height - ai.h;
-        
-        // DRAW PADDLES
-        drawPaddle(ctx, player.x, player.y, player.w, player.h, '#D4AF37', '#F5E6A3');
-        drawPaddle(ctx, ai.x, ai.y, ai.w, ai.h, '#FF4757', '#FF6B81');
-        
-        // DRAW BALL
-        var ballGlow = ctx.createRadialGradient(ball.x, ball.y, 0, ball.x, ball.y, ball.r*3);
-        ballGlow.addColorStop(0, 'rgba(0,212,255,0.8)');
-        ballGlow.addColorStop(1, 'rgba(0,212,255,0)');
-        ctx.fillStyle = ballGlow;
-        ctx.beginPath();
-        ctx.arc(ball.x, ball.y, ball.r*3, 0, Math.PI*2);
-        ctx.fill();
-        
-        var ballGrad = ctx.createRadialGradient(ball.x-2, ball.y-2, 0, ball.x, ball.y, ball.r);
-        ballGrad.addColorStop(0, '#fff');
-        ballGrad.addColorStop(1, '#00D4FF');
-        ctx.fillStyle = ballGrad;
-        ctx.beginPath();
-        ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2);
-        ctx.fill();
-        
-        // Particles
-        pongParticles = pongParticles.filter(function(p) {
-            p.x += p.vx; p.y += p.vy; p.life--;
-            ctx.globalAlpha = p.life / 15;
-            ctx.fillStyle = p.color;
-            ctx.shadowColor = p.color;
-            ctx.shadowBlur = 4;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.size * (p.life/15), 0, Math.PI*2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            return p.life > 0;
-        });
-        ctx.globalAlpha = 1;
-        
-        pongAnimation = requestAnimationFrame(draw);
+    const ball = {
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        radius: 7,
+        speed: 5,
+        dx: 5,
+        dy: 3
+    };
+
+    // Tracker capture handler tracking user mouse movement vectors
+    function trackMouseMove(e) {
+        let rect = canvas.getBoundingClientRect();
+        let rootY = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+        // Anchor tracking center bound target mechanics
+        player.y = Math.max(10, Math.min(canvas.height - paddleHeight - 10, rootY - paddleHeight / 2));
     }
-    
-    function resetBall(b, c) { b.x = c.width/2; b.y = c.height/2; b.dx = (Math.random() > 0.5 ? 5 : -5); b.dy = (Math.random() - 0.5) * 6; }
-    
-    function drawPaddle(ctx, x, y, w, h, c1, c2) {
-        var grad = ctx.createLinearGradient(x, y, x + w, y + h);
-        grad.addColorStop(0, c1);
-        grad.addColorStop(0.5, c2);
-        grad.addColorStop(1, c1);
-        ctx.fillStyle = grad;
-        ctx.shadowColor = c1;
-        ctx.shadowBlur = 18;
-        ctx.beginPath();
-        var r = 6;
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + w - r, y);
-        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-        ctx.lineTo(x + w, y + h - r);
-        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        ctx.lineTo(x + r, y + h);
-        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-        ctx.lineTo(x, y + r);
-        ctx.quadraticCurveTo(x, y, x + r, y);
-        ctx.closePath();
-        ctx.fill();
-        ctx.shadowBlur = 0;
-    }
-    
-    function drawGameOver(ctx, canvas, win, ps, as) {
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = win ? '#2ED573' : '#FF4757';
-        ctx.font = 'bold 26px Poppins';
-        ctx.textAlign = 'center';
-        ctx.fillText(win ? '🎉 You Win!' : '😞 AI Wins!', canvas.width/2, canvas.height/2 - 15);
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 18px Poppins';
-        ctx.fillText(ps + ' - ' + as, canvas.width/2, canvas.height/2 + 25);
-        if (win) {
-            ctx.fillStyle = '#FFD700';
-            ctx.font = 'bold 14px Poppins';
-            ctx.fillText('+35 XP', canvas.width/2, canvas.height/2 + 50);
-        }
-    }
-    
-    function spawnParticles(x, y, color, count) {
-        for (var i = 0; i < count; i++) {
-            pongParticles.push({
-                x: x, y: y,
-                vx: (Math.random() - 0.5) * 6,
-                vy: (Math.random() - 0.5) * 6,
-                life: 15,
-                size: Math.random() * 4 + 2,
-                color: color
+
+    container.addEventListener('mousemove', trackMouseMove);
+    container.addEventListener('touchmove', trackMouseMove, { passive: true });
+
+    function createExplosionSparks(x, y, color) {
+        for (let i = 0; i < 10; i++) {
+            let angle = Math.random() * Math.PI * 2;
+            let spd = Math.random() * 4 + 1;
+            particles.push({
+                x, y,
+                radius: Math.random() * 2 + 1,
+                dx: Math.cos(angle) * spd,
+                dy: Math.sin(angle) * spd,
+                alpha: 1,
+                color
             });
         }
     }
-    
-    draw();
-    
-    // CONTROLS
-    canvas.onmousemove = function(e) {
-        var rect = canvas.getBoundingClientRect();
-        player.y = e.clientY - rect.top - player.h/2;
-        if (player.y < 0) player.y = 0;
-        if (player.y + player.h > canvas.height) player.y = canvas.height - player.h;
+
+    function resetBallVector() {
+        ball.x = canvas.width / 2;
+        ball.y = canvas.height / 2;
+        ball.speed = 5;
+        ball.dx = -ball.dx; // Serve to the scorer
+        ball.dy = (Math.random() - 0.5) * 5;
+    }
+
+    function updateLogic() {
+        // Ball Translation Motion Updates
+        ball.x += ball.dx;
+        ball.y += ball.dy;
+
+        // Smart Adaptive AI Follow Bot Logic Matrix
+        let aiCenter = ai.y + paddleHeight / 2;
+        let trackingInterpolation = 0.085; // Skill tuning ratio mapping acceleration curves
+        if (aiCenter < ball.y - 10) {
+            ai.y += Math.min(4.5, (ball.y - aiCenter) * trackingInterpolation);
+        } else if (aiCenter > ball.y + 10) {
+            ai.y -= Math.min(4.5, (aiCenter - ball.y) * trackingInterpolation);
+        }
+        ai.y = Math.max(10, Math.min(canvas.height - paddleHeight - 10, ai.y));
+
+        // Upper & Lower Screen Edge Inversions
+        if (ball.y - ball.radius < 0) {
+            ball.y = ball.radius; ball.dy = -ball.dy;
+            createExplosionSparks(ball.x, ball.y, '#ffffff');
+        }
+        if (ball.y + ball.radius > canvas.height) {
+            ball.y = canvas.height - ball.radius; ball.dy = -ball.dy;
+            createExplosionSparks(ball.x, ball.y, '#ffffff');
+        }
+
+        // Active Collisions Check - Left Side Player Paddle Box
+        if (ball.dx < 0 && ball.x - ball.radius < player.x + paddleWidth && ball.x + ball.radius > player.x) {
+            if (ball.y > player.y && ball.y < player.y + paddleHeight) {
+                let hitAngle = (ball.y - (player.y + paddleHeight/2)) / (paddleHeight/2);
+                ball.speed = Math.min(12, ball.speed + 0.4);
+                ball.dx = Math.cos(hitAngle * 0.8) * ball.speed;
+                ball.dy = Math.sin(hitAngle * 0.8) * ball.speed;
+                createExplosionSparks(ball.x, ball.y, '#00f5d4');
+            }
+        }
+
+        // Active Collisions Check - Right Side AI Paddle Box
+        if (ball.dx > 0 && ball.x + ball.radius > ai.x && ball.x - ball.radius < ai.x + paddleWidth) {
+            if (ball.y > ai.y && ball.y < ai.y + paddleHeight) {
+                let hitAngle = (ball.y - (ai.y + paddleHeight/2)) / (paddleHeight/2);
+                ball.speed = Math.min(12, ball.speed + 0.4);
+                ball.dx = -Math.cos(hitAngle * 0.8) * ball.speed;
+                ball.dy = Math.sin(hitAngle * 0.8) * ball.speed;
+                createExplosionSparks(ball.x, ball.y, '#ff006e');
+            }
+        }
+
+        // Processing Out of Bounds Tracking - Point Distribution
+        if (ball.x < 0) {
+            aScore++;
+            aScoreHUD.innerText = aScore;
+            createExplosionSparks(0, ball.y, '#ff006e');
+            if (aScore >= 7) handleGameOver(false);
+            else resetBallVector();
+        } else if (ball.x > canvas.width) {
+            pScore++;
+            pScoreHUD.innerText = pScore;
+            createExplosionSparks(canvas.width, ball.y, '#00f5d4');
+            if (pScore >= 7) handleGameOver(true);
+            else resetBallVector();
+        }
+
+        // Particles Tickers Processing
+        for (let i = particles.length - 1; i >= 0; i--) {
+            let p = particles[i];
+            p.x += p.dx; p.y += p.dy; p.alpha -= 0.04;
+            if (p.alpha <= 0) particles.splice(i, 1);
+        }
+    }
+
+    function renderPipeline() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // A. Synthwave Field Centered Net Divide Line
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+        ctx.lineWidth = 4;
+        ctx.setLineDash([10, 10]);
+        ctx.beginPath(); ctx.moveTo(canvas.width / 2, 0); ctx.lineTo(canvas.width / 2, canvas.height); ctx.stroke();
+        ctx.setLineDash([]); // Core Reset
+
+        // B. Draw Player Neon Blue Paddle Node
+        ctx.save();
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = "#00f5d4";
+        ctx.fillStyle = "#00f5d4";
+        ctx.beginPath(); ctx.roundRect(player.x, player.y, paddleWidth, paddleHeight, 6); ctx.fill();
+        ctx.restore();
+
+        // C. Draw AI Neon Pink Paddle Node
+        ctx.save();
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = "#ff006e";
+        ctx.fillStyle = "#ff006e";
+        ctx.beginPath(); ctx.roundRect(ai.x, ai.y, paddleWidth, paddleHeight, 6); ctx.fill();
+        ctx.restore();
+
+        // D. Render Active Energy Core Ball
+        ctx.save();
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = ball.dx > 0 ? "#00f5d4" : "#ff006e";
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+
+        // E. Render Exploding Burst Layer Sparks
+        particles.forEach(p => {
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        });
+    }
+
+    function engineLoop() {
+        if (!gameRunning) return;
+        updateLogic();
+        renderPipeline();
+        animationId = requestAnimationFrame(engineLoop);
+    }
+
+    function bootSequence() {
+        pongScreen.style.opacity = '0';
+        pongScreen.style.visibility = 'hidden';
+        
+        pScore = 0; aScore = 0;
+        pScoreHUD.innerText = "0";
+        aScoreHUD.innerText = "0";
+        particles = [];
+        
+        player.y = canvas.height / 2 - paddleHeight / 2;
+        ai.y = canvas.height / 2 - paddleHeight / 2;
+        
+        resetBallVector();
+        gameRunning = true;
+        engineLoop();
+    }
+
+    function handleGameOver(userWon) {
+        gameRunning = false;
+        cancelAnimationFrame(animationId);
+        pongScreen.style.opacity = '1';
+        pongScreen.style.visibility = 'visible';
+        pongScreen.style.borderColor = userWon ? '#00f5d4' : '#ff006e';
+        
+        pongSub.innerHTML = userWon ? 
+            `<span style="color:#00f5d4; font-weight:800; font-size:16px; text-shadow: 0 0 8px #00f5d4;">MATRIX CONQUERED!</span><br>YOU DOMINATED THE SYSTEM.` : 
+            `<span style="color:#ff006e; font-weight:800; font-size:16px; text-shadow: 0 0 8px #ff006e;">AI CORE OVERLOAD!</span><br>THE MATRIX BREACHED YOUR GRID.`;
+        
+        pongBtn.innerText = "REBOOT CONSOLE CORE";
+    }
+
+    pongBtn.onclick = bootSequence;
+
+    // Safety clear handler anchor
+    window.pongCancelRef = () => {
+        gameRunning = false;
+        cancelAnimationFrame(animationId);
+        container.removeEventListener('mousemove', trackMouseMove);
     };
-    
-    canvas.ontouchmove = function(e) {
-        var rect = canvas.getBoundingClientRect();
-        player.y = e.touches[0].clientY - rect.top - player.h/2;
-        if (player.y < 0) player.y = 0;
-        if (player.y + player.h > canvas.height) player.y = canvas.height - player.h;
-        e.preventDefault();
-    };
-                  }
+}
+
+function exitPongGame() {
+    if (typeof window.pongCancelRef === 'function') window.pongCancelRef();
+    if (typeof openGames === 'function') openGames();
+}
