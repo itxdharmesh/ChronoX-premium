@@ -46,49 +46,12 @@ function openChronoxGamesHub() {
 
             <div id="recentlyPlayedSection" style="margin-bottom: 25px;">
                 <h2 style="font-size: 12px; font-weight: 800; letter-spacing: 2px; color: rgba(255,255,255,0.4); margin-bottom: 12px; text-transform: uppercase;">⏳ RECENT ACCESS LOGS</h2>
-                <div id="recentGamesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;"></div>
-            </div>
-
-            <div class="category-block" style="margin-bottom: 25px;">
-                <h2 style="font-size: 12px; font-weight: 800; letter-spacing: 2px; color: #00D4FF; margin-bottom: 12px; text-transform: uppercase; border-left: 3px solid #00D4FF; padding-left: 8px;">🌐 REAL-TIME QUANTUM MULTIPLAYER</h2>
-                
-                <div style="display: flex; gap: 10px; margin-bottom: 15px; background:rgba(255,255,255,0.02); padding:12px; border-radius:14px; border:1px solid rgba(255,255,255,0.05);">
-                    <input id="directRoomCodeInput" type="text" placeholder="ENTER 4-DIGIT CODE..." style="flex:1; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px 15px; color:#fff; font-family:monospace; font-weight:800; letter-spacing:2px; outline:none;">
-                    <button onclick="joinMultiplayerRoom(document.getElementById('directRoomCodeInput').value)" style="background:#00D4FF; color:#000; font-weight:800; border:none; padding:0 25px; border-radius:10px; cursor:pointer; font-size:12px; font-family:'Poppins', sans-serif;">JOIN DEPLOYMENT</button>
-                </div>
-
-                <div class="game-grid-cluster" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;">
-                    <div onclick="createMultiplayerRoom('chess', 2)" style="cursor:pointer; background:rgba(255,255,255,0.015); border:1px solid rgba(255,255,255,0.05); padding:15px; border-radius:14px; transition:0.2s;" class="premium-game-card">
-                        <div style="display:flex; align-items:center; gap:14px">
-                            <div style="font-size:32px; filter: drop-shadow(0 0 8px #ffffff40);">👑</div>
-                            <div style="text-align:left; flex:1">
-                                <h3 style="color:#fff; font-size:14px; margin:0; font-weight:800;">Quantum Chess</h3>
-                                <p style="color:rgba(255,255,255,0.4); font-size:10px; margin:2px 0 0;">Max 2 Players | Grandmaster Protocol</p>
-                            </div>
-                        </div>
+                <div id="recentGamesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;">
                     </div>
-                    <div onclick="createMultiplayerRoom('ludo', 4)" style="cursor:pointer; background:rgba(255,255,255,0.015); border:1px solid rgba(255,255,255,0.05); padding:15px; border-radius:14px; transition:0.2s;" class="premium-game-card">
-                        <div style="display:flex; align-items:center; gap:14px">
-                            <div style="font-size:32px; filter: drop-shadow(0 0 8px #00f5d440);">🎲</div>
-                            <div style="text-align:left; flex:1">
-                                <h3 style="color:#00f5d4; font-size:14px; margin:0; font-weight:800;">Chrono Ludo</h3>
-                                <p style="color:rgba(255,255,255,0.4); font-size:10px; margin:2px 0 0;">Max 4 Players | Spatial Dice Overlord</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div onclick="createMultiplayerRoom('uno', 4)" style="cursor:pointer; background:rgba(255,255,255,0.015); border:1px solid rgba(255,255,255,0.05); padding:15px; border-radius:14px; transition:0.2s;" class="premium-game-card">
-                        <div style="display:flex; align-items:center; gap:14px">
-                            <div style="font-size:32px; filter: drop-shadow(0 0 8px #ff006e40);">🃏</div>
-                            <div style="text-align:left; flex:1">
-                                <h3 style="color:#ff006e; font-size:14px; margin:0; font-weight:800;">Neon Uno Matrix</h3>
-                                <p style="color:rgba(255,255,255,0.4); font-size:10px; margin:2px 0 0;">Max 4 Players | Card Intercept Deck</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div id="categorizedGamesSection">
+                
                 <div class="category-block" style="margin-bottom: 25px;">
                     <h2 style="font-size: 12px; font-weight: 800; letter-spacing: 2px; color: #8B5CF6; margin-bottom: 12px; text-transform: uppercase; border-left: 3px solid #8B5CF6; padding-left: 8px;">⚡ ACTION CHANNELS</h2>
                     <div class="game-grid-cluster" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;">
@@ -123,17 +86,31 @@ function openChronoxGamesHub() {
         </div>
 
         <style>
-            .premium-game-card { position: relative; overflow: hidden; z-index: 1; transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
-            .premium-game-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.6), 0 0 12px var(--glow-color, rgba(255,255,255,0.1)); border-color: var(--glow-border, #fff) !important; background: rgba(255,255,255,0.05) !important; }
-            .premium-hover-node:hover { transform: scale(1.01); box-shadow: 0 15px 30px rgba(0,212,255,0.4); }
-            #gameSearchInput:focus { border-color: #00D4FF !important; background: rgba(255,255,255,0.06) !important; box-shadow: 0 0 15px rgba(0,212,255,0.25), inset 0 2px 8px rgba(0,0,0,0.5) !important; }
+            .premium-game-card {
+                position: relative; overflow: hidden; z-index: 1; transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+            .premium-game-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.6), 0 0 12px var(--glow-color);
+                border-color: var(--glow-border) !important;
+                background: rgba(255,255,255,0.05) !important;
+            }
+            .premium-hover-node:hover {
+                transform: scale(1.01);
+                box-shadow: 0 15px 30px rgba(0,212,255,0.4);
+            }
+            #gameSearchInput:focus {
+                border-color: #00D4FF !important;
+                background: rgba(255,255,255,0.06) !important;
+                box-shadow: 0 0 15px rgba(0,212,255,0.25), inset 0 2px 8px rgba(0,0,0,0.5) !important;
+            }
         </style>
     `;
 
     renderRecentGamesQueue();
 }
 
-// Global Meta Register Database
+// Global Dictionary Mapping Metadata
 const GAME_DATABASE_RECORDS = {
     cyberninja: { icon: "🥷", title: "Cyber Ninja", desc: "Endless Runner Run Matrix", xp: "+40 XP", color: "#8B5CF6" },
     spaceshooter: { icon: "🚀", title: "Space Shooter", desc: "Quantum Space Destroyer", xp: "+50 XP", color: "#00D4FF" },
@@ -172,7 +149,7 @@ function renderRecentGamesQueue() {
 
     let queue = JSON.parse(localStorage.getItem('recentlyPlayedGames')) || [];
     if (queue.length === 0) {
-        recentSection.style.display = 'none';
+        recentSection.style.style.display = 'none';
         return;
     }
 
@@ -187,10 +164,12 @@ function renderRecentGamesQueue() {
 function filterHubGames() {
     let query = document.getElementById('gameSearchInput').value.toLowerCase();
     let cards = document.querySelectorAll('.premium-game-card');
+
     cards.forEach(card => {
         let title = card.getAttribute('data-game-title');
-        if(title) card.style.display = title.includes(query) ? 'block' : 'none';
+        card.style.display = title.includes(query) ? 'block' : 'none';
     });
+
     let blocks = document.querySelectorAll('.category-block');
     blocks.forEach(block => {
         let hasVisible = Array.from(block.querySelectorAll('.premium-game-card')).some(c => c.style.display !== 'none');
@@ -203,15 +182,15 @@ function updateRecentQueue(id) {
     let queue = JSON.parse(localStorage.getItem('recentlyPlayedGames')) || [];
     queue = queue.filter(x => x !== id);
     queue.unshift(id);
-    if (queue.length > 3) queue.pop();
+    if (queue.length > 3) queue.pop(); // Max 3 items in recent queue
     localStorage.setItem('recentlyPlayedGames', JSON.stringify(queue));
 }
 
 function safeStart(name) {
     try {
         updateRecentQueue(name);
-        interceptAndHookGameOver(name);
-
+        
+        // Dynamic Matrix Core Routing Resolvers
         if (name === 'tictactoe' && typeof startTicTacToe === 'function') startTicTacToe();
         else if (name === 'tictactoe' && typeof startTTT === 'function') startTTT();
         else if (name === 'snake' && typeof startSnakeGame === 'function') startSnakeGame();
@@ -237,35 +216,6 @@ function safeStart(name) {
     }
 }
 
-// =================================================================
-// RUNTIME INTERCEPTOR STATE MACHINE FOR CENTRAL XP
-// =================================================================
-function interceptAndHookGameOver(gameId) {
-    setTimeout(() => {
-        if (typeof window.endGame === 'function' && !window.endGame.hooked) {
-            let originalEndGame = window.endGame;
-            window.endGame = function(winner) {
-                if (winner === 'human' || winner === 'player' || winner === true) rewardChronoxXP('win', gameId);
-                else if (winner === 'ai' || winner === 'computer' || winner === false) rewardChronoxXP('lose', gameId);
-                else rewardChronoxXP('draw', gameId);
-                originalEndGame.apply(this, arguments);
-            };
-            window.endGame.hooked = true;
-        }
-
-        if (typeof window.handleGameOver === 'function' && !window.handleGameOver.hooked) {
-            let originalHandleGameOver = window.handleGameOver;
-            window.handleGameOver = function(status) {
-                if (status === true || status === 'win') rewardChronoxXP('win', gameId);
-                else if (status === 'draw') rewardChronoxXP('draw', gameId);
-                else rewardChronoxXP('lose', gameId);
-                originalHandleGameOver.apply(this, arguments);
-            };
-            window.handleGameOver.hooked = true;
-        }
-    }, 400);
-}
-
 function utilHexToRgb(hex) {
     hex = hex.replace('#', '');
     if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
@@ -273,192 +223,72 @@ function utilHexToRgb(hex) {
     return `${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}`;
 }
 
+// Global Legacy Alias protection anchor
 window.openGames = openChronoxGamesHub;
-
-// =================================================================
-// REALTIME MULTIPLAYER LOBBY SUB-ROUTER (FIREBASE RTDB NODE)
-// =================================================================
-let currentRoomId = null;
-let currentMultiplayerGame = null;
-
-function createMultiplayerRoom(gameId, maxPlayers) {
-    if (typeof firebase === 'undefined') {
-        if (typeof showToast === 'function') showToast('❌ Firebase data pipeline offline!');
-        return;
-    }
-    const user = firebase.auth().currentUser;
-    if (!user) {
-        if (typeof showToast === 'function') showToast('🔑 Auth system session not found.');
-        return;
-    }
-
-    const roomId = Math.random().toString(36).substring(2, 6).toUpperCase();
-    currentRoomId = roomId;
-    currentMultiplayerGame = gameId;
-
-    const roomRef = firebase.database().ref(`rooms/${roomId}`);
-    const roomData = {
-        gameId: gameId,
-        maxPlayers: maxPlayers,
-        status: 'waiting',
-        hostId: user.uid,
-        players: {
-            [user.uid]: {
-                name: user.displayName || "Player One",
-                icon: "🎮",
-                joinedAt: Date.now()
-            }
-        },
-        gameState: {}
-    };
-
-    roomRef.set(roomData).then(() => {
-        renderMultiplayerLobbyUI(roomId, gameId, maxPlayers, true);
-        listenToRoomUpdates(roomId);
-    }).catch(err => console.error(err));
-}
-
-function joinMultiplayerRoom(roomId) {
-    if (!roomId) return;
-    roomId = roomId.trim().toUpperCase();
-    const user = firebase.auth().currentUser;
-    if (!user || typeof firebase === 'undefined') return;
-
-    const roomRef = firebase.database().ref(`rooms/${roomId}`);
-    roomRef.once('value').then((snapshot) => {
-        if (!snapshot.exists()) {
-            if (typeof showToast === 'function') showToast('❌ Room code matrix invalid.');
-            return;
-        }
-        const room = snapshot.val();
-        const playerKeys = Object.keys(room.players || {});
-
-        if (playerKeys.length >= room.maxPlayers) {
-            if (typeof showToast === 'function') showToast('🚫 Sector Full!');
-            return;
-        }
-
-        roomRef.child(`players/${user.uid}`).set({
-            name: user.displayName || "Player Two",
-            icon: "⚡",
-            joinedAt: Date.now()
-        }).then(() => {
-            currentRoomId = roomId;
-            currentMultiplayerGame = room.gameId;
-            renderMultiplayerLobbyUI(roomId, room.gameId, room.maxPlayers, false);
-            listenToRoomUpdates(roomId);
-        });
-    });
-}
-
-function listenToRoomUpdates(roomId) {
-    firebase.database().ref(`rooms/${roomId}`).on('value', (snapshot) => {
-        if (!snapshot.exists()) return;
-        const room = snapshot.val();
-        updateLobbyPlayersList(room.players, room.maxPlayers);
-
-        if (room.status === 'active') {
-            bootMultiplayerGameEngine(room.gameId, roomId);
-        }
-    });
-}
-
-function renderMultiplayerLobbyUI(roomId, gameId, maxPlayers, isHost) {
-    var c = document.getElementById('contentArea');
-    if (!c) return;
-
-    c.innerHTML = `
-        <div style="padding: 20px; background: radial-gradient(circle at top, #140b36 0%, #03020a 100%); min-height: calc(100vh - 70px); font-family: 'Poppins', sans-serif; color: #fff; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 24px; padding: 30px; width:100%; max-width:450px; text-align:center; box-shadow: 0 25px 50px rgba(0,0,0,0.6); backdrop-filter:blur(15px);">
-                <span style="font-size:10px; color:#00D4FF; letter-spacing:3px; display:block; font-weight:800;">MULTIPLAYER LOBBY</span>
-                <h2 style="margin:10px 0; font-size:26px; font-weight:900; text-transform:uppercase;">${gameId} MATRIX</h2>
-                
-                <div style="background:rgba(0,0,0,0.4); border:1px dashed rgba(255,255,255,0.1); padding:15px; border-radius:16px; margin:20px 0;">
-                    <span style="font-size:10px; color:rgba(255,255,255,0.4); display:block; font-weight:700;">SHARE ROOM SIGNAL</span>
-                    <span style="font-size:36px; font-weight:900; color:#00D4FF; letter-spacing:4px; text-shadow:0 0 15px rgba(0,212,255,0.4); font-family:monospace;">${roomId}</span>
-                </div>
-
-                <div style="text-align:left; margin-bottom:25px;">
-                    <span style="font-size:11px; color:rgba(255,255,255,0.5); font-weight:700; display:block; margin-bottom:10px;">CONNECTED CHANNELS:</span>
-                    <div id="lobbyPlayersContainer" style="display:flex; flex-direction:column; gap:10px;"></div>
-                </div>
-
-                ${isHost ? `
-                    <button onclick="triggerGameStart('${roomId}')" style="width:100%; background:linear-gradient(135deg, #00D4FF, #8B5CF6); border:none; color:#fff; font-weight:800; padding:14px; border-radius:14px; cursor:pointer; font-size:14px; letter-spacing:1px; font-family:'Poppins'; box-shadow:0 10px 20px rgba(139,92,246,0.3);">START SYSTEM</button>
-                ` : `
-                    <div style="font-size:12px; color:rgba(255,255,255,0.4); font-style:italic;">Awaiting host execution parameters...</div>
-                `}
-            </div>
-        </div>
-    `;
-}
-
-function updateLobbyPlayersList(players, maxPlayers) {
-    const container = document.getElementById('lobbyPlayersContainer');
-    if (!container) return;
-
-    let html = '';
-    const currentKeys = Object.keys(players || {});
-    for (let i = 0; i < maxPlayers; i++) {
-        if (i < currentKeys.length) {
-            let p = players[currentKeys[i]];
-            html += `
-                <div style="display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:10px 15px; border-radius:12px;">
-                    <div style="font-size:20px;">${p.icon || '⚡'}</div>
-                    <div style="font-weight:700; font-size:13px; color:#fff; flex:1;">${p.name}</div>
-                    <span style="color:#2ed573; font-size:9px; font-weight:800; background:rgba(46,213,115,0.1); padding:3px 8px; border-radius:6px;">SYNCED</span>
-                </div>
-            `;
-        } else {
-            html += `
-                <div style="display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.2); border:1px dashed rgba(255,255,255,0.05); padding:10px 15px; border-radius:12px; opacity:0.5;">
-                    <div style="font-size:18px; color:rgba(255,255,255,0.3);">⏳</div>
-                    <div style="font-weight:600; font-size:13px; color:rgba(255,255,255,0.3);">Awaiting connection...</div>
-                </div>
-            `;
-        }
-    }
-    container.innerHTML = html;
-}
-
-function triggerGameStart(roomId) {
-    firebase.database().ref(`rooms/${roomId}`).update({ status: 'active' });
-}
-
-function bootMultiplayerGameEngine(gameId, roomId) {
-    if (gameId === 'chess' && typeof startMultiplayerChess === 'function') startMultiplayerChess(roomId);
-    if (gameId === 'ludo' && typeof startMultiplayerLudo === 'function') startMultiplayerLudo(roomId);
-    if (gameId === 'uno' && typeof startMultiplayerUno === 'function') startMultiplayerUno(roomId);
-}
 
 // =================================================================
 // CHRONOX NEURAL REWARD ENGINE (FIREBASE SYNC)
 // =================================================================
+
+/**
+ * Handles real-time XP accumulation based on match results.
+ * @param {string} result - 'win', 'draw', or 'lose'
+ * @param {string} gameId - Unique identifier of the simulation
+ */
 function rewardChronoxXP(result, gameId) {
     let xpEarned = 0;
+
+    // Strict Rule Matrix Setup
     if (result === 'win') xpEarned = 25;
     else if (result === 'draw') xpEarned = 10;
     else if (result === 'lose') xpEarned = 0;
 
     console.log(`[Reward Engine] Game: ${gameId} | Result: ${result} | XP Earned: ${xpEarned}`);
-    if (xpEarned <= 0) return;
 
+    // If score is 0, no need to update database node to save bandwidth
+    if (xpEarned <= 0) {
+        if (typeof showToast === 'function') showToast('Simulation terminated. 0 XP added.');
+        return;
+    }
+
+    // Check if Firebase Auth and Firestore are active on client device
     if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
         const user = firebase.auth().currentUser;
+        
         if (user) {
             const userRef = firebase.firestore().collection('users').doc(user.uid);
-            userRef.update({ xp: firebase.firestore.FieldValue.increment(xpEarned) })
+
+            // Atomic Increment Pattern ensuring zero duplication or loss during connection drops
+            userRef.update({
+                xp: firebase.firestore.FieldValue.increment(xpEarned)
+            })
             .then(() => {
-                if (typeof showToast === 'function') showToast(`⚡ +${xpEarned} XP Secured in Matrix!`);
+                console.log(`[Database Sync] Successfully pushed +${xpEarned} XP to user profile.`);
+                if (typeof showToast === 'function') {
+                    showToast(`⚡ +${xpEarned} XP Secured in Matrix!`);
+                }
+                
+                // Optional: Re-render profile HUD if active on the layout screen right now
                 if (typeof updateProfileHUD === 'function') updateProfileHUD();
-            }).catch(e => console.error(e));
-        } else { fallbackLocalXPAccumulator(xpEarned); }
-    } else { fallbackLocalXPAccumulator(xpEarned); }
+            })
+            .catch((error) => {
+                console.error("[Database Sync Error] Failed to update XP node: ", error);
+            });
+        } else {
+            console.warn("[Reward Engine] No active firebase user session detected. XP cached locally.");
+            fallbackLocalXPAccumulator(xpEarned);
+        }
+    } else {
+        // Fallback for offline sandbox mode testing environment
+        fallbackLocalXPAccumulator(xpEarned);
+    }
 }
 
 function fallbackLocalXPAccumulator(amount) {
     let currentLocalXP = parseInt(localStorage.getItem('chronox_sandbox_xp')) || 0;
     currentLocalXP += amount;
     localStorage.setItem('chronox_sandbox_xp', currentLocalXP);
-    if (typeof showToast === 'function') showToast(`⚡ Offline Mode: +${amount} XP Cached!`);
-}
+    if (typeof showToast === 'function') {
+        showToast(`⚡ Offline Mode: +${amount} XP Cached locally (${currentLocalXP} Total)`);
+    }
+                                           }
