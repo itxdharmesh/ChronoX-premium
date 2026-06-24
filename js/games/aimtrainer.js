@@ -1,380 +1,258 @@
-// aimtrainer.js - ChronoX Premium Aim Trainer
-// Drop into js/games/aimtrainer.js
-
-var aimScore = 0,
-    aimHits = 0,
-    aimMisses = 0,
-    aimCombo = 0,
-    aimTime = 30,
-    aimBest = 0,
-    aimActive = false,
-    aimAnimation = null,
-    aimParticles = [],
-    aimTargets = [];
+// js/games/aimtrainer.js
 
 function startAimTrainer() {
-
-    aimScore = 0;
-    aimHits = 0;
-    aimMisses = 0;
-    aimCombo = 0;
-    aimTime = 30;
-    aimParticles = [];
-    aimTargets = [];
-    aimActive = true;
-
-    aimBest = parseInt(localStorage.getItem('aimTrainerBest') || '0');
-
     var c = document.getElementById('contentArea');
     if (!c) return;
 
-    c.innerHTML =
-        '<div style="text-align:center">' +
-            '<h2 style="color:#D4AF37;margin-bottom:2px;font-size:24px">🎯 Aim Trainer Pro</h2>' +
+    // Premium Cyber HTML Structure Injection
+    c.innerHTML = `
+        <div id="atContainer" style="position:relative; width:100%; height:100%; min-height: 500px; height: calc(100vh - 120px); overflow:hidden; background: #050716; font-family: 'Poppins', sans-serif; user-select:none; -webkit-user-select:none;">
+            
+            <div style="position:absolute; top:15px; left:0; width:100%; display:flex; justify-content:space-between; padding:0 20px; z-index:10; pointer-events:none;">
+                <div style="background: rgba(6, 9, 25, 0.85); border: 1px solid rgba(46, 213, 115, 0.4); padding: 6px 14px; border-radius: 10px; backdrop-filter: blur(8px);">
+                    <span style="font-size:9px; color:rgba(255,255,255,0.4); display:block; letter-spacing:1px;">SCORE METRIC</span>
+                    <span id="atScore" style="color:#2ED573; font-weight:900; font-size:16px; text-shadow: 0 0 10px #2ED573;">0000</span>
+                </div>
+                <div style="background: rgba(6, 9, 25, 0.85); border: 1px solid rgba(255, 165, 2, 0.3); padding: 6px 14px; border-radius: 10px; backdrop-filter: blur(8px);">
+                    <span style="font-size:9px; color:rgba(255,255,255,0.4); display:block; letter-spacing:1px;">TIME REMAINING</span>
+                    <span id="atTimer" style="color:#FFA502; font-weight:800; font-size:16px; text-shadow: 0 0 10px #FFA502;">30s</span>
+                </div>
+            </div>
 
-            '<div style="display:flex;justify-content:center;gap:18px;margin:8px 0;flex-wrap:wrap">' +
+            <canvas id="atCanvas" style="display:block; width:100%; height:100%; position:absolute; top:0; left:0; z-index:1; background:#050716; cursor:crosshair;"></canvas>
 
-                '<div>' +
-                    '<span style="font-size:10px;color:rgba(255,255,255,.5)">SCORE</span><br>' +
-                    '<b id="aimScore" style="color:#D4AF37;font-size:20px">0</b>' +
-                '</div>' +
+            <button id="atExitBtn" style="position:absolute; bottom:20px; right:20px; background:rgba(255,71,87,0.2); border:1px solid rgba(255,71,87,0.5); color:#ff4757; padding:8px 16px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; z-index:10; backdrop-filter:blur(5px); letter-spacing:1px;">ABORT TRAINING</button>
 
-                '<div>' +
-                    '<span style="font-size:10px;color:rgba(255,255,255,.5)">BEST</span><br>' +
-                    '<b id="aimBest" style="color:#2ED573;font-size:20px">' + aimBest + '</b>' +
-                '</div>' +
+            <div id="atScreen" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background: rgba(14, 20, 45, 0.95); border:1px solid rgba(46, 213, 115, 0.4); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); padding:35px 25px; border-radius:24px; text-align:center; width:88%; max-width:340px; box-shadow:0 20px 60px rgba(0,0,0,0.8); z-index:20; display:block;">
+                <div style="width:60px; height:60px; background: rgba(46,213,115,0.2); border: 2px solid #2ED573; border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:28px;">🎯</div>
+                <h1 style="font-size:22px; font-weight:900; letter-spacing:2px; color:#fff; margin-bottom:5px; text-transform:uppercase;">AIM TRAINER</h1>
+                <p id="atSub" style="font-size:11px; color:rgba(255,255,255,0.6); margin-bottom:25px; letter-spacing:1px; line-height:1.5;">REFLEX & ACCURACY STIMULUS <br><span style="color:#2ED573;">HIT THE TARGET CORES RAPIDLY</span></p>
+                <button id="atBtn" style="background:linear-gradient(135deg,#2ED573, #FFA502); border:none; padding:14px 30px; font-size:13px; font-weight:800; color:#fff; border-radius:12px; cursor:pointer; text-transform:uppercase; letter-spacing:1px; width:100%; box-shadow: 0 5px 15px rgba(46,213,115,0.4);">START SIMULATION</button>
+            </div>
+        </div>
+    `;
 
-                '<div>' +
-                    '<span style="font-size:10px;color:rgba(255,255,255,.5)">COMBO</span><br>' +
-                    '<b id="aimCombo" style="color:#00D4FF;font-size:20px">0x</b>' +
-                '</div>' +
+    // Grabbing Dynamic Layout DOM Handles
+    const canvas = document.getElementById('atCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('atContainer');
+    const atScreen = document.getElementById('atScreen');
+    const atSub = document.getElementById('atSub');
+    const atBtn = document.getElementById('atBtn');
+    const atExitBtn = document.getElementById('atExitBtn');
+    const atScore = document.getElementById('atScore');
+    const atTimer = document.getElementById('atTimer');
 
-                '<div>' +
-                    '<span style="font-size:10px;color:rgba(255,255,255,.5)">TIME</span><br>' +
-                    '<b id="aimTime" style="color:#FF4757;font-size:20px">30</b>' +
-                '</div>' +
+    // Safe Canvas Bounds Calculations
+    canvas.width = container.clientWidth || window.innerWidth;
+    canvas.height = container.clientHeight || (window.innerHeight - 120);
 
-            '</div>' +
+    let score = 0, timeLeft = 30, gameRunning = false;
+    let targets = [], particles = [];
+    let clockInterval = null, animationId = null, frameCount = 0;
 
-            '<canvas id="aimCanvas" width="360" height="500" style="background:radial-gradient(ellipse at center,#1a1f4e 0%,#0A0E27 100%);border:2px solid rgba(212,175,55,.3);border-radius:20px;display:block;margin:10px auto;max-width:95%;box-shadow:0 0 40px rgba(0,0,0,.5)"></canvas>' +
-
-            '<p style="font-size:10px;color:rgba(255,255,255,.4)">Tap targets as fast as possible</p>' +
-
-            '<div style="display:flex;gap:8px;margin-top:8px">' +
-                '<button class="btn-out" onclick="startAimTrainer()" style="flex:1">🔄 Restart</button>' +
-                '<button class="btn-out" onclick="navigate(\'games\')" style="flex:1">← Games Hub</button>' +
-            '</div>' +
-
-        '</div>';
-
-    setTimeout(initAimTrainer, 300);
-}
-
-function initAimTrainer() {
-
-    var canvas = document.getElementById('aimCanvas');
-    if (!canvas) return;
-
-    var ctx = canvas.getContext('2d');
-
-    if (aimAnimation) cancelAnimationFrame(aimAnimation);
-
-    spawnTarget();
-
-    var timer = setInterval(function () {
-
-        if (!aimActive) {
-            clearInterval(timer);
-            return;
+    function spawnTarget() {
+        // Maximum 4 active core nodes inside view grid bounds
+        if (targets.length < 4) {
+            let colors = ['#00D4FF', '#7C3AED', '#FF4757', '#2ED573', '#FFA502'];
+            targets.push({
+                id: Math.random(),
+                x: Math.random() * (canvas.width - 80) + 40,
+                y: Math.random() * (canvas.height - 180) + 90,
+                radius: 2,
+                maxRadius: Math.random() * 12 + 18,
+                growing: true,
+                speed: Math.random() * 0.3 + 0.35,
+                color: colors[Math.floor(Math.random() * colors.length)]
+            });
         }
-
-        aimTime--;
-
-        var t = document.getElementById('aimTime');
-        if (t) t.textContent = aimTime;
-
-        if (aimTime <= 0) {
-            clearInterval(timer);
-            endAimTrainer(ctx, canvas);
-        }
-
-    }, 1000);
-
-    function loop() {
-
-        if (!aimActive) return;
-
-        ctx.fillStyle = '#0A0E27';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        drawGrid(ctx, canvas);
-
-        aimTargets.forEach(function (target) {
-
-            target.pulse += 0.05;
-
-            var glow = ctx.createRadialGradient(
-                target.x,
-                target.y,
-                0,
-                target.x,
-                target.y,
-                target.r * 2.5
-            );
-
-            glow.addColorStop(0, 'rgba(0,212,255,.5)');
-            glow.addColorStop(1, 'rgba(0,212,255,0)');
-
-            ctx.fillStyle = glow;
-            ctx.beginPath();
-            ctx.arc(target.x, target.y, target.r * 2.5, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.strokeStyle = '#00D4FF';
-            ctx.lineWidth = 3;
-
-            ctx.beginPath();
-            ctx.arc(target.x, target.y, target.r, 0, Math.PI * 2);
-            ctx.stroke();
-
-            ctx.strokeStyle = '#D4AF37';
-
-            ctx.beginPath();
-            ctx.arc(target.x, target.y, target.r * 0.65, 0, Math.PI * 2);
-            ctx.stroke();
-
-            ctx.fillStyle = '#FF4757';
-
-            ctx.beginPath();
-            ctx.arc(target.x, target.y, target.r * 0.25, 0, Math.PI * 2);
-            ctx.fill();
-        });
-
-        aimParticles = aimParticles.filter(function (p) {
-
-            p.x += p.vx;
-            p.y += p.vy;
-            p.life--;
-
-            ctx.globalAlpha = p.life / 25;
-
-            ctx.fillStyle = p.color;
-            ctx.shadowColor = p.color;
-            ctx.shadowBlur = 10;
-
-            ctx.beginPath();
-            ctx.arc(
-                p.x,
-                p.y,
-                p.size * (p.life / 25),
-                0,
-                Math.PI * 2
-            );
-            ctx.fill();
-
-            ctx.shadowBlur = 0;
-
-            return p.life > 0;
-
-        });
-
-        ctx.globalAlpha = 1;
-
-        aimAnimation = requestAnimationFrame(loop);
     }
 
-    loop();
+    function createExplosion(x, y, color) {
+        for (let i = 0; i < 12; i++) {
+            let angle = Math.random() * Math.PI * 2;
+            let speed = Math.random() * 3.5 + 1.5;
+            particles.push({
+                x, y,
+                radius: Math.random() * 2 + 1,
+                dx: Math.cos(angle) * speed,
+                dy: Math.sin(angle) * speed,
+                alpha: 1,
+                decay: Math.random() * 0.04 + 0.02,
+                color
+            });
+        }
+    }
 
-    canvas.onclick = function (e) {
+    // High Precision Input Raycast Matrix Handler
+    function handleInputFire(e) {
+        if (!gameRunning) return;
+        if (e.preventDefault) e.preventDefault();
 
-        if (!aimActive) return;
+        let rect = canvas.getBoundingClientRect();
+        let clickX = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+        let clickY = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
 
-        var rect = canvas.getBoundingClientRect();
+        let hitRegister = false;
 
-        var mx = e.clientX - rect.left;
-        var my = e.clientY - rect.top;
+        // Trace vectors backwards to catch topmost overlapping node layers
+        for (let i = targets.length - 1; i >= 0; i--) {
+            let t = targets[i];
+            let distance = Math.hypot(t.x - clickX, t.y - clickY);
 
-        var hit = false;
-
-        aimTargets.forEach(function (target, index) {
-
-            var dx = mx - target.x;
-            var dy = my - target.y;
-
-            var dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist <= target.r) {
-
-                hit = true;
-
-                aimHits++;
-                aimCombo++;
-
-                aimScore += 10 + (aimCombo * 2);
-
-                updateUI();
-
-                spawnHitParticles(target.x, target.y);
-
-                aimTargets.splice(index, 1);
-
+            // Generous mobile hit bounding box padding (adds 8px dynamic tap area)
+            if (distance <= t.radius + 8) {
+                createExplosion(t.x, t.y, t.color);
+                
+                // Bonus Score Calculation: Smarter precise tiny targets fetch massive multipliers
+                let precisionFactor = Math.max(10, Math.floor((1 - (t.radius / t.maxRadius)) * 50));
+                score += precisionFactor;
+                
+                atScore.innerText = String(score).padStart(4, '0');
+                targets.splice(i, 1);
+                hitRegister = true;
+                
                 spawnTarget();
+                break;
             }
-
-        });
-
-        if (!hit) {
-
-            aimMisses++;
-            aimCombo = 0;
-
-            updateUI();
         }
+
+        // Tactical missed penalizer flash
+        if (!hitRegister) {
+            createExplosion(clickX, clickY, 'rgba(255,255,255,0.2)');
+            if (score > 5) score -= 5;
+            atScore.innerText = String(score).padStart(4, '0');
+        }
+    }
+
+    canvas.addEventListener('mousedown', handleInputFire);
+    canvas.addEventListener('touchstart', handleInputFire, { passive: false });
+
+    function updateFrameLogic() {
+        frameCount++;
+
+        // Lifecycle loops inside expanding node targets arrays
+        for (let i = targets.length - 1; i >= 0; i--) {
+            let t = targets[i];
+            if (t.growing) {
+                t.radius += t.speed;
+                if (t.radius >= t.maxRadius) t.growing = false;
+            } else {
+                t.radius -= t.speed * 0.8;
+                // Target completely shriveled and expired without manual clicks
+                if (t.radius <= 2) {
+                    targets.splice(i, 1);
+                    continue;
+                }
+            }
+        }
+
+        // Continuous automatic node structural stream refills
+        if (frameCount % 45 === 0 || targets.length === 0) {
+            spawnTarget();
+        }
+
+        // Decay micro fragments inside explosion particle loops
+        for (let i = particles.length - 1; i >= 0; i--) {
+            let p = particles[i];
+            p.x += p.dx; p.y += p.dy; p.alpha -= p.decay;
+            if (p.alpha <= 0) particles.splice(i, 1);
+        }
+    }
+
+    function drawRenderPipeline() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 1. Draw Geometric Targets Layers with Double Outer Bloom Ring Blurs
+        targets.forEach(t => {
+            ctx.save();
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = t.color;
+            
+            // Outer Concentric Circle Ring
+            ctx.strokeStyle = t.color;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Inner Quantum White Tracking Core Eye
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, Math.max(1.5, t.radius * 0.35), 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        });
+
+        // 2. Render Burst Fragments Matrix
+        particles.forEach(p => {
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        });
+    }
+
+    function engineLoop() {
+        if (!gameRunning) return;
+        updateFrameLogic();
+        drawRenderPipeline();
+        animationId = requestAnimationFrame(engineLoop);
+    }
+
+    function bootSequence() {
+        // Clear UI states layers cleanly
+        atScreen.style.display = 'none';
+
+        score = 0; timeLeft = 30; targets = []; particles = [];
+        atScore.innerText = "0000";
+        atTimer.innerText = "30s";
+
+        gameRunning = true;
+        
+        // Populate view grid blocks instantly
+        spawnTarget(); spawnTarget(); spawnTarget();
+
+        // Safe Clock Countdown Engine 
+        clockInterval = setInterval(() => {
+            timeLeft--;
+            atTimer.innerText = timeLeft + "s";
+            
+            if (timeLeft <= 0) {
+                handleGameOver();
+            }
+        }, 1000);
+
+        engineLoop();
+    }
+
+    function handleGameOver() {
+        gameRunning = false;
+        clearInterval(clockInterval);
+        cancelAnimationFrame(animationId);
+
+        atScreen.style.display = 'block';
+        atSub.innerHTML = `TRAINING MATRICES FINALIZED! <br><span style="color:#2ED573; font-weight:900; font-size:15px; text-shadow:0 0 10px #2ED573;">EFFICIENCY SCORE: ${score}</span>`;
+        atBtn.innerText = "RE-ENGAGE TARGET SECTORS";
+    }
+
+    // Attach click triggers cleanly to inner button instances
+    atBtn.onclick = bootSequence;
+
+    // Window global tracker destruction cleanup handling leaks 
+    window.atCancelRef = () => {
+        gameRunning = false;
+        clearInterval(clockInterval);
+        cancelAnimationFrame(animationId);
     };
 
-    canvas.ontouchstart = function (e) {
-
-        if (!aimActive) return;
-
-        e.preventDefault();
-
-        var rect = canvas.getBoundingClientRect();
-
-        var mx = e.touches[0].clientX - rect.left;
-        var my = e.touches[0].clientY - rect.top;
-
-        canvas.onclick({
-            clientX: e.touches[0].clientX,
-            clientY: e.touches[0].clientY
-        });
+    // Return Routing back into layout Main Menu Router Engine
+    atExitBtn.onclick = function() {
+        if (typeof window.atCancelRef === 'function') window.atCancelRef();
+        if (typeof openGames === 'function') openGames();
     };
-}
-
-function spawnTarget() {
-
-    aimTargets = [];
-
-    aimTargets.push({
-        x: 50 + Math.random() * 260,
-        y: 50 + Math.random() * 380,
-        r: 28,
-        pulse: 0
-    });
-}
-
-function spawnHitParticles(x, y) {
-
-    for (var i = 0; i < 20; i++) {
-
-        aimParticles.push({
-            x: x,
-            y: y,
-            vx: (Math.random() - .5) * 8,
-            vy: (Math.random() - .5) * 8,
-            life: 25,
-            size: Math.random() * 5 + 2,
-            color: '#FFD700'
-        });
-
-    }
-}
-
-function updateUI() {
-
-    var s = document.getElementById('aimScore');
-    var c = document.getElementById('aimCombo');
-
-    if (s) s.textContent = aimScore;
-    if (c) c.textContent = aimCombo + 'x';
-}
-
-function drawGrid(ctx, canvas) {
-
-    ctx.strokeStyle = 'rgba(255,255,255,.03)';
-
-    for (var x = 0; x < canvas.width; x += 30) {
-
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
-        ctx.stroke();
-    }
-
-    for (var y = 0; y < canvas.height; y += 30) {
-
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-        ctx.stroke();
-    }
-}
-
-function endAimTrainer(ctx, canvas) {
-
-    aimActive = false;
-
-    if (aimAnimation) cancelAnimationFrame(aimAnimation);
-
-    if (aimScore > aimBest) {
-
-        aimBest = aimScore;
-        localStorage.setItem('aimTrainerBest', aimBest);
-    }
-
-    var accuracy = 0;
-
-    if ((aimHits + aimMisses) > 0) {
-
-        accuracy = Math.round(
-            (aimHits / (aimHits + aimMisses)) * 100
-        );
-    }
-
-    ctx.fillStyle = 'rgba(0,0,0,.75)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = '#D4AF37';
-    ctx.font = 'bold 28px Poppins';
-    ctx.textAlign = 'center';
-
-    ctx.fillText(
-        'Training Complete',
-        canvas.width / 2,
-        canvas.height / 2 - 80
-    );
-
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 16px Poppins';
-
-    ctx.fillText(
-        'Score: ' + aimScore,
-        canvas.width / 2,
-        canvas.height / 2 - 20
-    );
-
-    ctx.fillText(
-        'Hits: ' + aimHits,
-        canvas.width / 2,
-        canvas.height / 2 + 10
-    );
-
-    ctx.fillText(
-        'Accuracy: ' + accuracy + '%',
-        canvas.width / 2,
-        canvas.height / 2 + 40
-    );
-
-    var xp = Math.floor(aimScore / 4);
-
-    ctx.fillStyle = '#FFD700';
-
-    ctx.fillText(
-        '+ ' + xp + ' XP',
-        canvas.width / 2,
-        canvas.height / 2 + 90
-    );
-
-    if (typeof addXP === 'function') {
-        addXP(xp);
-    }
 }
