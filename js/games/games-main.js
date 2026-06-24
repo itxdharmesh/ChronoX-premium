@@ -1,106 +1,103 @@
-// js/games/games-main.js - FULL INTEGRATED SYSTEM
+// js/games/games-main.js - FULL MASTER BUILD
 
-// 1. INITIALIZATION
-if (!localStorage.getItem('recentlyPlayedGames')) {
-    localStorage.setItem('recentlyPlayedGames', JSON.stringify(['spaceshooter', 'neondrift']));
-}
-
+// 1. SYSTEM INITIALIZATION & UI RENDER
 function openChronoxGamesHub() {
+    if (!navigator.onLine) { renderOfflineUI(); return; }
+
     var c = document.getElementById('contentArea');
     if (!c) return;
 
     c.innerHTML = `
-        <div id="gamesHubWrapper" style="padding: 20px; background: radial-gradient(circle at top, #0f0a2a 0%, #03020a 100%); min-height: calc(100vh - 70px); font-family: 'Poppins', sans-serif; color: #ffffff;">
+        <div id="gamesHubWrapper" style="padding: 20px; background: #03020a; min-height: 100vh; font-family: 'Poppins', sans-serif; color: #ffffff;">
             <h1 style="text-align: center; color: #D4AF37; margin-bottom: 25px;">🎮 CHRONOX GAMES HUB</h1>
-            
-            <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 25px;">
-                <button onclick="renderMultiplayerSelector()" style="padding: 20px; background: #8B5CF6; border: none; border-radius: 16px; color: white; font-weight: 800; cursor: pointer; box-shadow: 0 0 20px rgba(139,92,246,0.3);">🌐 MULTIPLAYER ARENA</button>
-            </div>
-
-            <div id="mainHubContent">
-                <div style="position: relative; margin-bottom: 25px;">
-                    <input id="gameSearchInput" oninput="filterHubGames()" type="text" placeholder="Search games..." style="width: 100%; padding: 15px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; color: #fff;">
+            <div id="mainHubContent" style="max-width: 800px; margin: auto;">
+                <button onclick="renderMultiplayerSelector()" style="width: 100%; padding: 20px; background: #8B5CF6; border: none; border-radius: 12px; color: white; font-weight: 800; margin-bottom: 20px; cursor: pointer;">🌐 MULTIPLAYER ARENA</button>
+                <div id="arcadeGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                    ${generateArcadeCards()}
                 </div>
-                <div id="recentlyPlayedSection" style="margin-bottom: 25px;">
-                    <h2 style="font-size: 12px; color: rgba(255,255,255,0.4); text-transform: uppercase;">⏳ RECENT ACCESS LOGS</h2>
-                    <div id="recentGamesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;"></div>
-                </div>
-                <div id="categorizedGamesSection"></div>
             </div>
         </div>
     `;
-    renderRecentGamesQueue();
-    renderAllGames();
 }
 
-// 2. MULTIPLAYER SELECTOR (The "Click to reveal" logic)
+// 2. ARCADE GAME DATABASE
+const ARCADE_GAMES = [
+    { id: 'spaceshooter', name: 'Space Shooter', icon: '🚀' },
+    { id: 'cyberninja', name: 'Cyber Ninja', icon: '🥷' },
+    { id: 'neondrift', name: 'Neon Drift', icon: '🏎️' },
+    { id: 'brickbreaker', name: 'Brick Breaker', icon: '🧱' },
+    { id: 'pong', name: 'Pong', icon: '🏓' },
+    { id: 'flappy', name: 'Flappy Bird', icon: '🐦' },
+    { id: 'tictactoe', name: 'Tic Tac Toe', icon: '❌' },
+    { id: 'memorymatch', name: 'Memory Match', icon: '🧠' },
+    { id: 'reactionmaster', name: 'Reaction Master', icon: '⚡' },
+    { id: 'aimtrainer', name: 'Aim Trainer', icon: '🎯' }
+];
+
+function generateArcadeCards() {
+    return ARCADE_GAMES.map(g => `
+        <button onclick="safeStart('${g.id}')" style="padding: 15px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 10px; cursor: pointer; text-align: left;">
+            <span style="font-size: 20px;">${g.icon}</span> ${g.name}
+        </button>
+    `).join('');
+}
+
+// 3. MULTIPLAYER SELECTOR
 function renderMultiplayerSelector() {
     document.getElementById('mainHubContent').innerHTML = `
-        <div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:16px; border:1px solid rgba(255,255,255,0.1);">
-            <h2 style="color:#8B5CF6; text-align:center;">MULTIPLAYER COMMAND</h2>
-            <div style="margin:20px 0; display:flex; gap:10px;">
-                <input id="directRoomCodeInput" placeholder="ENTER 4-DIGIT CODE" style="flex:1; padding:10px; background:#000; color:#fff; border:1px solid #444; border-radius:8px;">
-                <button onclick="joinMultiplayerRoom(document.getElementById('directRoomCodeInput').value)" style="padding:10px 20px; background:#8B5CF6; border:none; color:white; border-radius:8px;">JOIN</button>
+        <div style="background: #0f0a2a; padding: 25px; border-radius: 16px; border: 1px solid #333;">
+            <h2 style="color: #D4AF37;">MULTIPLAYER ARENA</h2>
+            <div style="display: grid; gap: 10px;">
+                <button onclick="createMultiplayerRoom('chess')" style="padding: 15px; background: #222; border: none; color: white; border-radius: 8px;">👑 Chess</button>
+                <button onclick="createMultiplayerRoom('ludo')" style="padding: 15px; background: #222; border: none; color: #00f5d4; border-radius: 8px;">🎲 Ludo</button>
+                <button onclick="createMultiplayerRoom('uno')" style="padding: 15px; background: #222; border: none; color: #ff006e; border-radius: 8px;">🃏 Uno</button>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
-                <button onclick="createMultiplayerRoom('chess', 2)" style="padding:15px; background:#111; border:1px solid #333; color:white; border-radius:10px;">👑 Chess</button>
-                <button onclick="createMultiplayerRoom('ludo', 4)" style="padding:15px; background:#111; border:1px solid #333; color:#00f5d4; border-radius:10px;">🎲 Ludo</button>
-                <button onclick="createMultiplayerRoom('uno', 4)" style="padding:15px; background:#111; border:1px solid #333; color:#ff006e; border-radius:10px;">🃏 Uno</button>
-            </div>
-            <button onclick="openChronoxGamesHub()" style="width:100%; margin-top:20px; background:transparent; color:#666; border:none;">BACK TO HUB</button>
+            <button onclick="openChronoxGamesHub()" style="width: 100%; margin-top: 20px; background: transparent; color: #666; border: none;">← Back</button>
         </div>
     `;
 }
 
-// 3. GAME DATABASE & HELPERS
-const GAME_DATABASE_RECORDS = {
-    cyberninja: { icon: "🥷", title: "Cyber Ninja", desc: "Endless Runner", xp: "+40 XP", color: "#8B5CF6" },
-    spaceshooter: { icon: "🚀", title: "Space Shooter", desc: "Space Destroyer", xp: "+50 XP", color: "#00D4FF" },
-    aimtrainer: { icon: "🎯", title: "Aim Trainer", desc: "Target Acquisition", xp: "+30 XP", color: "#FF4757" },
-    neondrift: { icon: "🏎️", title: "Neon Drift", desc: "Hyper Racer", xp: "+50 XP", color: "#FF9F43" },
-    brickbreaker: { icon: "🧱", title: "Brick Breaker", desc: "Vector Shield", xp: "+30 XP", color: "#FF6B81" },
-    pong: { icon: "🏓", title: "Pong", desc: "Laser Matrix", xp: "+35 XP", color: "#00D4FF" },
-    flappy: { icon: "🐦", title: "Flappy Bird", desc: "Grav Infiltrator", xp: "+20 XP", color: "#FF6B81" },
-    tictactoe: { icon: "❌", title: "Tic Tac Toe", desc: "Minimax AI", xp: "+25 XP", color: "#D4AF37" },
-    memorymatch: { icon: "🧠", title: "Memory Match", desc: "Synapse Grid", xp: "+20 XP", color: "#2ED573" },
-    reactionmaster: { icon: "⚡", title: "Reaction Master", desc: "Latency Trigger", xp: "+20 XP", color: "#FFD700" }
-};
+// 4. REWARD & NOTIFICATION ENGINE
+function rewardChronoxXP(result, gameId) {
+    let xp = (result === 'win') ? 25 : 10;
+    
+    // Notification
+    if (typeof showToast === 'function') {
+        showToast(`⚡ XP GAINED: +${xp} XP [${gameId.toUpperCase()}]`);
+    }
 
-function renderAllGames() {
-    const container = document.getElementById('categorizedGamesSection');
-    container.innerHTML = Object.keys(GAME_DATABASE_RECORDS).map(id => {
-        let g = GAME_DATABASE_RECORDS[id];
-        return injectCardEngine(g.icon, g.title, g.desc, g.xp, g.color, id);
-    }).join('');
+    // Firestore Sync
+    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+        firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid)
+            .update({ xp: firebase.firestore.FieldValue.increment(xp) });
+    }
 }
 
-function injectCardEngine(icon, title, desc, xp, color, id) {
-    return `<div class="premium-game-card" onclick="safeStart('${id}')" style="cursor:pointer; background:rgba(255,255,255,0.02); padding:15px; border-radius:12px; border:1px solid #333;">
-        <div style="font-size:30px">${icon}</div>
-        <h3 style="color:${color}; font-size:14px; margin:5px 0;">${title}</h3>
-    </div>`;
-}
-
-// 4. MULTIPLAYER ENGINE (Unchanged functional core)
-function createMultiplayerRoom(gameId, maxPlayers) {
-    const roomId = Math.random().toString(36).substring(2, 6).toUpperCase();
-    firebase.database().ref(`rooms/${roomId}`).set({ gameId, status:'waiting', players: { [firebase.auth().currentUser.uid]: { name: "Host" } } });
-    renderMultiplayerLobbyUI(roomId, gameId, true);
-}
-
-function joinMultiplayerRoom(roomId) {
-    firebase.database().ref(`rooms/${roomId.toUpperCase()}`).once('value').then(snap => {
-        if(snap.exists()) renderMultiplayerLobbyUI(roomId, snap.val().gameId, false);
-    });
-}
-
-function renderMultiplayerLobbyUI(roomId, gameId, isHost) {
-    document.getElementById('contentArea').innerHTML = `<div style="padding:50px; text-align:center; color:white;"><h2>Room: ${roomId}</h2><p>Game: ${gameId}</p>${isHost ? `<button onclick="firebase.database().ref('rooms/${roomId}').update({status:'active'})">START</button>` : ''}</div>`;
-}
-
-// 5. START LOGIC
+// 5. SAFE START & HOOKS
 function safeStart(name) {
-    // Add all your existing start functions here
+    interceptAndHookGameOver(name);
     if(name === 'spaceshooter') startSpaceShooter();
-    // etc...
+    else if(name === 'cyberninja') startCyberNinja();
+    // ... baaki games ke starts yahan add kar le
+}
+
+function interceptAndHookGameOver(gameId) {
+    if (typeof window.endGame !== 'undefined' && !window.endGame.hooked) {
+        let original = window.endGame;
+        window.endGame = function(winner) {
+            rewardChronoxXP((winner === 'human' || winner === true) ? 'win' : 'lose', gameId);
+            original.apply(this, arguments);
+        };
+        window.endGame.hooked = true;
+    }
+}
+
+// 6. OFFLINE UI
+function renderOfflineUI() {
+    document.getElementById('contentArea').innerHTML = `
+        <div style="padding: 50px; text-align: center; color: white;">
+            <h2>🚫 SYSTEM OFFLINE</h2>
+            <button onclick="location.reload()" style="padding: 10px 20px; background: #D4AF37; border:none;">RETRY</button>
+        </div>
+    `;
 }
