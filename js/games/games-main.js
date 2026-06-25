@@ -1,100 +1,59 @@
-// js/games/games-main.js - COMPLETE INTEGRATED VERSION
-
-// Active Storage Cache for Telemetry
-if (!localStorage.getItem('recentlyPlayedGames')) {
-    localStorage.setItem('recentlyPlayedGames', JSON.stringify(['spaceshooter', 'neondrift']));
-}
-
+// --- ULTRA GOD LEVEL GAMES HUB ---
 function openGames() {
-    var c = document.getElementById('contentArea');
-    if (!c) return;
-
+    const c = document.getElementById('contentArea');
     c.innerHTML = `
-        <div id="gamesHubWrapper" style="padding: 20px; background: #03020a; min-height: 100vh; font-family: sans-serif; color: #ffffff;">
-            <h1 style="color: #D4AF37; font-size: 24px; margin-bottom: 20px;">🎮 Games Hub</h1>
-            
-            <input id="gameSearchInput" oninput="filterHubGames()" type="text" placeholder="Search games..." style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; margin-bottom: 20px;">
-
-            <div id="categorizedGamesSection">
-                <div class="category-block" style="margin-bottom: 20px;">
-                    <h2 style="font-size: 14px; color: #8B5CF6; margin-bottom: 10px; text-transform: uppercase;">⚡ Action Channels</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
-                        ${injectCard("🥷","Cyber Ninja","cyberninja","#8B5CF6")}
-                        ${injectCard("🚀","Space Shooter","spaceshooter","#00D4FF")}
-                        ${injectCard("🎯","Aim Trainer","aimtrainer","#FF4757")}
-                        ${injectCard("🏎️","Neon Drift","neondrift","#FF9F43")}
-                    </div>
-                </div>
-
-                <div class="category-block" style="margin-bottom: 20px;">
-                    <h2 style="font-size: 14px; color: #00D4FF; margin-bottom: 10px; text-transform: uppercase;">🕹️ Arcade Ports</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
-                        ${injectCard("🧱","Brick Breaker","brickbreaker","#FF6B81")}
-                        ${injectCard("🏓","Pong","pong","#00D4FF")}
-                        ${injectCard("🐦","Flappy Bird","flappy","#FF6B81")}
-                    </div>
-                </div>
-
-                <div class="category-block" style="margin-bottom: 20px;">
-                    <h2 style="font-size: 14px; color: #2ED573; margin-bottom: 10px; text-transform: uppercase;">🧠 Cognitive Matrix</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
-                        ${injectCard("❌","Tic Tac Toe","tictactoe","#D4AF37")}
-                        ${injectCard("🧠","Memory Match","memorymatch","#2ED573")}
-                        ${injectCard("⚡","Reaction Master","reactionmaster","#FFD700")}
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function injectCard(icon, title, id, color) {
-    return `
-        <div class="game-card" onclick="safeStart('${id}')" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid ${color}; cursor: pointer;">
-            <div style="font-size: 30px;">${icon}</div>
-            <div style="font-size: 12px; margin-top: 8px; font-weight: bold;">${title}</div>
-        </div>
-    `;
-}
-
-function filterHubGames() {
-    let query = document.getElementById('gameSearchInput').value.toLowerCase();
-    let cards = document.querySelectorAll('.game-card');
-    cards.forEach(card => {
-        let title = card.innerText.toLowerCase();
-        card.parentElement.parentElement.style.display = title.includes(query) ? 'block' : 'none';
-    });
-}
-
-function safeStart(name) {
-    updateRecentQueue(name);
-    var funcName = 'start' + name.charAt(0).toUpperCase() + name.slice(1);
-    if (window[funcName]) window[funcName]();
-    else if (typeof showToast === 'function') showToast('Loading game...', 'info');
-}
-
-function updateRecentQueue(id) {
-    let queue = JSON.parse(localStorage.getItem('recentlyPlayedGames')) || [];
-    queue = queue.filter(x => x !== id);
-    queue.unshift(id);
-    if (queue.length > 3) queue.pop();
-    localStorage.setItem('recentlyPlayedGames', JSON.stringify(queue));
-}
-
-// XP Reward Engine (Fixed for Firebase)
-function rewardChronoxXP(result, gameId) {
-    let xp = (result === 'win') ? 25 : (result === 'draw' ? 10 : 0);
-    
-    if (xp > 0 && typeof firebase !== 'undefined') {
-        const user = firebase.auth().currentUser;
-        if (user) {
-            firebase.firestore().collection('users').doc(user.uid).update({
-                xp: firebase.firestore.FieldValue.increment(xp)
-            }).then(() => {
-                if (typeof showToast === 'function') showToast(`⚡ +${xp} XP Secured!`);
-                // Update local memory if profile is open
-                if (currentUserData) currentUserData.xp += xp;
-            }).catch(err => console.error("XP Error:", err));
+    <style>
+        .glow-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
-    }
+        .glow-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: #D4AF37;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+        }
+    </style>
+    <div style="padding:20px; font-family:'Poppins', sans-serif; color:white;">
+        <h1 style="color:#D4AF37; font-size:32px; margin-bottom:25px; text-shadow:0 0 20px #D4AF37;">🎮 ChronoX Arena</h1>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+            ${createGame("🚀", "Shooter", "#00d4ff", "startSpaceshooter")}
+            ${createGame("🏎️", "Drift", "#ff9f43", "startNeondrift")}
+            ${createGame("🥷", "Ninja", "#8b5cf6", "startCyberninja")}
+            ${createGame("♟️", "Chess", "#D4AF37", "startChess")}
+            ${createGame("🎲", "Ludo", "#2ED573", "startLudo")}
+            ${createGame("🎯", "Aim", "#FF4757", "startAimtrainer")}
+        </div>
+    </div>`;
+}
+
+function createGame(icon, title, color, func) {
+    return `
+    <div class="glow-card" onclick="${func}()">
+        <div style="font-size:40px; filter:drop-shadow(0 0 10px ${color});">${icon}</div>
+        <div style="margin-top:12px; font-weight:800; letter-spacing:1px;">${title}</div>
+    </div>`;
+}
+
+// Global XP Engine
+function rewardChronoxXP(result, gameId) {
+    if (!currentUser) return;
+    // XP Calculation
+    const xp = (result === 'win') ? 50 : 20; 
+    
+    // Firebase Update
+    db.collection('users').doc(currentUser.uid).update({
+        xp: firebase.firestore.FieldValue.increment(xp)
+    }).then(() => {
+        currentUserData.xp += xp;
+        // Premium Toast Notification
+        showToast(`⚡ LEGENDARY! +${xp} XP Added`, 'success');
+    });
 }
