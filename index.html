@@ -2,100 +2,180 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0A0E27">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>ChronoX - Premium Social Network</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ChronoX • Premium Social Network</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="manifest" href="manifest.json">
-    
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 </head>
 <body>
-
-<div class="stars-container" id="starsContainer"></div>
-<div class="clouds-container" id="cloudsContainer"></div>
-<div class="nebula nebula-1"></div>
-<div class="nebula nebula-2"></div>
-<div class="nebula nebula-3"></div>
-<div class="shooting-star"></div>
-<div class="shooting-star"></div>
-<div class="shooting-star"></div>
-
-<div id="splashScreen">
-    <div class="chronox-logo"><div class="logo-c"></div><div class="logo-dot"></div><div class="logo-dot"></div><div class="logo-dot"></div></div>
-    <div class="splash-brand">ChronoX</div>
-    <p style="color:rgba(255,255,255,0.5);letter-spacing:3px;text-transform:uppercase;font-size:12px">Premium Social Network</p>
-    <div class="splash-loader"><div></div></div>
-</div>
-
-<div id="authScreen"></div>
-
-<div id="mainApp">
-    <div id="contentArea"></div>
-    <nav id="bottomNav">
-        <button class="nav-btn active" data-page="home"><span>🏠</span>Home</button>
-        <button class="nav-btn" data-page="chats"><span>💬</span>Chats</button>
-        <button class="nav-btn" data-page="search"><span>🔍</span>Search</button>
-        <button class="nav-btn" data-page="games"><span>🎮</span>Games</button>
-        <button class="nav-btn" data-page="profile"><span>👤</span>Profile</button>
-    </nav>
-</div>
-
-<div id="chatWindow">
-    <div id="chatHeader">
-        <button onclick="closeChatWindow()">←</button>
-        <img id="chatAvImg" src="">
-        <div><div id="chatNm"></div><div id="chatSt"></div></div>
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-content">
+            <h1 class="neon-text splash-title">CHRONOX</h1>
+            <p class="gold-text splash-subtitle">Premium Social Network</p>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
     </div>
-    <div id="chatMsgs"></div>
-    <div id="chatInputArea">
-        <input id="chatInput" placeholder="Type a message..." autocomplete="off">
-        <button id="chatSendBtn" onclick="sendChatMessage()">➤</button>
+
+    <!-- Main App Container -->
+    <div id="app-container">
+        <!-- Auth Page -->
+        <div id="authPage" class="page active">
+            <div class="auth-container">
+                <div class="glass-panel auth-card">
+                    <h2 class="neon-text auth-title">Welcome Back</h2>
+                    <div class="input-group">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="authEmail" placeholder="Email address" class="auth-input">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="authPass" placeholder="Password" class="auth-input">
+                    </div>
+                    <div class="input-group" id="signupField" style="display:none;">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" id="authUsername" placeholder="Choose username" class="auth-input">
+                    </div>
+                    <div class="auth-buttons">
+                        <button id="loginBtn" class="btn-glow auth-btn">Login</button>
+                        <button id="signupBtn" class="btn-gold auth-btn">Sign Up</button>
+                    </div>
+                    <p class="auth-toggle">or <span id="toggleAuth">create new account</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Home Page -->
+        <div id="homePage" class="page">
+            <div class="page-header">
+                <h2 class="neon-text">✦ Home Feed</h2>
+                <button onclick="window.logout()" class="btn-icon"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+            <div class="home-content">
+                <div class="glass-panel welcome-card">
+                    <h3>Welcome to ChronoX</h3>
+                    <p>Your premium social experience awaits</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chats Page -->
+        <div id="chatsPage" class="page">
+            <div class="page-header">
+                <h2 class="neon-text">💬 Messages</h2>
+            </div>
+            <div id="chatListContainer" class="chat-list"></div>
+        </div>
+
+        <!-- Search Page -->
+        <div id="searchPage" class="page">
+            <div class="page-header">
+                <h2 class="neon-text">🔍 Discover</h2>
+            </div>
+            <div class="search-container">
+                <div class="input-group">
+                    <i class="fas fa-search input-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Search by username..." class="auth-input">
+                </div>
+                <div id="searchResults" class="search-results"></div>
+            </div>
+        </div>
+
+        <!-- Games Page -->
+        <div id="gamesPage" class="page">
+            <div class="page-header">
+                <h2 class="neon-text">🎮 Games Hub</h2>
+            </div>
+            <div id="gamesGrid" class="games-grid"></div>
+            
+            <!-- Game Container (for embedding games) -->
+            <div id="gameContainer" style="display:none; margin-top: 1rem;">
+                <button onclick="window.closeGame()" class="btn-glow" style="margin-bottom: 1rem;">
+                    <i class="fas fa-arrow-left"></i> Back to Games
+                </button>
+                <div id="gameCanvas" class="glass-panel" style="min-height: 400px; display: flex; align-items: center; justify-content: center;">
+                    <!-- Games will render here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="profilePage" class="page">
+            <div id="profileContainer" class="profile-container"></div>
+        </div>
+
+        <!-- Chat Modal -->
+        <div id="chatModal" class="chat-modal glass-panel">
+            <div class="chat-header">
+                <span id="chatTitle" class="neon-text">Chat</span>
+                <button id="closeChatModal" class="btn-icon">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="chatMessages" class="chat-messages"></div>
+            <div class="chat-input-container">
+                <input type="text" id="chatMessageInput" placeholder="Type a message..." class="chat-input">
+                <button id="sendChatBtn" class="btn-glow send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" data-page="home">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </div>
+            <div class="nav-item" data-page="chats">
+                <i class="fas fa-comment-dots"></i>
+                <span>Chats</span>
+            </div>
+            <div class="nav-item" data-page="search">
+                <i class="fas fa-search"></i>
+                <span>Search</span>
+            </div>
+            <div class="nav-item" data-page="games">
+                <i class="fas fa-gamepad"></i>
+                <span>Games</span>
+            </div>
+            <div class="nav-item" data-page="profile">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </div>
+        </nav>
     </div>
-</div>
 
-<div class="modal" id="genericModal"><div class="modal-box" id="genericContent"></div></div>
-<div class="modal" id="gamesModal"><div class="modal-box" id="gamesContent"></div></div>
-
-<script src="js/config.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/app.js"></script>
-<script src="js/chat.js"></script>
-<script src="js/profile.js"></script>
-<script src="js/search.js"></script>
-<script src="js/shop.js"></script>
-<script src="js/achievements.js"></script>
-<script src="js/notifications.js"></script>
-<script src="js/dashboard.js"></script>
-
-<script src="js/games/games-main.js"></script>
-
-<script src="js/games/chess.js"></script>
-<script src="js/games/ludo.js"></script>
-<script src="js/games/uno.js"></script>
-
-<script src="js/games/tictactoe.js"></script>
-<script src="js/games/pong.js"></script>
-<script src="js/games/flappy.js"></script>
-<script src="js/games/neondrift.js"></script>
-<script src="js/games/cyberninja.js"></script>
-<script src="js/games/aimtrainer.js"></script>
-<script src="js/games/brickbreaker.js"></script>
-<script src="js/games/spaceshooter.js"></script>
-<script src="js/games/memorymatch.js"></script> 
-<script src="js/games/reactionmaster.js"></script>
+    <!-- Firebase SDK -->
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/utils.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/profile.js"></script>
+    <script type="module" src="js/search.js"></script>
+    <script type="module" src="js/chat.js"></script>
     
-<script>
-(function(){var c=document.getElementById('starsContainer');if(!c)return;for(var i=0;i<200;i++){var s=document.createElement('div');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';var sz=Math.random()*3+1;s.style.width=sz+'px';s.style.height=sz+'px';s.style.setProperty('--duration',(Math.random()*3+2)+'s');s.style.setProperty('--delay',Math.random()*4+'s');c.appendChild(s);}})();
-(function(){var c=document.getElementById('cloudsContainer');if(!c)return;var cf=[{w:220,h:85,t:5,s:55},{w:300,h:110,t:15,s:75},{w:190,h:75,t:28,s:50},{w:340,h:120,t:48,s:85},{w:240,h:90,t:62,s:60},{w:280,h:100,t:78,s:70},{w:200,h:80,t:90,s:48}];cf.forEach(function(x){var cl=document.createElement('div');cl.className='cloud';cl.style.width=x.w+'px';cl.style.height=x.h+'px';cl.style.top=x.t+'%';cl.style.left='-'+x.w+'px';cl.style.setProperty('--speed',x.s+'s');c.appendChild(cl);});})();
-if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js');}
-</script>
+    <!-- Games Module -->
+    <script type="module" src="js/games-main.js"></script>
+    
+    <!-- All Games (your custom game scripts) -->
+    <script src="js/games/chess.js"></script>
+    <script src="js/games/ludo.js"></script>
+    <script src="js/games/uno.js"></script>
+    <script src="js/games/tictactoe.js"></script>
+    <script src="js/games/pong.js"></script>
+    <script src="js/games/flappy.js"></script>
+    <script src="js/games/neondrift.js"></script>
+    <script src="js/games/cyberninja.js"></script>
+    <script src="js/games/aimtrainer.js"></script>
+    <script src="js/games/brickbreaker.js"></script>
+    <script src="js/games/spaceshooter.js"></script>
+    <script src="js/games/memorymatch.js"></script>
+    <script src="js/games/reactionmaster.js"></script>
+    
+    <script type="module" src="js/achievements.js"></script>
+    <script type="module" src="js/notifications.js"></script>
 </body>
-</html>
+        </html>
