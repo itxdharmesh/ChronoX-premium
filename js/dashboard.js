@@ -2,65 +2,56 @@ import { db } from './config.js';
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 async function loadDashboard() {
-    const currentUser = window.auth?.currentUser;
-    if (!currentUser) return;
+    const user = window.auth?.currentUser;
+    if (!user) return;
     
     try {
-        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-        if (!userDoc.exists()) return;
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (!snap.exists()) return;
+        const d = snap.data();
         
-        const data = userDoc.data();
+        // Greeting
+        const h = new Date().getHours();
+        const g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+        const greetEl = document.getElementById('greetingText');
+        if (greetEl) greetEl.textContent = `${g}, ${d.name || 'User'} ✨`;
         
-        // Update greeting
-        const hour = new Date().getHours();
-        const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-        document.getElementById('greetingText').textContent = `${greeting}, ${data.name || 'User'} ✨`;
+        // Stats
+        const levelEl = document.getElementById('statLevel');
+        const xpEl = document.getElementById('statXP');
+        const coinsEl = document.getElementById('statCoins');
+        const streakEl = document.getElementById('statStreak');
+        if (levelEl) levelEl.textContent = d.level || 1;
+        if (xpEl) xpEl.textContent = d.xp || 0;
+        if (coinsEl) coinsEl.textContent = d.coins || 0;
+        if (streakEl) streakEl.textContent = d.streak || 0;
         
-        // Update stats
-        document.getElementById('statLevel').textContent = data.level || 1;
-        document.getElementById('statXP').textContent = data.xp || 0;
-        document.getElementById('statCoins').textContent = data.coins || 0;
-        document.getElementById('statStreak').textContent = data.streak || 0;
+        // XP Bar
+        const xpProgress = (d.xp || 0) % 100;
+        const xpText = document.getElementById('xpProgressText');
+        const xpFill = document.getElementById('xpFill');
+        if (xpText) xpText.textContent = `${xpProgress}/100 XP`;
+        if (xpFill) xpFill.style.width = `${xpProgress}%`;
         
-        // XP Progress
-        const xpForCurrentLevel = ((data.level || 1) - 1) * 100;
-        const xpProgress = (data.xp || 0) - xpForCurrentLevel;
-        const xpNeeded = 100;
-        const xpPercent = Math.min(100, Math.max(0, (xpProgress / xpNeeded) * 100));
-        
-        document.getElementById('xpProgressText').textContent = `${xpProgress}/${xpNeeded} XP`;
-        document.getElementById('xpFill').style.width = `${xpPercent}%`;
-        
-        // Daily challenge progress
-        const dailyPercent = Math.min(100, ((data.dailyGamesPlayed || 0) / 3) * 100);
-        document.getElementById('dailyFill').style.width = `${dailyPercent}%`;
-        
-        // Recent badges
-        const badges = data.badges || [];
-        const badgeContainer = document.getElementById('recentBadges');
-        if (badges.length > 0) {
-            badgeContainer.innerHTML = badges.slice(-4).map(b => 
-                `<span class="badge-pill">🏅 ${b.replace(/_/g, ' ')}</span>`
-            ).join('');
-        } else {
-            badgeContainer.innerHTML = '<span style="color:#666;font-size:0.8rem;">No badges yet - Play games to earn!</span>';
+        // Badges
+        const badges = d.badges || [];
+        const badgeDiv = document.getElementById('recentBadges');
+        if (badgeDiv) {
+            badgeDiv.innerHTML = badges.length > 0 
+                ? badges.slice(-4).map(b => `<span class="badge-pill">🏅 ${b.replace(/_/g, ' ')}</span>`).join('')
+                : '<span style="color:#666;font-size:0.8rem;">No badges yet</span>';
         }
         
-        // Update nav avatar
-        const navAvatar = document.getElementById('navAvatar');
-        if (navAvatar) navAvatar.src = data.avatar || window.defaultAvatar?.() || '';
+        // Avatar in nav
+        const navImg = document.getElementById('navAvatar');
+        if (navImg) navImg.src = d.avatar || 'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=35';
         
-    } catch (error) {
-        console.error('Dashboard load error:', error);
-    }
+        // Daily challenge
+        const dailyFill = document.getElementById('dailyFill');
+        if (dailyFill) dailyFill.style.width = `${Math.min(100, ((d.dailyGamesPlayed || 0) / 3) * 100)}%`;
+        
+    } catch(e) { console.error(e); }
 }
-
-// Refresh dashboard when navigating to home
-const originalNavigate = window.navigate;
-window.navigate = function(page) {
-    if (originalNavigate) originalNavigate(page);
-    if (page === 'home') loadDashboard();
-};
 
 window.loadDashboard = loadDashboard;
 export { loadDashboard };
