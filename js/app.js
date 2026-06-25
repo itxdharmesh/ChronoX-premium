@@ -1,63 +1,103 @@
-// --- CENTRALIZED APP ENGINE ---
-var currentUser = null;
-var currentUserData = null;
+/**
+ * Main App Controller
+ * Handles navigation and page routing
+ */
 
-// Firebase Listener
-auth.onAuthStateChanged(function(user) {
-    if (user) {
-        currentUser = user;
-        db.collection('users').doc(user.uid).get().then(function(doc) {
-            currentUserData = doc.exists ? doc.data() : { name: 'User', xp: 0, coins: 500 };
-            document.getElementById('splashScreen')?.classList.add('hidden');
-            document.getElementById('mainApp')?.classList.add('show');
-            navigate('home');
-        });
-    } else {
-        document.getElementById('mainApp')?.classList.remove('show');
-        document.getElementById('authScreen')?.classList.add('show');
-    }
-});
-
-// Universal Navigation Controller
-function navigate(p) {
-    // 1. Navigation UI Updates
-    var btns = document.querySelectorAll('.nav-btn');
-    btns.forEach(b => b.classList.remove('active'));
-    document.querySelector(`[data-page="${p}"]`)?.classList.add('active');
+// Navigation function
+function navigate(page) {
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(p => {
+        p.classList.remove('active');
+    });
     
-    var c = document.getElementById('contentArea');
-    if (!c) return;
-
-    // 2. Modular Routing
-    switch(p) {
-        case 'home':
-            if(typeof renderDashboard === 'function') renderDashboard(c);
-            break;
+    // Show selected page
+    const targetPage = document.getElementById(page + 'Page');
+    if (targetPage) {
+        targetPage.classList.add('active');
+    }
+    
+    // Update bottom nav
+    document.querySelectorAll('.nav-item').forEach(nav => {
+        nav.classList.remove('active');
+    });
+    
+    const activeNav = document.querySelector(`.nav-item[data-page="${page}"]`);
+    if (activeNav) {
+        activeNav.classList.add('active');
+    }
+    
+    // Trigger page-specific functions
+    switch(page) {
         case 'chats':
-            if(typeof renderChats === 'function') renderChats(c);
-            break;
-        case 'search':
-            if(typeof renderSearch === 'function') renderSearch(c);
-            break;
-        case 'games':
-            if(typeof openGames === 'function') openGames();
+            if (typeof window.loadChatList === 'function') {
+                window.loadChatList();
+            }
             break;
         case 'profile':
-            if(typeof renderProfile === 'function') renderProfile(c);
+            if (typeof window.renderOwnProfile === 'function') {
+                window.renderOwnProfile();
+            }
             break;
-        default:
-            c.innerHTML = `<h1>${p.toUpperCase()}</h1>`;
+        case 'games':
+            if (typeof window.renderGamesHub === 'function') {
+                window.renderGamesHub();
+            }
+            break;
+        case 'search':
+            // Focus on search input
+            setTimeout(() => {
+                document.getElementById('searchInput')?.focus();
+            }, 300);
+            break;
     }
 }
 
-// Global Event Listeners for Nav Buttons
-document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        navigate(this.dataset.page);
+// Initialize bottom navigation
+function initNavigation() {
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const page = item.dataset.page;
+            navigate(page);
+        });
     });
+}
+
+// Handle back button
+window.addEventListener('popstate', (event) => {
+    if (event.state && event.state.page) {
+        navigate(event.state.page);
+    }
 });
 
-// Logout Helper
-function logout() {
-    auth.signOut().then(() => location.reload());
-}
+// Push state to history when navigating
+const originalNavigate = navigate;
+navigate = function(page) {
+    history.pushState({ page: page }, '', `#${page}`);
+    originalNavigate(page);
+};
+
+// Initialize app
+document.addEventListener('DOMContentLoaded', () => {
+    initNavigation();
+    
+    // Handle initial hash
+    const hash = window.location.hash.slice(1);
+    if (hash && document.getElementById(hash + 'Page')) {
+        navigate(hash);
+    }
+    
+    // Hide splash screen after delay
+    setTimeout(() => {
+        const splash = document.getElementById('splashScreen');
+        if (splash && splash.style.display !== 'none') {
+            splash.style.opacity = '0';
+            setTimeout(() => {
+                splash.style.display = 'none';
+            }, 500);
+        }
+    }, 2000);
+});
+
+// Export globally
+window.navigate = navigate;
+window.initNavigation = initNavigation;
