@@ -1,154 +1,62 @@
-var chatId = null, chatUser = null, chatListener = null;
-var activeTab = 'chats';
+import { db } from './config.js';
+import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { defaultAvatar, formatTime } from './utils.js';
 
-function renderChats(c) {
-    c.innerHTML = 
-        '<h2 style="color:#D4AF37;margin-bottom:10px">💬 Messages</h2>' +
-        '<div style="display:flex;gap:5px;margin-bottom:12px">' +
-            '<button id="tabChats" class="btn-out" style="flex:1;background:rgba(212,175,55,0.2)" onclick="switchChatTab(\'chats\')">💬 Chats</button>' +
-            '<button id="tabRequests" class="btn-out" style="flex:1" onclick="switchChatTab(\'requests\')">📩 Requests</button>' +
-        '</div>' +
-        '<div id="chatListContainer"></div>';
-    loadChatList();
-}
-
-function switchChatTab(tab) {
-    activeTab = tab;
-    document.getElementById('tabChats').style.background = tab === 'chats' ? 'rgba(212,175,55,0.2)' : '';
-    document.getElementById('tabRequests').style.background = tab === 'requests' ? 'rgba(212,175,55,0.2)' : '';
-    loadChatList();
-}
-
-function loadChatList() {
-    var container = document.getElementById('chatListContainer');
-    if (!container) return;
-    
-    if (activeTab === 'requests') {
-        loadRequests(container);
-        return;
-    }
-    
-    var mutualIds = (currentUserData.following || []).filter(function(id) {
-        return (currentUserData.followers || []).indexOf(id) !== -1;
-    });
-    
-    if (mutualIds.length === 0) {
-        container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:30px">No chats yet.<br>Follow someone and ask them to follow back!</p>';
-        return;
-    }
-    
-    container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:20px">Loading...</p>';
-    var html = '', loaded = 0;
-    
-    mutualIds.forEach(function(uid) {
-        db.collection('users').doc(uid).get().then(function(doc) {
-            loaded++;
-            var u = doc.data();
-            if (!u) return;
-            var isOnline = u.onlineStatus === 'online';
-            var dp = u.avatar || defaultAvatar(u.name);
-            var cid = [currentUser.uid, uid].sort().join('_');
-            
-            html += '<div class="chat-item" onclick="openChatWindow(\'' + cid + '\',\'' + uid + '\',\'' + u.name + '\',\'' + (u.avatar||'') + '\')">' +
-                '<img src="' + dp + '" style="width:48px;height:48px;border-radius:50%;border:2px solid #D4AF37;object-fit:cover;background:#1a1f4e" onerror="this.src=\'' + defaultAvatar(u.name) + '\'">' +
-                '<div style="flex:1"><b>' + u.name + '</b><br><small style="color:rgba(255,255,255,0.5)">Tap to chat</small></div>' +
-                '<small style="color:' + (isOnline?'#2ED573':'#888') + '">' + (isOnline?'● Online':'Offline') + '</small>' +
-            '</div>';
-            
-            if (loaded === mutualIds.length) container.innerHTML = html;
+async function openChat(peerUid) {
+    const currentUser = window.auth?.currentUser;
+    if (!currentUser) return;
+    const chatId = [currentUser.uid, peerUid].sort().join('_');
+    document.getElementById('chatTitle').textContent = 'Chat';
+    document.getElementById('chatModal').style.display = 'flex';
+    const messagesContainer = document.getElementById('chatMessages');
+    const messagesQuery = query(collection(db, 'chats', chatId, 'messages'), orderBy('timestamp', 'asc'));
+    onSnapshot(messagesQuery, (snapshot) => {
+        messagesContainer.innerHTML = '';
+        snapshot.forEach(doc => {
+            const message = doc.data();
+            const isMine = message.sender === currentUser.uid;
+            messagesContainer.innerHTML += `
+                <div style="text-align:${isMine ? 'right' : 'left'};margin:0.5rem 0;">
+                    <div class="glass-panel" style="display:inline-block;padding:0.5rem 1rem;max-width:80%;">
+                        <p>${message.text}</p><small style="color:#aaa;">${formatTime(message.timestamp)}</small>
+                    </div>
+                </div>`;
         });
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+    document.getElementById('sendChatBtn').onclick = async () => {
+        const input = document.getElementById('chatMessageInput');
+        const text = input.value.trim();
+        if (!text) return;
+        await addDoc(collection(db, 'chats', chatId, 'messages'), { text, sender: currentUser.uid, timestamp: serverTimestamp() });
+        input.value = '';
+    };
+}
+
+document.getElementById('closeChatModal').addEventListener('click', () => {
+    document.getElementById('chatModal').style.display = 'none';
+});
+
+async function loadChatList() {
+    const currentUser = window.auth?.currentUser;
+    if (!currentUser) return;
+    const container = document.getElementById('chatListContainer');
+    const chatsQuery = query(collection(db, 'chats'), where('participants', 'array-contains', currentUser.uid));
+    const snapshot = await getDocs(chatsQuery);
+    container.innerHTML = '';
+    snapshot.forEach(doc => {
+        const chatData = doc.data();
+        const peerUid = chatData.participants.find(p => p !== currentUser.uid);
+        container.innerHTML += `
+            <div class="glass-panel chat-list-item" onclick="window.openChat('${peerUid}')">
+                <div style="display:flex;align-items:center;gap:0.8rem;">
+                    <img src="${defaultAvatar()}" width="50" height="50" style="border-radius:50%;">
+                    <div><strong>User ${peerUid.substring(0,6)}</strong><p style="font-size:0.8rem;color:#aaa;">Tap to chat</p></div>
+                </div>
+            </div>`;
     });
 }
 
-function loadRequests(container) {
-    db.collection('chat_requests').where('to', '==', currentUser.uid).where('status', '==', 'pending').get().then(function(snap) {
-        if (snap.empty) {
-            container.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.5);padding:30px">No pending requests</p>';
-            return;
-        }
-        var html = '';
-        snap.forEach(function(doc) {
-            var req = doc.data();
-            db.collection('users').doc(req.from).get().then(function(ud) {
-                var u = ud.data();
-                if (!u) return;
-                html += '<div class="card" style="padding:15px;margin-bottom:10px">' +
-                    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">' +
-                        '<img src="' + (u.avatar || defaultAvatar(u.name)) + '" style="width:40px;height:40px;border-radius:50%;border:2px solid #D4AF37;object-fit:cover;background:#1a1f4e">' +
-                        '<div><b>' + u.name + '</b><br><small style="color:#D4AF37">' + u.username + '</small></div>' +
-                    '</div>' +
-                    '<p style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:10px">💬 ' + (req.message || 'No message') + '</p>' +
-                    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">' +
-                        '<button class="btn" style="font-size:11px;padding:8px" onclick="acceptReq(\'' + doc.id + '\')">✅ Accept</button>' +
-                        '<button class="btn-out" style="font-size:11px;padding:8px;color:#FF4757;border-color:#FF4757" onclick="rejectReq(\'' + doc.id + '\')">❌ Reject</button>' +
-                    '</div>' +
-                '</div>';
-                container.innerHTML = html;
-            });
-        });
-    });
-}
-
-function acceptReq(rid) {
-    db.collection('chat_requests').doc(rid).update({ status: 'accepted' });
-    showToast('Accepted! ✅');
-    activeTab = 'chats';
-    loadChatList();
-}
-
-function rejectReq(rid) {
-    db.collection('chat_requests').doc(rid).update({ status: 'rejected' });
-    showToast('Rejected ❌');
-    loadChatList();
-}
-
-function openChatWindow(cid, uid, name, avt) {
-    chatId = cid; chatUser = { uid: uid, name: name, avt: avt };
-    var win = document.getElementById('chatWindow');
-    win.style.display = 'flex';
-    document.getElementById('chatNm').textContent = name;
-    document.getElementById('chatAvImg').src = avt || defaultAvatar(name);
-    document.getElementById('chatAvImg').onerror = function() { this.src = defaultAvatar(name); };
-    document.getElementById('chatMsgs').innerHTML = '';
-    document.getElementById('chatInput').value = '';
-    document.getElementById('chatSt').textContent = 'Loading...';
-    
-    db.collection('users').doc(uid).get().then(function(doc) {
-        var u = doc.data();
-        var el = document.getElementById('chatSt');
-        if (u && u.onlineStatus === 'online') { el.textContent = '● Active now'; el.style.color = '#2ED573'; }
-        else { el.textContent = 'Offline'; el.style.color = '#888'; }
-    });
-    
-    if (chatListener) chatListener();
-    chatListener = db.collection('chats').doc(cid).collection('messages').orderBy('timestamp','asc').onSnapshot(function(snap) {
-        var mc = document.getElementById('chatMsgs'); if (!mc) return; mc.innerHTML = '';
-        snap.forEach(function(doc) {
-            var m = doc.data();
-            mc.innerHTML += '<div style="align-self:' + (m.senderId === currentUser.uid ? 'flex-end' : 'flex-start') + ';background:' + (m.senderId === currentUser.uid ? 'linear-gradient(135deg,#D4AF37,#00D4FF)' : 'rgba(19,24,66,0.8)') + ';color:' + (m.senderId === currentUser.uid ? '#0A0E27' : '#fff') + ';padding:10px 16px;border-radius:18px;max-width:75%">' + m.text + '</div>';
-        });
-        mc.scrollTop = mc.scrollHeight;
-    });
-}
-
-function closeChatWindow() {
-    document.getElementById('chatWindow').style.display = 'none';
-    if (chatListener) chatListener();
-    chatListener = null; chatId = null; chatUser = null;
-}
-
-function sendChatMessage() {
-    var input = document.getElementById('chatInput');
-    if (!input) return;
-    var t = input.value.trim();
-    if (!t || !chatId || !chatUser) return;
-    var ref = db.collection('chats').doc(chatId);
-    ref.get().then(function(doc) {
-        if (!doc.exists) ref.set({ participants: [currentUser.uid, chatUser.uid], lastMessage: t, lastMessageTime: firebase.firestore.FieldValue.serverTimestamp() });
-        ref.collection('messages').add({ senderId: currentUser.uid, text: t, timestamp: firebase.firestore.FieldValue.serverTimestamp(), seen: false });
-        ref.update({ lastMessage: t, lastMessageTime: firebase.firestore.FieldValue.serverTimestamp() });
-    });
-    input.value = '';
-}
-
-console.log('✅ Chat loaded');
+window.openChat = openChat;
+window.loadChatList = loadChatList;
+export { openChat, loadChatList };
