@@ -18,53 +18,46 @@ auth.onAuthStateChanged(function(user) {
     }
 });
 
-// Navigation Engine
+// Universal Navigation Controller
 function navigate(p) {
-    // Buttons update
-    var btns = document.querySelectorAll('#bottomNav .nav-btn');
+    // 1. Navigation UI Updates
+    var btns = document.querySelectorAll('.nav-btn');
     btns.forEach(b => b.classList.remove('active'));
     document.querySelector(`[data-page="${p}"]`)?.classList.add('active');
     
     var c = document.getElementById('contentArea');
     if (!c) return;
 
-    // Routing Logic
+    // 2. Modular Routing
     switch(p) {
         case 'home':
-            c.innerHTML = `<div style="padding:20px; color:white;"><h1>🏠 Dashboard</h1><p>Welcome to your personal hub.</p></div>`;
+            if(typeof renderDashboard === 'function') renderDashboard(c);
             break;
-            
         case 'chats':
-            c.innerHTML = `<div style="padding:20px; color:white;"><h1>💬 Chats</h1><p>Connect with global players.</p></div>`;
+            if(typeof renderChats === 'function') renderChats(c);
             break;
-            
         case 'search':
-            c.innerHTML = `<div style="padding:20px; color:white;"><h1>🔍 Search</h1><input type="text" placeholder="Find games..." style="width:100%; padding:10px; border-radius:10px;"></div>`;
+            if(typeof renderSearch === 'function') renderSearch(c);
             break;
-            
         case 'games':
-            // Yahan Games Hub load hoga
-            if(typeof openGames === 'function') {
-                openGames();
-            } else {
-                c.innerHTML = `<h1 style="color:red; padding:20px;">Games module missing!</h1>`;
-            }
+            if(typeof openGames === 'function') openGames();
             break;
-            
         case 'profile':
-            const u = currentUserData || { name: 'User', xp: 0, coins: 500 };
-            c.innerHTML = `
-                <div style="padding:30px; color:white; text-align:center;">
-                    <h1 style="color:#D4AF37;">👤 Profile</h1>
-                    <div style="background:#1a1a1a; padding:20px; border-radius:20px; border:1px solid #333;">
-                        <h2>${u.name}</h2>
-                        <p>XP: ${u.xp} | Coins: ${u.coins}</p>
-                        <button onclick="auth.signOut(); location.reload();" style="background:#ff4757; border:none; padding:10px 20px; color:white; border-radius:10px;">Logout</button>
-                    </div>
-                </div>`;
+            if(typeof renderProfile === 'function') renderProfile(c);
             break;
-            
         default:
-            c.innerHTML = `<div style="padding:20px; color:white;"><h1>${p.toUpperCase()}</h1></div>`;
+            c.innerHTML = `<h1>${p.toUpperCase()}</h1>`;
     }
+}
+
+// Global Event Listeners for Nav Buttons
+document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        navigate(this.dataset.page);
+    });
+});
+
+// Logout Helper
+function logout() {
+    auth.signOut().then(() => location.reload());
 }
