@@ -5,12 +5,13 @@ import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-
 
 // Your Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyAZ0GNKhOQ2WZzN0fMBwPjQYQkYvDlF8Zc",
-    authDomain: "chronox-demo.firebaseapp.com",
-    projectId: "chronox-demo",
-    storageBucket: "chronox-demo.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abc123"
+  apiKey: "AIzaSyBROVVwRZfnPJcBy1y1jwkG3D124m7S7zw",
+  authDomain: "chronox-4562a.firebaseapp.com",
+  projectId: "chronox-4562a",
+  storageBucket: "chronox-4562a.firebasestorage.app",
+  messagingSenderId: "88388929062",
+  appId: "1:88388929062:web:ec830cab64b8b207dac8e7",
+  measurementId: "G-LMWYZ8RSKN"
 };
 
 // Initialize Firebase
