@@ -1,19 +1,28 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+// Your Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyAIcmtV131UOy8n-t2_NFWFtnXzqHM09EU",
-    authDomain: "chronox-94ad7.firebaseapp.com",
-    databaseURL: "https://chronox-94ad7-default-rtdb.firebaseio.com",
-    projectId: "chronox-94ad7",
-    storageBucket: "chronox-94ad7.firebasestorage.app",
-    messagingSenderId: "571679909717",
-    appId: "1:571679909717:web:45841500518af27258f1dc",
-    measurementId: "G-J99TEGGSST"
+    apiKey: "AIzaSyAZ0GNKhOQ2WZzN0fMBwPjQYQkYvDlF8Zc",
+    authDomain: "chronox-demo.firebaseapp.com",
+    projectId: "chronox-demo",
+    storageBucket: "chronox-demo.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "1:123456789:web:abc123"
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-const GEMINI_KEY = "AQ.Ab8RN6JeA-wi9QbkIrCgUYAmOaIRQE3w9t7SJ2Kuy8PrWr3O5g";
+// Export for use in other modules
+export { auth, db, storage };
 
-console.log('🚀 ChronoX Config Loaded');
+// Also make available globally for non-module scripts
+window.db = db;
+window.auth = auth;
+window.storage = storage;
