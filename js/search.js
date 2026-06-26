@@ -33,25 +33,22 @@ if (searchInput) {
                 if (userId === myUid) return;
                 
                 var userData = docSnap.data();
+                var avatarUrl = userData.avatar || 'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=40';
                 
-                // CREATE CARD
                 var card = document.createElement('div');
                 card.className = 'glass-panel';
                 card.style.cssText = 'cursor:pointer;display:flex;align-items:center;gap:0.8rem;padding:0.8rem;margin:0.5rem 0;';
-                
-                // PROFILE CLICK - DIRECT onclick property
-                card.onclick = function() {
-                    var uid = this.getAttribute('data-uid');
-                    console.log('CLICKED CARD, UID:', uid);
-                    window.openUserProfile(uid);
-                };
                 card.setAttribute('data-uid', userId);
                 
-                var avatarUrl = userData.avatar || 'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=40';
+                // ✅ USE viewProfile (global function)
+                card.addEventListener('click', function() {
+                    var uid = this.getAttribute('data-uid');
+                    console.log('🟢 Card clicked! UID:', uid);
+                    window.viewProfile(uid);
+                });
                 
                 card.innerHTML = `
-                    <img src="${avatarUrl}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" 
-                         onerror="this.src='https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=40'">
+                    <img src="${avatarUrl}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" onerror="this.src='https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=40'">
                     <div style="flex:1;min-width:0;">
                         <strong>${userData.name || 'User'}</strong>
                         <p style="font-size:0.7rem;color:#aaa;">@${userData.username || 'unknown'}</p>
@@ -64,8 +61,6 @@ if (searchInput) {
             if (resultsContainer.children.length === 0) {
                 resultsContainer.innerHTML = '<p style="text-align:center;color:#888;padding:1rem;">No users found</p>';
             }
-        }).catch(function(error) {
-            console.error('Search error:', error);
         });
     });
 }
