@@ -14,37 +14,51 @@ document.getElementById('searchInput')?.addEventListener('input', async (e) => {
         collection(db, 'users'),
         where('username', '>=', searchTerm),
         where('username', '<=', searchTerm + '\uf8ff'),
-        limit(10)
+        limit(15)
     );
     
     const snapshot = await getDocs(usersQuery);
     resultsContainer.innerHTML = '';
     
-    // Track unique users to prevent duplicates
     const seenUids = new Set();
+    const currentUserUid = window.auth?.currentUser?.uid;
     
     snapshot.forEach(doc => {
         // Skip duplicates
         if (seenUids.has(doc.id)) return;
         seenUids.add(doc.id);
         
-        const userData = doc.data();
-        const currentUserUid = window.auth?.currentUser?.uid;
-        
-        // Skip current user from results
+        // Skip current user
         if (doc.id === currentUserUid) return;
         
-        resultsContainer.innerHTML += `
-            <div class="glass-panel search-result-card" onclick="window.openUserProfile('${doc.id}')">
-                <img src="${userData.avatar || 'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=40'}" class="search-avatar" alt="${userData.name}">
-                <div style="flex:1;">
-                    <strong>${userData.name}</strong>
-                    <p style="font-size:0.8rem;color:#aaa;">@${userData.username}</p>
-                </div>
-                <button class="btn-glow" style="padding:0.3rem 0.8rem;font-size:0.75rem;" onclick="event.stopPropagation();window.openChat('${doc.id}')">
-                    <i class="fas fa-comment"></i>
-                </button>
+        const userData = doc.data();
+        const uid = doc.id;
+        
+        const card = document.createElement('div');
+        card.className = 'glass-panel search-result-card';
+        card.style.cursor = 'pointer';
+        card.onclick = function() {
+            window.openUserProfile(uid);
+        };
+        
+        card.innerHTML = `
+            <img src="${userData.avatar || 'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=40'}" 
+                 class="search-avatar" 
+                 alt="${userData.name}"
+                 onerror="this.src='https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=40'">
+            <div style="flex:1;min-width:0;">
+                <strong>${userData.name || 'User'}</strong>
+                <p style="font-size:0.75rem;color:#aaa;">@${userData.username || 'unknown'}</p>
             </div>
+            <button class="btn-glow" style="padding:0.3rem 0.8rem;font-size:0.7rem;" onclick="event.stopPropagation();window.openChat('${uid}')">
+                <i class="fas fa-comment"></i>
+            </button>
         `;
+        
+        resultsContainer.appendChild(card);
     });
+    
+    if (resultsContainer.children.length === 0) {
+        resultsContainer.innerHTML = '<p style="text-align:center;color:#888;padding:1rem;">No users found</p>';
+    }
 });
