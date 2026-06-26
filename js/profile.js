@@ -1,5 +1,5 @@
 import { db } from './config.js';
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { showToast } from './utils.js';
 
 function defaultAvatar(name) {
@@ -12,18 +12,18 @@ function getXPForLevel(level) {
     return req[level] || level * 500;
 }
 
-// ✅ BRAND NEW openUserProfile
-async function openUserProfile(viewUid) {
-    console.log('🔍 Opening profile for UID:', viewUid);
+// ✅ FIXED: openUserProfile - ab selected user ka data load hota hai
+async function openUserProfile(profileUid) {
+    console.log('🔍 openUserProfile called with UID:', profileUid);
     
-    if (!viewUid) {
+    if (!profileUid) {
         showToast('Invalid user', 'error');
         return;
     }
     
     try {
-        // LOAD FROM FIRESTORE using viewUid
-        var userDocRef = doc(db, 'users', viewUid);
+        // ✅ FIRESTORE SE SELECTED USER LOAD KARO
+        var userDocRef = doc(db, 'users', profileUid);
         var userDoc = await getDoc(userDocRef);
         
         if (!userDoc.exists()) {
@@ -31,28 +31,27 @@ async function openUserProfile(viewUid) {
             return;
         }
         
-        // THIS IS THE SELECTED USER'S DATA
+        // ✅ SELECTED USER KA DATA
         var profileData = userDoc.data();
         var container = document.getElementById('profileContainer');
         
         if (container) {
-            // RENDER WITH CORRECT UID
-            buildProfileUI(container, profileData, viewUid);
+            buildProfileUI(container, profileData, profileUid);
             window.navigate('profile');
         }
-    } catch(err) {
-        console.error('Error:', err);
+        
+        console.log('✅ Profile loaded for:', profileData.username);
+        
+    } catch(error) {
+        console.error('Error loading profile:', error);
         showToast('Error loading profile', 'error');
     }
 }
 
-// ✅ BRAND NEW render function
+// ✅ Profile UI builder
 function buildProfileUI(container, profileData, profileUid) {
-    // Get current user for comparison
     var me = window.auth?.currentUser;
     var myUid = me ? me.uid : null;
-    
-    // IS THIS MY OWN PROFILE?
     var isMine = (myUid === profileUid);
     
     // Badges
@@ -66,12 +65,14 @@ function buildProfileUI(container, profileData, profileUid) {
         badgesHTML = '<span style="color:#666;font-size:0.7rem;">No badges yet</span>';
     }
     
-    // Level & XP
+    // Stats
     var lvl = profileData.level || 1;
     var xp = profileData.xp || 0;
     var xpNeed = getXPForLevel(lvl);
     var xpProg = xp % xpNeed;
     var xpPct = Math.min(100, (xpProg / xpNeed) * 100);
+    var coins = profileData.coins || 0;
+    var streak = profileData.streak || 0;
     
     // Mutual friends
     var mutual = 0;
@@ -90,7 +91,7 @@ function buildProfileUI(container, profileData, profileUid) {
     }
     
     // Online status
-    var statusDot = profileData.status === 'online' ? '🟢 Online' : '⚫ Offline';
+    var statusText = profileData.status === 'online' ? '🟢 Online' : '⚫ Offline';
     var statusColor = profileData.status === 'online' ? '#2ED573' : '#666';
     
     // Followers/Following
@@ -100,24 +101,24 @@ function buildProfileUI(container, profileData, profileUid) {
     // Avatar
     var avatarUrl = profileData.avatar || defaultAvatar(profileData.name);
     
-    // BUILD HTML
+    // Build HTML
     var html = '';
     html += '<div class="glass-panel" style="padding:1.5rem;text-align:center;position:relative;">';
     
-    // Report button for others
+    // Report button (other users only)
     if (!isMine) {
-        html += '<button style="position:absolute;top:10px;right:10px;background:none;border:none;color:#ff4757;font-size:1rem;z-index:5;" onclick="window.reportUser(\'' + profileUid + '\')">⚠️</button>';
+        html += '<button style="position:absolute;top:10px;right:10px;background:none;border:none;color:#ff4757;font-size:1rem;z-index:5;" onclick="window.reportUser(\'' + profileUid + '\')" title="Report">⚠️</button>';
     }
     
-    // Avatar
+    // Avatar with click handler
     html += '<div style="position:relative;display:inline-block;">';
-    html += '<img src="' + avatarUrl + '" class="profile-avatar" onerror="this.src=\'' + defaultAvatar('User') + '\'" style="cursor:pointer;" onclick="';
+    html += '<img src="' + avatarUrl + '" class="profile-avatar" onerror="this.src=\'' + defaultAvatar('User') + '\'" style="cursor:pointer;"';
     if (isMine) {
-        html += 'window.triggerAvatarUpload()';
+        html += ' onclick="window.triggerAvatarUpload()"';
     } else {
-        html += 'window.openUserProfile(\'' + profileUid + '\')';
+        html += ' onclick="window.openUserProfile(\'' + profileUid + '\')"';
     }
-    html += '">';
+    html += '>';
     
     // Camera icon for own profile
     if (isMine) {
@@ -130,12 +131,12 @@ function buildProfileUI(container, profileData, profileUid) {
     html += '<p style="color:var(--gold);">@' + (profileData.username || 'unknown') + '</p>';
     html += '<p style="margin:0.5rem 0;color:#ccc;">' + (profileData.bio || 'No bio yet ✨') + '</p>';
     
-    // Stats
+    // Stats Grid
     html += '<div style="display:flex;justify-content:center;gap:1.2rem;margin:1rem 0;flex-wrap:wrap;">';
     html += '<div><div style="font-weight:bold;color:var(--neon-blue);">⭐ ' + lvl + '</div><div style="font-size:0.65rem;color:#888;">Level</div></div>';
     html += '<div><div style="font-weight:bold;color:var(--neon-blue);">✨ ' + xp + '</div><div style="font-size:0.65rem;color:#888;">XP</div></div>';
-    html += '<div><div style="font-weight:bold;color:var(--gold);">🪙 ' + (profileData.coins||0) + '</div><div style="font-size:0.65rem;color:#888;">Coins</div></div>';
-    html += '<div><div style="font-weight:bold;color:#ff4757;">🔥 ' + (profileData.streak||0) + '</div><div style="font-size:0.65rem;color:#888;">Streak</div></div>';
+    html += '<div><div style="font-weight:bold;color:var(--gold);">🪙 ' + coins + '</div><div style="font-size:0.65rem;color:#888;">Coins</div></div>';
+    html += '<div><div style="font-weight:bold;color:#ff4757;">🔥 ' + streak + '</div><div style="font-size:0.65rem;color:#888;">Streak</div></div>';
     html += '</div>';
     
     // XP Bar
@@ -157,7 +158,7 @@ function buildProfileUI(container, profileData, profileUid) {
     
     // Join date & Status
     html += '<p style="font-size:0.7rem;color:#888;">📅 Joined ' + joinDate + '</p>';
-    html += '<p style="font-size:0.75rem;color:' + statusColor + ';">' + statusDot + '</p>';
+    html += '<p style="font-size:0.75rem;color:' + statusColor + ';">' + statusText + '</p>';
     
     // Buttons
     html += '<div style="display:flex;gap:0.5rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap;">';
@@ -179,7 +180,7 @@ function buildProfileUI(container, profileData, profileUid) {
     
     container.innerHTML = html;
     
-    // Add follow button listener for other profiles
+    // Follow button listener
     if (!isMine) {
         setTimeout(function() {
             var btn = document.getElementById('profileFollowBtn');
@@ -196,9 +197,14 @@ function buildProfileUI(container, profileData, profileUid) {
 async function renderOwnProfile() {
     var me = window.auth?.currentUser;
     if (!me) return;
-    var docSnap = await getDoc(doc(db, 'users', me.uid));
-    if (docSnap.exists()) {
-        buildProfileUI(document.getElementById('profileContainer'), docSnap.data(), me.uid);
+    
+    try {
+        var docSnap = await getDoc(doc(db, 'users', me.uid));
+        if (docSnap.exists()) {
+            buildProfileUI(document.getElementById('profileContainer'), docSnap.data(), me.uid);
+        }
+    } catch(e) {
+        console.error('Error rendering own profile:', e);
     }
 }
 
@@ -217,19 +223,28 @@ async function toggleFollow(targetUid) {
         if ((myData.following || []).indexOf(targetUid) !== -1) {
             batch.update(myRef, { following: arrayRemove(targetUid) });
             batch.update(targetRef, { followers: arrayRemove(me.uid) });
+            showToast('Unfollowed', 'info');
         } else {
             batch.update(myRef, { following: arrayUnion(targetUid) });
             batch.update(targetRef, { followers: arrayUnion(me.uid) });
+            showToast('Following! 🎉', 'success');
         }
         
         await batch.commit();
         window.currentUserData = myData;
-        showToast('Updated!', 'success');
-        setTimeout(function() { openUserProfile(targetUid); }, 300);
-    } catch(e) { showToast('Error', 'error'); }
+        
+        // Refresh profile
+        setTimeout(function() {
+            openUserProfile(targetUid);
+        }, 300);
+        
+    } catch(e) {
+        console.error('Toggle follow error:', e);
+        showToast('Error', 'error');
+    }
 }
 
-// Edit Profile
+// Edit Profile Modal
 function openEditProfile() {
     var modal = document.createElement('div');
     modal.className = 'glass-panel';
@@ -248,16 +263,30 @@ function openEditProfile() {
     document.body.appendChild(modal);
 }
 
+// Save Profile
 async function saveProfile() {
     var name = document.getElementById('editName')?.value.trim();
     var username = document.getElementById('editUsername')?.value.trim().toLowerCase();
     var bio = document.getElementById('editBio')?.value.trim();
-    if (!name || !username) { showToast('Name and username required', 'error'); return; }
-    await updateDoc(doc(db, 'users', window.auth.currentUser.uid), { name: name, username: username, bio: bio });
-    window.currentUserData = { ...window.currentUserData, name: name, username: username, bio: bio };
-    showToast('Saved! ✅', 'success');
-    document.getElementById('editProfileModal')?.remove();
-    renderOwnProfile();
+    
+    if (!name || !username) {
+        showToast('Name and username required', 'error');
+        return;
+    }
+    
+    try {
+        await updateDoc(doc(db, 'users', window.auth.currentUser.uid), {
+            name: name,
+            username: username,
+            bio: bio
+        });
+        window.currentUserData = { ...window.currentUserData, name: name, username: username, bio: bio };
+        showToast('Profile updated! ✅', 'success');
+        document.getElementById('editProfileModal')?.remove();
+        renderOwnProfile();
+    } catch(e) {
+        showToast('Error saving', 'error');
+    }
 }
 
 // Avatar Upload
@@ -268,6 +297,7 @@ function triggerAvatarUpload() {
     input.onchange = async function(e) {
         var file = e.target.files[0];
         if (!file) return;
+        
         var reader = new FileReader();
         reader.onload = async function(ev) {
             var img = new Image();
@@ -275,11 +305,16 @@ function triggerAvatarUpload() {
                 var canvas = document.createElement('canvas');
                 var maxSize = 200;
                 var w = img.width, h = img.height;
-                if (w > h) { if (w > maxSize) { h *= maxSize/w; w = maxSize; } }
-                else { if (h > maxSize) { w *= maxSize/h; h = maxSize; } }
-                canvas.width = w; canvas.height = h;
+                if (w > h) {
+                    if (w > maxSize) { h *= maxSize/w; w = maxSize; }
+                } else {
+                    if (h > maxSize) { w *= maxSize/h; h = maxSize; }
+                }
+                canvas.width = w;
+                canvas.height = h;
                 canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                 var dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                
                 await updateDoc(doc(db, 'users', window.auth.currentUser.uid), { avatar: dataUrl });
                 window.currentUserData = { ...window.currentUserData, avatar: dataUrl };
                 showToast('Avatar updated! 📷', 'success');
@@ -303,11 +338,6 @@ function openShop() {
         { name: 'Star Bubble', icon: '⭐', price: 300 }
     ];
     
-    var modal = document.createElement('div');
-    modal.className = 'glass-panel';
-    modal.id = 'shopModal';
-    modal.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;padding:1.5rem;min-width:300px;max-height:80vh;overflow-y:auto;';
-    
     var itemsHTML = '';
     items.forEach(function(item) {
         itemsHTML += `
@@ -315,12 +345,15 @@ function openShop() {
                 <div style="font-size:2rem;">${item.icon}</div>
                 <p style="font-size:0.8rem;">${item.name}</p>
                 <p style="color:var(--gold);font-size:0.7rem;">🪙 ${item.price}</p>
-                <button class="btn-glow" style="padding:0.3rem 0.8rem;font-size:0.7rem;margin-top:0.3rem;" 
-                    onclick="window.buyItem('${item.name}',${item.price})">Buy</button>
+                <button class="btn-glow" style="padding:0.3rem 0.8rem;font-size:0.7rem;margin-top:0.3rem;" onclick="window.buyItem('${item.name}',${item.price})">Buy</button>
             </div>
         `;
     });
     
+    var modal = document.createElement('div');
+    modal.className = 'glass-panel';
+    modal.id = 'shopModal';
+    modal.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;padding:1.5rem;min-width:300px;max-height:80vh;overflow-y:auto;';
     modal.innerHTML = `
         <h3 class="neon-text">🛍️ Premium Shop</h3>
         <p style="color:var(--gold);margin-bottom:1rem;">🪙 Balance: ${window.currentUserData?.coins||0}</p>
@@ -333,19 +366,28 @@ function openShop() {
 async function buyItem(itemName, price) {
     var me = window.auth?.currentUser;
     if (!me) return;
+    
     var snap = await getDoc(doc(db, 'users', me.uid));
     if (!snap.exists()) return;
     var data = snap.data();
-    if ((data.coins||0) < price) { showToast('Not enough coins!', 'error'); return; }
+    
+    if ((data.coins||0) < price) {
+        showToast('Not enough coins!', 'error');
+        return;
+    }
     
     var owned = data.ownedItems || [];
-    if (owned.indexOf(itemName) !== -1) { showToast('Already owned!', 'info'); return; }
+    if (owned.indexOf(itemName) !== -1) {
+        showToast('Already owned!', 'info');
+        return;
+    }
     
     owned.push(itemName);
     await updateDoc(doc(db, 'users', me.uid), {
         coins: (data.coins||0) - price,
         ownedItems: owned
     });
+    
     window.currentUserData = { ...window.currentUserData, coins: (data.coins||0)-price, ownedItems: owned };
     showToast('Purchased ' + itemName + '! 🎉', 'success');
     document.getElementById('shopModal')?.remove();
@@ -359,11 +401,11 @@ function openSettings() {
     modal.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;padding:1.5rem;min-width:300px;';
     modal.innerHTML = `
         <h3 class="neon-text">⚙️ Settings</h3>
-        <label style="display:flex;justify-content:space-between;align-items:center;padding:0.8rem 0;">
+        <label style="display:flex;justify-content:space-between;align-items:center;padding:0.8rem 0;cursor:pointer;">
             <span>🔒 Private Account</span>
             <input type="checkbox" id="privateAccount" ${window.currentUserData?.isPrivate?'checked':''} onchange="window.togglePrivacy()">
         </label>
-        <label style="display:flex;justify-content:space-between;align-items:center;padding:0.8rem 0;">
+        <label style="display:flex;justify-content:space-between;align-items:center;padding:0.8rem 0;cursor:pointer;">
             <span>👻 Hide Online Status</span>
             <input type="checkbox" id="hideStatus" ${window.currentUserData?.hideStatus?'checked':''} onchange="window.toggleStatus()">
         </label>
@@ -373,15 +415,17 @@ function openSettings() {
 }
 
 async function togglePrivacy() {
-    var val = document.getElementById('privateAccount')?.checked;
+    var val = document.getElementById('privateAccount')?.checked || false;
     await updateDoc(doc(db, 'users', window.auth.currentUser.uid), { isPrivate: val });
     window.currentUserData = { ...window.currentUserData, isPrivate: val };
+    showToast(val ? 'Private account' : 'Public account', 'info');
 }
 
 async function toggleStatus() {
-    var val = document.getElementById('hideStatus')?.checked;
+    var val = document.getElementById('hideStatus')?.checked || false;
     await updateDoc(doc(db, 'users', window.auth.currentUser.uid), { hideStatus: val });
     window.currentUserData = { ...window.currentUserData, hideStatus: val };
+    showToast(val ? 'Status hidden' : 'Status visible', 'info');
 }
 
 // Block & Report
@@ -395,7 +439,12 @@ async function reportUser(uid) {
     var reason = prompt('Reason for reporting:');
     if (!reason) return;
     var { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    await addDoc(collection(db, 'reports'), { reportedUser:uid, reportedBy:window.auth.currentUser.uid, reason:reason, timestamp:new Date() });
+    await addDoc(collection(db, 'reports'), {
+        reportedUser: uid,
+        reportedBy: window.auth.currentUser.uid,
+        reason: reason,
+        timestamp: new Date()
+    });
     showToast('Report submitted', 'success');
 }
 
@@ -403,8 +452,12 @@ async function reportUser(uid) {
 async function showFollowList(type, uid) {
     var userDoc = await getDoc(doc(db, 'users', uid));
     if (!userDoc.exists()) return;
+    
     var list = type === 'followers' ? (userDoc.data().followers||[]) : (userDoc.data().following||[]);
-    if (!list.length) { showToast('No ' + type, 'info'); return; }
+    if (!list.length) {
+        showToast('No ' + type, 'info');
+        return;
+    }
     
     var modal = document.createElement('div');
     modal.className = 'glass-panel';
@@ -414,21 +467,21 @@ async function showFollowList(type, uid) {
     
     var container = modal.querySelector('#flContent');
     for (var i = 0; i < Math.min(list.length, 20); i++) {
-        var userId = list[i];
-        var uDoc = await getDoc(doc(db, 'users', userId));
-        if (uDoc.exists()) {
-            var u = uDoc.data();
-            var div = document.createElement('div');
-            div.style.cssText = 'display:flex;align-items:center;gap:0.8rem;padding:0.6rem;cursor:pointer;border-radius:1rem;';
-            div.onclick = function(uid) {
-                return function() {
-                    modal.remove();
-                    openUserProfile(uid);
-                };
-            }(userId);
-            div.innerHTML = '<img src="' + (u.avatar||defaultAvatar(u.name)) + '" width="35" height="35" style="border-radius:50%;"><div><strong>' + u.name + '</strong><p style="font-size:0.7rem;color:#aaa;">@' + u.username + '</p></div>';
-            container.appendChild(div);
-        }
+        (function(userId) {
+            getDoc(doc(db, 'users', userId)).then(function(uDoc) {
+                if (uDoc.exists()) {
+                    var u = uDoc.data();
+                    var div = document.createElement('div');
+                    div.style.cssText = 'display:flex;align-items:center;gap:0.8rem;padding:0.6rem;cursor:pointer;border-radius:1rem;';
+                    div.onclick = function() {
+                        modal.remove();
+                        openUserProfile(userId);
+                    };
+                    div.innerHTML = '<img src="' + (u.avatar||defaultAvatar(u.name)) + '" width="35" height="35" style="border-radius:50%;"><div><strong>' + u.name + '</strong><p style="font-size:0.7rem;color:#aaa;">@' + u.username + '</p></div>';
+                    container.appendChild(div);
+                }
+            });
+        })(list[i]);
     }
 }
 
@@ -448,3 +501,5 @@ window.reportUser = reportUser;
 window.showFollowList = showFollowList;
 
 export { openUserProfile, renderOwnProfile };
+
+console.log('✅ Profile module loaded successfully');
