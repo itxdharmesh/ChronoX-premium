@@ -11,19 +11,46 @@ function getXPForLevel(level) {
     return req[level] || level * 500;
 }
 
+// CRITICAL FIX: openUserProfile now correctly uses the passed uid
 async function openUserProfile(uid) {
-    if (!uid) return;
+    if (!uid) {
+        showToast('Invalid user', 'error');
+        return;
+    }
+    
     try {
-        const userDoc = await getDoc(doc(db, 'users', uid));
-        if (!userDoc.exists()) { showToast('User not found', 'error'); return; }
+        // Load the SELECTED user's data from Firestore using the passed uid
+        const userDocRef = doc(db, 'users', uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (!userDoc.exists()) {
+            showToast('User not found', 'error');
+            return;
+        }
+        
+        // Get the SELECTED user's data (NOT currentUserData)
+        const selectedUserData = userDoc.data();
         const container = document.getElementById('profileContainer');
-        if (container) { renderProfile(container, userDoc.data(), uid); window.navigate('profile'); }
-    } catch(e) { showToast('Error loading profile', 'error'); }
+        
+        if (container) {
+            // Pass the SELECTED uid and SELECTED user data
+            renderProfile(container, selectedUserData, uid);
+            window.navigate('profile');
+        }
+    } catch(e) {
+        console.error('Error opening profile:', e);
+        showToast('Error loading profile', 'error');
+    }
 }
 
 function renderProfile(container, userData, uid) {
+    // Get current user for comparison only
     const currentUser = window.auth?.currentUser;
-    const isOwnProfile = currentUser?.uid === uid;
+    const currentUserUid = currentUser?.uid;
+    
+    // Check if viewing own profile by comparing uids
+    const isOwnProfile = (currentUserUid === uid);
+    
     const badges = (userData.badges || []).map(b => 
         `<span class="badge-pill" title="${b.replace(/_/g,' ')}">🏅 ${b.replace(/_/g,' ')}</span>`
     ).join('');
@@ -114,30 +141,51 @@ function renderProfile(container, userData, uid) {
 async function renderOwnProfile() {
     const currentUser = window.auth?.currentUser;
     if (!currentUser) return;
+    
+    // Load own profile from Firestore
     const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-    if (userDoc.exists()) renderProfile(document.getElementById('profileContainer'), userDoc.data(), currentUser.uid);
+    if (userDoc.exists()) {
+        const container = document.getElementById('profileContainer');
+        if (container) {
+            renderProfile(container, userDoc.data(), currentUser.uid);
+        }
+    }
 }
 
 async function toggleFollow(targetUid) {
     const currentUser = window.auth?.currentUser;
     if (!currentUser || currentUser.uid === targetUid) return;
+    
     try {
         const myRef = doc(db, 'users', currentUser.uid);
         const targetRef = doc(db, 'users', targetUid);
         const batch = writeBatch(db);
-        const myData = window.currentUserData || (await getDoc(myRef)).data();
         
-        if ((myData.following||[]).includes(targetUid)) {
+        // Load current user data from Firestore
+        const myDoc = await getDoc(myRef);
+        const myData = myDoc.data();
+        
+        if ((myData.following || []).includes(targetUid)) {
             batch.update(myRef, { following: arrayRemove(targetUid) });
             batch.update(targetRef, { followers: arrayRemove(currentUser.uid) });
         } else {
             batch.update(myRef, { following: arrayUnion(targetUid) });
             batch.update(targetRef, { followers: arrayUnion(currentUser.uid) });
+            // Track daily task progress
+            updateDailyTaskProgress('follow_user', currentUser.uid);
         }
+        
         await batch.commit();
+        
+        // Update local cache
+        window.currentUserData = myData;
+        
         showToast('Updated!', 'success');
         setTimeout(() => openUserProfile(targetUid), 300);
-    } catch(e) { showToast('Error', 'error'); }
+    } catch(e) { 
+        console.error('Toggle follow error:', e);
+        showToast('Error', 'error'); 
+    }
 }
 
 // EDIT PROFILE
@@ -162,6 +210,7 @@ function openEditProfile() {
 async function saveProfile() {
     const currentUser = window.auth?.currentUser;
     if (!currentUser) return;
+    
     const name = document.getElementById('editName')?.value.trim();
     const username = document.getElementById('editUsername')?.value.trim().toLowerCase();
     const bio = document.getElementById('editBio')?.value.trim();
@@ -270,19 +319,17 @@ function openSettings() {
     const modal = document.createElement('div');
     modal.className = 'glass-panel';
     modal.id = 'settingsModal';
-    modal.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;padding:1.5rem;min-width:300px;max-height:80vh;overflow-y:auto;';
+    modal.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;padding:1.5rem;min-width:300px;';
     modal.innerHTML = `
         <h3 class="neon-text">⚙️ Settings</h3>
-        <div style="margin:1rem 0;">
-            <label style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;">
-                <span>🔒 Private Account</span>
-                <input type="checkbox" id="privateAccount" ${window.currentUserData?.isPrivate?'checked':''} onchange="window.togglePrivacy()">
-            </label>
-            <label style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;">
-                <span>👻 Hide Online Status</span>
-                <input type="checkbox" id="hideStatus" ${window.currentUserData?.hideStatus?'checked':''} onchange="window.toggleStatus()">
-            </label>
-        </div>
+        <label style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;">
+            <span>🔒 Private Account</span>
+            <input type="checkbox" id="privateAccount" ${window.currentUserData?.isPrivate?'checked':''} onchange="window.togglePrivacy()">
+        </label>
+        <label style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;">
+            <span>👻 Hide Online Status</span>
+            <input type="checkbox" id="hideStatus" ${window.currentUserData?.hideStatus?'checked':''} onchange="window.toggleStatus()">
+        </label>
         <button class="btn-gold" style="width:100%;margin-top:1rem;" onclick="document.getElementById('settingsModal').remove()">Close</button>
     `;
     document.body.appendChild(modal);
@@ -292,17 +339,14 @@ async function togglePrivacy() {
     const isPrivate = document.getElementById('privateAccount')?.checked;
     await updateDoc(doc(db, 'users', window.auth.currentUser.uid), { isPrivate });
     window.currentUserData = { ...window.currentUserData, isPrivate };
-    showToast(isPrivate?'Account is now private':'Account is now public', 'info');
 }
 
 async function toggleStatus() {
     const hideStatus = document.getElementById('hideStatus')?.checked;
     await updateDoc(doc(db, 'users', window.auth.currentUser.uid), { hideStatus });
     window.currentUserData = { ...window.currentUserData, hideStatus };
-    showToast(hideStatus?'Online status hidden':'Online status visible', 'info');
 }
 
-// BLOCK / REPORT
 async function blockUser(uid) {
     if (!confirm('Block this user?')) return;
     await updateDoc(doc(db, 'users', window.auth.currentUser.uid), { blockedUsers: arrayUnion(uid) });
@@ -317,7 +361,6 @@ async function reportUser(uid) {
     showToast('Report submitted', 'success');
 }
 
-// FOLLOW LIST
 async function showFollowList(type, uid) {
     try {
         const userDoc = await getDoc(doc(db, 'users', uid));
@@ -350,6 +393,23 @@ async function showFollowList(type, uid) {
                 container.appendChild(div);
             }
         }
+    } catch(e) { console.error(e); }
+}
+
+// Daily Task Progress Tracker
+async function updateDailyTaskProgress(taskType, uid) {
+    try {
+        const userRef = doc(db, 'users', uid);
+        const snap = await getDoc(userRef);
+        if (!snap.exists()) return;
+        const data = snap.data();
+        const dailyTasks = data.dailyTasks || {};
+        
+        if (taskType === 'follow_user') {
+            dailyTasks.follow_user = (dailyTasks.follow_user || 0) + 1;
+        }
+        
+        await updateDoc(userRef, { dailyTasks });
     } catch(e) { console.error(e); }
 }
 
