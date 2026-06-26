@@ -7,12 +7,11 @@ function getXPForLevel(level) {
     return req[level] || level * 500;
 }
 
-// 4 Daily Tasks
 const DAILY_TASKS = [
-    { id: 'play_games', name: 'Play 2 Games', target: 2, icon: '🎮', rewardXP: 20, rewardCoins: 20 },
-    { id: 'send_messages', name: 'Send 10 Messages', target: 10, icon: '💬', rewardXP: 25, rewardCoins: 25 },
-    { id: 'search_users', name: 'Search 5 Users', target: 5, icon: '🔍', rewardXP: 20, rewardCoins: 20 },
-    { id: 'follow_user', name: 'Follow 1 User', target: 1, icon: '👥', rewardXP: 30, rewardCoins: 30 }
+    { id: 'play_games', name: 'Play 3 Games', target: 3, icon: '🎮', rewardXP: 30, rewardCoins: 25 },
+    { id: 'send_messages', name: 'Send 5 Messages', target: 5, icon: '💬', rewardXP: 25, rewardCoins: 20 },
+    { id: 'search_users', name: 'Search 3 Users', target: 3, icon: '🔍', rewardXP: 20, rewardCoins: 15 },
+    { id: 'follow_user', name: 'Follow 1 User', target: 1, icon: '👥', rewardXP: 35, rewardCoins: 30 }
 ];
 
 async function loadDashboard() {
@@ -51,6 +50,7 @@ async function loadDashboard() {
         }
         
         document.getElementById('navAvatar').src = d.avatar || 'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=35';
+        document.getElementById('dailyFill').style.width = `${Math.min(100,((d.dailyGamesPlayed||0)/3)*100)}%`;
         
         // Daily Reward
         checkDailyReward(d);
@@ -66,12 +66,13 @@ function renderDailyTasks(userData) {
     if (!tasksContainer) return;
     
     const dailyTasks = userData.dailyTasks || {};
+    
+    // Check if tasks need reset (24 hours)
     const lastReset = userData.lastTaskReset?.toDate?.() || new Date(0);
     const now = new Date();
-    
-    // Reset tasks if 24 hours passed
     if ((now - lastReset) > 86400000) {
         resetDailyTasks();
+        dailyTasks = {};
     }
     
     tasksContainer.innerHTML = DAILY_TASKS.map(task => {
@@ -110,6 +111,7 @@ async function resetDailyTasks() {
     if (!user) return;
     await updateDoc(doc(db, 'users', user.uid), {
         dailyTasks: {},
+        dailyGamesPlayed: 0,
         lastTaskReset: serverTimestamp()
     });
 }
@@ -203,30 +205,20 @@ async function claimDailyReward() {
     } catch(e) { console.error(e); }
 }
 
-// Track search for daily task
-document.addEventListener('DOMContentLoaded', () => {
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        let searchCount = 0;
-        searchInput.addEventListener('input', () => {
-            searchCount++;
-            if (searchCount >= 5) {
-                updateSearchTask();
-            }
-        });
-    }
-});
-
-async function updateSearchTask() {
+// Track game completion
+const origCompleteGame = window.completeGame;
+window.completeGame = async function(name, xp, coins) {
+    if (origCompleteGame) await origCompleteGame(name, xp, coins);
     const user = window.auth?.currentUser;
     if (!user) return;
     const snap = await getDoc(doc(db, 'users', user.uid));
-    if (!snap.exists()) return;
-    const data = snap.data();
-    const dailyTasks = data.dailyTasks || {};
-    dailyTasks.search_users = Math.min(5, (dailyTasks.search_users || 0) + 1);
-    await updateDoc(doc(db, 'users', user.uid), { dailyTasks });
-}
+    if (snap.exists()) {
+        const data = snap.data();
+        const dailyTasks = data.dailyTasks || {};
+        dailyTasks.play_games = Math.min(3, (dailyTasks.play_games || 0) + 1);
+        await updateDoc(doc(db, 'users', user.uid), { dailyTasks, dailyGamesPlayed: (data.dailyGamesPlayed||0)+1 });
+    }
+};
 
 window.loadDashboard = loadDashboard;
 window.claimDailyReward = claimDailyReward;
