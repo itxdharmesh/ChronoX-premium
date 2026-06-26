@@ -2,6 +2,7 @@ import { db } from './config.js';
 import { collection, query, where, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 var searchInput = document.getElementById('searchInput');
+
 if (searchInput) {
     searchInput.addEventListener('input', function(e) {
         var searchTerm = e.target.value.trim().toLowerCase();
@@ -22,7 +23,11 @@ if (searchInput) {
         getDocs(usersQuery).then(function(snapshot) {
             resultsContainer.innerHTML = '';
             var seenUids = {};
-            var myUid = window.auth?.currentUser?.uid;
+            var myUid = null;
+            
+            if (window.auth && window.auth.currentUser) {
+                myUid = window.auth.currentUser.uid;
+            }
             
             snapshot.forEach(function(docSnap) {
                 var userId = docSnap.id;
@@ -40,18 +45,19 @@ if (searchInput) {
                 card.style.cssText = 'cursor:pointer;display:flex;align-items:center;gap:0.8rem;padding:0.8rem;margin:0.5rem 0;';
                 card.setAttribute('data-uid', userId);
                 
-                // ✅ USE viewProfile (global function)
-                card.addEventListener('click', function() {
-                    var uid = this.getAttribute('data-uid');
-                    console.log('🟢 Card clicked! UID:', uid);
-                    window.viewProfile(uid);
-                });
+                card.onclick = function() {
+                    var clickedUid = this.getAttribute('data-uid');
+                    if (clickedUid && window.openUserProfile) {
+                        window.openUserProfile(clickedUid);
+                    }
+                };
                 
                 card.innerHTML = `
-                    <img src="${avatarUrl}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" onerror="this.src='https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=40'">
-                    <div style="flex:1;min-width:0;">
-                        <strong>${userData.name || 'User'}</strong>
-                        <p style="font-size:0.7rem;color:#aaa;">@${userData.username || 'unknown'}</p>
+                    <img src="${avatarUrl}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" 
+                         onerror="this.src='https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=40'">
+                    <div style="flex:1;min-width:0;overflow:hidden;">
+                        <strong style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${userData.name || 'User'}</strong>
+                        <p style="font-size:0.7rem;color:#aaa;margin:0;">@${userData.username || 'unknown'}</p>
                     </div>
                 `;
                 
@@ -59,8 +65,11 @@ if (searchInput) {
             });
             
             if (resultsContainer.children.length === 0) {
-                resultsContainer.innerHTML = '<p style="text-align:center;color:#888;padding:1rem;">No users found</p>';
+                resultsContainer.innerHTML = '<p style="text-align:center;color:#888;padding:2rem;">No users found</p>';
             }
+        }).catch(function(error) {
+            console.error('Search error:', error);
+            resultsContainer.innerHTML = '<p style="text-align:center;color:#ff4757;padding:1rem;">Search error. Try again.</p>';
         });
     });
 }
