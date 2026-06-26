@@ -24,15 +24,12 @@ document.getElementById('searchInput')?.addEventListener('input', async (e) => {
     const currentUserUid = window.auth?.currentUser?.uid;
     
     snapshot.forEach(doc => {
-        // Get the ACTUAL selected user's UID from Firestore document
-        const selectedUid = doc.id;
+        const selectedUid = doc.id; // ✅ Firestore document ID
         
-        // Skip duplicates
         if (seenUids.has(selectedUid)) return;
         seenUids.add(selectedUid);
         
-        // Skip current logged in user
-        if (selectedUid === currentUserUid) return;
+        if (selectedUid === currentUserUid) return; // Skip own profile
         
         const userData = doc.data();
         
@@ -40,15 +37,14 @@ document.getElementById('searchInput')?.addEventListener('input', async (e) => {
         card.className = 'glass-panel search-result-card';
         card.style.cursor = 'pointer';
         
-        // CRITICAL FIX: Use selectedUid (doc.id) NOT currentUser.uid
+        // ✅ selectedUid pass karo
         card.onclick = function() {
             window.openUserProfile(selectedUid);
         };
         
         card.innerHTML = `
             <img src="${userData.avatar || 'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=40'}" 
-                 class="search-avatar" 
-                 alt="${userData.name}"
+                 class="search-avatar" alt="${userData.name}"
                  onerror="this.src='https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=40'">
             <div style="flex:1;min-width:0;">
                 <strong>${userData.name || 'User'}</strong>
