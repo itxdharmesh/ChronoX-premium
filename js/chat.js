@@ -1,68 +1,75 @@
 import { db } from './config.js';
-import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, getDocs, updateDoc, doc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { formatTime, showToast } from './utils.js';
+import { collection, query, where, orderBy, limit, onSnapshot, addDoc, serverTimestamp, getDocs, setDoc, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { showToast } from './utils.js';
 
-// Open chat with user
+function formatTime(ts) {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+// OPEN CHAT - Check mutual follow
 async function openChat(peerUid) {
     const currentUser = window.auth?.currentUser;
-    if (!currentUser) return;
+    if (!currentUser) { showToast('Login required', 'error'); return; }
     
-    // Check mutual follow
-    const currentUserData = window.currentUserData || (await getDoc(doc(db, 'users', currentUser.uid))).data();
+    const myData = (await getDoc(doc(db, 'users', currentUser.uid))).data();
     const peerData = (await getDoc(doc(db, 'users', peerUid))).data();
     
-    const isFollowing = (currentUserData.following || []).includes(peerUid);
-    const isFollowedBy = (peerData.followers || []).includes(currentUser.uid);
-    const mutualFollow = isFollowing && isFollowedBy;
+    if (!peerData) { showToast('User not found', 'error'); return; }
     
-    if (!mutualFollow && !isFollowing) {
-        // Send chat request
-        await sendChatRequest(peerUid);
-        return;
+    const iFollow = (myData.following || []).includes(peerUid);
+    const theyFollow = (peerData.followers || []).includes(currentUser.uid);
+    const mutual = iFollow && theyFollow;
+    
+    if (mutual) {
+        openChatWindow(peerUid);
+    } else {
+        sendChatRequest(peerUid);
     }
-    
-    // Open chat window
-    openChatWindow(peerUid);
 }
 
 async function sendChatRequest(peerUid) {
-    const currentUser = window.auth?.currentUser;
-    if (!currentUser) return;
-    
     try {
-        const requestRef = doc(db, 'chatRequests', `${currentUser.uid}_${peerUid}`);
-        await setDoc(requestRef, {
-            from: currentUser.uid,
+        await setDoc(doc(db, 'chatRequests', `${window.auth.currentUser.uid}_${peerUid}`), {
+            from: window.auth.currentUser.uid,
             to: peerUid,
             status: 'pending',
             timestamp: serverTimestamp()
         });
         showToast('Chat request sent! 📩', 'success');
-    } catch(e) { showToast('Error sending request', 'error'); }
+    } catch(e) { showToast('Error', 'error'); }
 }
 
 function openChatWindow(peerUid) {
     const chatId = [window.auth.currentUser.uid, peerUid].sort().join('_');
+    
+    // Save chat reference
+    setDoc(doc(db, 'chats', chatId), {
+        participants: [window.auth.currentUser.uid, peerUid],
+        updatedAt: serverTimestamp()
+    }, { merge: true });
+    
     document.getElementById('chatTitle').textContent = 'Chat';
     document.getElementById('chatModal').style.display = 'flex';
     
-    const messagesContainer = document.getElementById('chatMessages');
-    const messagesQuery = query(collection(db, 'chats', chatId, 'messages'), orderBy('timestamp', 'asc'));
+    const msgContainer = document.getElementById('chatMessages');
+    const msgQuery = query(collection(db, 'chats', chatId, 'messages'), orderBy('timestamp', 'asc'));
     
-    onSnapshot(messagesQuery, (snapshot) => {
-        messagesContainer.innerHTML = '';
-        snapshot.forEach(doc => {
-            const message = doc.data();
-            const isMine = message.sender === window.auth.currentUser.uid;
-            messagesContainer.innerHTML += `
-                <div style="text-align:${isMine ? 'right' : 'left'};margin:0.5rem 0;">
+    onSnapshot(msgQuery, (snap) => {
+        msgContainer.innerHTML = '';
+        snap.forEach(d => {
+            const m = d.data();
+            const isMine = m.sender === window.auth.currentUser.uid;
+            msgContainer.innerHTML += `
+                <div style="text-align:${isMine?'right':'left'};margin:0.3rem 0;">
                     <div class="glass-panel" style="display:inline-block;padding:0.5rem 1rem;max-width:80%;">
-                        <p>${message.text}</p>
-                        <small style="color:#aaa;font-size:0.65rem;">${formatTime(message.timestamp)} ${message.seen ? '✓✓' : '✓'}</small>
+                        <p style="font-size:0.9rem;">${m.text}</p>
+                        <small style="color:#888;font-size:0.6rem;">${formatTime(m.timestamp)} ${m.seen?'✓✓':'✓'}</small>
                     </div>
                 </div>`;
         });
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        msgContainer.scrollTop = msgContainer.scrollHeight;
     });
     
     document.getElementById('sendChatBtn').onclick = async () => {
@@ -80,85 +87,136 @@ document.getElementById('closeChatModal').addEventListener('click', () => {
     document.getElementById('chatModal').style.display = 'none';
 });
 
-// Load chat list with Instagram-style UI
+// LOAD CHAT LIST
 async function loadChatList() {
     const currentUser = window.auth?.currentUser;
     if (!currentUser) return;
     
     const container = document.getElementById('chatListContainer');
-    container.innerHTML = '<div style="text-align:center;padding:1rem;color:#888;">Loading chats...</div>';
+    container.innerHTML = '<p style="text-align:center;color:#888;padding:1rem;">Loading chats...</p>';
     
-    const chatsQuery = query(collection(db, 'chats'), where('participants', 'array-contains', currentUser.uid));
-    const snapshot = await getDocs(chatsQuery);
+    // Search bar for chat
+    container.innerHTML = `
+        <div class="input-group" style="margin-bottom:1rem;">
+            <i class="fas fa-search input-icon"></i>
+            <input type="text" id="chatSearchInput" placeholder="Search users to chat..." class="auth-input" style="padding-left:2.5rem;">
+        </div>
+        <div id="chatSearchResults"></div>
+        <h4 style="color:var(--neon-blue);margin:1rem 0 0.5rem;">💬 Recent Chats</h4>
+        <div id="recentChatsList"></div>
+        <h4 style="color:var(--gold);margin:1rem 0 0.5rem;">📩 Chat Requests</h4>
+        <div id="chatRequestsList"></div>
+    `;
     
-    if (snapshot.empty) {
-        container.innerHTML = '<div style="text-align:center;padding:2rem;color:#888;">No chats yet. Search users to start chatting!</div>';
-        return;
+    // Chat search functionality
+    document.getElementById('chatSearchInput').addEventListener('input', async (e) => {
+        const term = e.target.value.trim().toLowerCase();
+        const resultsDiv = document.getElementById('chatSearchResults');
+        if (term.length < 2) { resultsDiv.innerHTML = ''; return; }
+        
+        const q = query(collection(db, 'users'), where('username', '>=', term), where('username', '<=', term+'\uf8ff'), limit(10));
+        const snap = await getDocs(q);
+        resultsDiv.innerHTML = '';
+        
+        snap.forEach(d => {
+            if (d.id === currentUser.uid) return;
+            const u = d.data();
+            resultsDiv.innerHTML += `
+                <div class="glass-panel" style="padding:0.6rem;margin:0.3rem 0;cursor:pointer;display:flex;align-items:center;gap:0.6rem;" 
+                    onclick="window.openChat('${d.id}')">
+                    <img src="${u.avatar||'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=35'}" width="35" height="35" style="border-radius:50%;">
+                    <div style="flex:1;"><strong>${u.name}</strong><p style="font-size:0.7rem;color:#aaa;">@${u.username}</p></div>
+                    <span style="color:#2ED573;font-size:0.65rem;">${u.status==='online'?'🟢':''}</span>
+                </div>`;
+        });
+    });
+    
+    // Load recent chats
+    const chatsQuery = query(collection(db, 'chats'), where('participants', 'array-contains', currentUser.uid), orderBy('updatedAt', 'desc'), limit(20));
+    const chatSnap = await getDocs(chatsQuery);
+    const recentDiv = document.getElementById('recentChatsList');
+    recentDiv.innerHTML = '';
+    
+    if (chatSnap.empty) {
+        recentDiv.innerHTML = '<p style="color:#888;font-size:0.8rem;text-align:center;">No chats yet. Search users above!</p>';
     }
     
-    container.innerHTML = '';
-    snapshot.forEach(async (chatDoc) => {
-        const chatData = chatDoc.data();
-        const peerUid = chatData.participants.find(p => p !== currentUser.uid);
-        const peerData = (await getDoc(doc(db, 'users', peerUid))).data();
+    for (const chatDoc of chatSnap.docs) {
+        const data = chatDoc.data();
+        const peerUid = data.participants.find(p => p !== currentUser.uid);
+        if (!peerUid) continue;
         
-        // Get last message
+        const peerSnap = await getDoc(doc(db, 'users', peerUid));
+        if (!peerSnap.exists()) continue;
+        const peer = peerSnap.data();
+        
         const lastMsgQuery = query(collection(db, 'chats', chatDoc.id, 'messages'), orderBy('timestamp', 'desc'), limit(1));
-        const lastMsgSnap = await getDocs(lastMsgQuery);
-        let lastMsg = '';
+        const lastSnap = await getDocs(lastMsgQuery);
+        let lastMsg = 'No messages';
         let lastTime = '';
-        
-        if (!lastMsgSnap.empty) {
-            const msg = lastMsgSnap.docs[0].data();
-            lastMsg = msg.text.substring(0, 30);
-            lastTime = formatTime(msg.timestamp);
+        if (!lastSnap.empty) {
+            const m = lastSnap.docs[0].data();
+            lastMsg = m.text.substring(0, 25);
+            lastTime = formatTime(m.timestamp);
         }
         
-        container.innerHTML += `
-            <div class="glass-panel chat-list-item" onclick="window.openChat('${peerUid}')" style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem;cursor:pointer;">
+        recentDiv.innerHTML += `
+            <div class="glass-panel chat-list-item" onclick="window.openChat('${peerUid}')" style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem;cursor:pointer;margin:0.3rem 0;">
                 <div style="position:relative;">
-                    <img src="${peerData?.avatar || 'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=50'}" width="55" height="55" style="border-radius:50%;">
-                    <span style="position:absolute;bottom:0;right:0;width:12px;height:12px;background:${peerData?.status==='online'?'#2ED573':'#666'};border-radius:50%;border:2px solid #000;"></span>
+                    <img src="${peer.avatar||'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=45'}" width="45" height="45" style="border-radius:50%;">
+                    <span style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:${peer.status==='online'?'#2ED573':'#666'};border-radius:50%;border:2px solid #000;"></span>
                 </div>
                 <div style="flex:1;min-width:0;">
                     <div style="display:flex;justify-content:space-between;">
-                        <strong>${peerData?.name || 'User'}</strong>
-                        <small style="color:#888;">${lastTime}</small>
+                        <strong style="font-size:0.9rem;">${peer.name}</strong>
+                        <small style="color:#888;font-size:0.65rem;">${lastTime}</small>
                     </div>
-                    <p style="color:#aaa;font-size:0.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${lastMsg || 'Start chatting...'}</p>
+                    <p style="color:#aaa;font-size:0.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${lastMsg}</p>
                 </div>
-            </div>
-        `;
-    });
+            </div>`;
+    }
+    
+    // Load chat requests
+    const reqQuery = query(collection(db, 'chatRequests'), where('to', '==', currentUser.uid), where('status', '==', 'pending'));
+    const reqSnap = await getDocs(reqQuery);
+    const reqDiv = document.getElementById('chatRequestsList');
+    reqDiv.innerHTML = '';
+    
+    if (reqSnap.empty) {
+        reqDiv.innerHTML = '<p style="color:#888;font-size:0.8rem;text-align:center;">No pending requests</p>';
+    }
+    
+    for (const reqDoc of reqSnap.docs) {
+        const req = reqDoc.data();
+        const fromSnap = await getDoc(doc(db, 'users', req.from));
+        if (!fromSnap.exists()) continue;
+        const from = fromSnap.data();
+        
+        reqDiv.innerHTML += `
+            <div class="glass-panel" style="padding:0.6rem;margin:0.3rem 0;display:flex;align-items:center;gap:0.6rem;">
+                <img src="${from.avatar||'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=35'}" width="35" height="35" style="border-radius:50%;">
+                <div style="flex:1;"><strong>${from.name}</strong><p style="font-size:0.65rem;color:#aaa;">Wants to chat</p></div>
+                <button class="btn-glow" style="padding:0.2rem 0.6rem;font-size:0.65rem;" onclick="window.acceptRequest('${reqDoc.id}','${req.from}')">Accept</button>
+                <button class="btn-icon" style="font-size:0.7rem;color:#ff4757;" onclick="window.rejectRequest('${reqDoc.id}')">✕</button>
+            </div>`;
+    }
 }
 
-// Search users inside chat
-async function searchChatUsers(searchTerm) {
-    if (!searchTerm || searchTerm.length < 2) return [];
-    const q = query(collection(db, 'users'), where('username', '>=', searchTerm.toLowerCase()), where('username', '<=', searchTerm.toLowerCase()+'\uf8ff'), limit(10));
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+async function acceptRequest(reqId, fromUid) {
+    await setDoc(doc(db, 'chatRequests', reqId), { status: 'accepted' }, { merge: true });
+    showToast('Request accepted!', 'success');
+    openChatWindow(fromUid);
+    loadChatList();
 }
 
-// Group chat creation
-async function createGroupChat(name, memberUids) {
-    const currentUser = window.auth?.currentUser;
-    if (!currentUser) return;
-    
-    const allMembers = [currentUser.uid, ...memberUids];
-    const chatRef = await addDoc(collection(db, 'chats'), {
-        name,
-        participants: allMembers,
-        admin: currentUser.uid,
-        isGroup: true,
-        createdAt: serverTimestamp()
-    });
-    
-    showToast('Group created! 🎉', 'success');
-    return chatRef.id;
+async function rejectRequest(reqId) {
+    await setDoc(doc(db, 'chatRequests', reqId), { status: 'rejected' }, { merge: true });
+    showToast('Request rejected', 'info');
+    loadChatList();
 }
 
 window.openChat = openChat;
 window.loadChatList = loadChatList;
-window.createGroupChat = createGroupChat;
-export { openChat, loadChatList, searchChatUsers, createGroupChat };
+window.acceptRequest = acceptRequest;
+window.rejectRequest = rejectRequest;
+export { openChat, loadChatList };
