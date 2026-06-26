@@ -5,17 +5,22 @@ import { showToast } from './utils.js';
 function formatTime(ts) {
     if (!ts) return '';
     const d = ts.toDate ? ts.toDate() : new Date(ts);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const now = new Date();
+    const diff = now - d;
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+    if (diff < 86400000) return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    if (diff < 172800000) return 'Yesterday';
+    return d.toLocaleDateString();
 }
 
-// OPEN CHAT - Check mutual follow
+// OPEN CHAT
 async function openChat(peerUid) {
     const currentUser = window.auth?.currentUser;
     if (!currentUser) { showToast('Login required', 'error'); return; }
     
     const myData = (await getDoc(doc(db, 'users', currentUser.uid))).data();
     const peerData = (await getDoc(doc(db, 'users', peerUid))).data();
-    
     if (!peerData) { showToast('User not found', 'error'); return; }
     
     const iFollow = (myData.following || []).includes(peerUid);
@@ -32,10 +37,7 @@ async function openChat(peerUid) {
 async function sendChatRequest(peerUid) {
     try {
         await setDoc(doc(db, 'chatRequests', `${window.auth.currentUser.uid}_${peerUid}`), {
-            from: window.auth.currentUser.uid,
-            to: peerUid,
-            status: 'pending',
-            timestamp: serverTimestamp()
+            from: window.auth.currentUser.uid, to: peerUid, status: 'pending', timestamp: serverTimestamp()
         });
         showToast('Chat request sent! 📩', 'success');
     } catch(e) { showToast('Error', 'error'); }
@@ -44,10 +46,8 @@ async function sendChatRequest(peerUid) {
 function openChatWindow(peerUid) {
     const chatId = [window.auth.currentUser.uid, peerUid].sort().join('_');
     
-    // Save chat reference
     setDoc(doc(db, 'chats', chatId), {
-        participants: [window.auth.currentUser.uid, peerUid],
-        updatedAt: serverTimestamp()
+        participants: [window.auth.currentUser.uid, peerUid], updatedAt: serverTimestamp()
     }, { merge: true });
     
     document.getElementById('chatTitle').textContent = 'Chat';
@@ -63,7 +63,7 @@ function openChatWindow(peerUid) {
             const isMine = m.sender === window.auth.currentUser.uid;
             msgContainer.innerHTML += `
                 <div style="text-align:${isMine?'right':'left'};margin:0.3rem 0;">
-                    <div class="glass-panel" style="display:inline-block;padding:0.5rem 1rem;max-width:80%;">
+                    <div class="glass-panel" style="display:inline-block;padding:0.5rem 1rem;max-width:80%;background:${isMine?'rgba(0,212,255,0.2)':'rgba(255,255,255,0.05)'};">
                         <p style="font-size:0.9rem;">${m.text}</p>
                         <small style="color:#888;font-size:0.6rem;">${formatTime(m.timestamp)} ${m.seen?'✓✓':'✓'}</small>
                     </div>
@@ -79,6 +79,7 @@ function openChatWindow(peerUid) {
         await addDoc(collection(db, 'chats', chatId, 'messages'), {
             text, sender: window.auth.currentUser.uid, timestamp: serverTimestamp(), seen: false
         });
+        await updateDoc(doc(db, 'chats', chatId), { updatedAt: serverTimestamp() });
         input.value = '';
     };
 }
@@ -93,22 +94,25 @@ async function loadChatList() {
     if (!currentUser) return;
     
     const container = document.getElementById('chatListContainer');
-    container.innerHTML = '<p style="text-align:center;color:#888;padding:1rem;">Loading chats...</p>';
-    
-    // Search bar for chat
     container.innerHTML = `
-        <div class="input-group" style="margin-bottom:1rem;">
+        <!-- Search Bar -->
+        <div class="input-group" style="margin-bottom:0.8rem;">
             <i class="fas fa-search input-icon"></i>
-            <input type="text" id="chatSearchInput" placeholder="Search users to chat..." class="auth-input" style="padding-left:2.5rem;">
+            <input type="text" id="chatSearchInput" placeholder="🔍 Search users to chat..." class="auth-input">
         </div>
         <div id="chatSearchResults"></div>
-        <h4 style="color:var(--neon-blue);margin:1rem 0 0.5rem;">💬 Recent Chats</h4>
-        <div id="recentChatsList"></div>
-        <h4 style="color:var(--gold);margin:1rem 0 0.5rem;">📩 Chat Requests</h4>
-        <div id="chatRequestsList"></div>
+        
+        <!-- Tabs -->
+        <div style="display:flex;gap:0;margin-bottom:0.8rem;">
+            <button class="chat-tab active" onclick="switchChatTab('messages')" id="tabMessages">💬 Messages</button>
+            <button class="chat-tab" onclick="switchChatTab('requests')" id="tabRequests">📩 Requests</button>
+        </div>
+        
+        <div id="messagesList"></div>
+        <div id="requestsList" style="display:none;"></div>
     `;
     
-    // Chat search functionality
+    // Chat search
     document.getElementById('chatSearchInput').addEventListener('input', async (e) => {
         const term = e.target.value.trim().toLowerCase();
         const resultsDiv = document.getElementById('chatSearchResults');
@@ -122,23 +126,32 @@ async function loadChatList() {
             if (d.id === currentUser.uid) return;
             const u = d.data();
             resultsDiv.innerHTML += `
-                <div class="glass-panel" style="padding:0.6rem;margin:0.3rem 0;cursor:pointer;display:flex;align-items:center;gap:0.6rem;" 
-                    onclick="window.openChat('${d.id}')">
-                    <img src="${u.avatar||'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=35'}" width="35" height="35" style="border-radius:50%;">
+                <div class="glass-panel" style="padding:0.6rem;margin:0.3rem 0;cursor:pointer;display:flex;align-items:center;gap:0.6rem;" onclick="window.openChat('${d.id}')">
+                    <div style="position:relative;">
+                        <img src="${u.avatar||'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=40'}" width="40" height="40" style="border-radius:50%;">
+                        <span style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:${u.status==='online'?'#2ED573':'#666'};border-radius:50%;border:2px solid #000;"></span>
+                    </div>
                     <div style="flex:1;"><strong>${u.name}</strong><p style="font-size:0.7rem;color:#aaa;">@${u.username}</p></div>
-                    <span style="color:#2ED573;font-size:0.65rem;">${u.status==='online'?'🟢':''}</span>
                 </div>`;
         });
     });
     
-    // Load recent chats
+    // Load messages
+    loadMessagesList();
+    loadRequestsList();
+}
+
+async function loadMessagesList() {
+    const currentUser = window.auth?.currentUser;
+    const container = document.getElementById('messagesList');
+    
     const chatsQuery = query(collection(db, 'chats'), where('participants', 'array-contains', currentUser.uid), orderBy('updatedAt', 'desc'), limit(20));
     const chatSnap = await getDocs(chatsQuery);
-    const recentDiv = document.getElementById('recentChatsList');
-    recentDiv.innerHTML = '';
+    container.innerHTML = '';
     
     if (chatSnap.empty) {
-        recentDiv.innerHTML = '<p style="color:#888;font-size:0.8rem;text-align:center;">No chats yet. Search users above!</p>';
+        container.innerHTML = '<p style="text-align:center;color:#888;padding:2rem;">No messages yet. Search users above!</p>';
+        return;
     }
     
     for (const chatDoc of chatSnap.docs) {
@@ -152,38 +165,48 @@ async function loadChatList() {
         
         const lastMsgQuery = query(collection(db, 'chats', chatDoc.id, 'messages'), orderBy('timestamp', 'desc'), limit(1));
         const lastSnap = await getDocs(lastMsgQuery);
-        let lastMsg = 'No messages';
+        let lastMsg = 'No messages yet';
         let lastTime = '';
+        let unread = 0;
+        
         if (!lastSnap.empty) {
             const m = lastSnap.docs[0].data();
-            lastMsg = m.text.substring(0, 25);
+            lastMsg = m.text.substring(0, 30);
             lastTime = formatTime(m.timestamp);
+            if (!m.seen && m.sender !== currentUser.uid) unread = 1;
         }
         
-        recentDiv.innerHTML += `
+        container.innerHTML += `
             <div class="glass-panel chat-list-item" onclick="window.openChat('${peerUid}')" style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem;cursor:pointer;margin:0.3rem 0;">
                 <div style="position:relative;">
-                    <img src="${peer.avatar||'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=45'}" width="45" height="45" style="border-radius:50%;">
-                    <span style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:${peer.status==='online'?'#2ED573':'#666'};border-radius:50%;border:2px solid #000;"></span>
+                    <img src="${peer.avatar||'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=50'}" width="50" height="50" style="border-radius:50%;">
+                    <span style="position:absolute;bottom:0;right:0;width:12px;height:12px;background:${peer.status==='online'?'#2ED573':'#666'};border-radius:50%;border:2px solid #000;"></span>
                 </div>
                 <div style="flex:1;min-width:0;">
                     <div style="display:flex;justify-content:space-between;">
                         <strong style="font-size:0.9rem;">${peer.name}</strong>
-                        <small style="color:#888;font-size:0.65rem;">${lastTime}</small>
+                        <small style="color:#888;">${lastTime}</small>
                     </div>
-                    <p style="color:#aaa;font-size:0.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${lastMsg}</p>
+                    <div style="display:flex;align-items:center;gap:0.3rem;">
+                        <p style="color:#aaa;font-size:0.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">${lastMsg}</p>
+                        ${unread ? '<span style="background:#ff4757;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;">1</span>' : ''}
+                    </div>
                 </div>
             </div>`;
     }
+}
+
+async function loadRequestsList() {
+    const currentUser = window.auth?.currentUser;
+    const container = document.getElementById('requestsList');
     
-    // Load chat requests
     const reqQuery = query(collection(db, 'chatRequests'), where('to', '==', currentUser.uid), where('status', '==', 'pending'));
     const reqSnap = await getDocs(reqQuery);
-    const reqDiv = document.getElementById('chatRequestsList');
-    reqDiv.innerHTML = '';
+    container.innerHTML = '';
     
     if (reqSnap.empty) {
-        reqDiv.innerHTML = '<p style="color:#888;font-size:0.8rem;text-align:center;">No pending requests</p>';
+        container.innerHTML = '<p style="text-align:center;color:#888;padding:2rem;">No pending requests</p>';
+        return;
     }
     
     for (const reqDoc of reqSnap.docs) {
@@ -192,12 +215,15 @@ async function loadChatList() {
         if (!fromSnap.exists()) continue;
         const from = fromSnap.data();
         
-        reqDiv.innerHTML += `
-            <div class="glass-panel" style="padding:0.6rem;margin:0.3rem 0;display:flex;align-items:center;gap:0.6rem;">
-                <img src="${from.avatar||'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=35'}" width="35" height="35" style="border-radius:50%;">
-                <div style="flex:1;"><strong>${from.name}</strong><p style="font-size:0.65rem;color:#aaa;">Wants to chat</p></div>
-                <button class="btn-glow" style="padding:0.2rem 0.6rem;font-size:0.65rem;" onclick="window.acceptRequest('${reqDoc.id}','${req.from}')">Accept</button>
-                <button class="btn-icon" style="font-size:0.7rem;color:#ff4757;" onclick="window.rejectRequest('${reqDoc.id}')">✕</button>
+        container.innerHTML += `
+            <div class="glass-panel" style="padding:0.8rem;margin:0.3rem 0;display:flex;align-items:center;gap:0.6rem;">
+                <img src="${from.avatar||'https://ui-avatars.com/api/?name=User&background=00D4FF&color=fff&size=45'}" width="45" height="45" style="border-radius:50%;">
+                <div style="flex:1;">
+                    <strong>${from.name}</strong>
+                    <p style="font-size:0.7rem;color:#aaa;">Wants to chat with you</p>
+                </div>
+                <button class="btn-glow" style="padding:0.3rem 0.8rem;font-size:0.7rem;" onclick="window.acceptRequest('${reqDoc.id}','${req.from}')">Accept</button>
+                <button class="btn-icon" style="color:#ff4757;font-size:0.8rem;" onclick="window.rejectRequest('${reqDoc.id}')">✕</button>
             </div>`;
     }
 }
@@ -215,8 +241,17 @@ async function rejectRequest(reqId) {
     loadChatList();
 }
 
+function switchChatTab(tab) {
+    document.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+    document.getElementById('messagesList').style.display = tab==='messages'?'block':'none';
+    document.getElementById('requestsList').style.display = tab==='requests'?'block':'none';
+}
+
 window.openChat = openChat;
 window.loadChatList = loadChatList;
 window.acceptRequest = acceptRequest;
 window.rejectRequest = rejectRequest;
+window.switchChatTab = switchChatTab;
+
 export { openChat, loadChatList };
