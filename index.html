@@ -11,15 +11,11 @@
     <!-- SPLASH SCREEN -->
     <div id="splashScreen" class="splash-screen">
         <div class="splash-content">
-            <div class="splash-logo">
-                <i class="fas fa-infinity" style="font-size:4rem; color:var(--neon-blue); animation: glowPulse 2s infinite;"></i>
-            </div>
+            <div class="splash-logo"><i class="fas fa-infinity" style="font-size:4rem; color:var(--neon-blue); animation: glowPulse 2s infinite;"></i></div>
             <h1 class="neon-text splash-title">CHRONOX</h1>
             <p class="gold-text splash-subtitle">Premium Social Network</p>
-            <div class="loading-bar">
-                <div class="loading-progress"></div>
-            </div>
-            <p style="color:#666; margin-top:1rem; font-size:0.8rem;">Loading your universe...</p>
+            <div class="loading-bar"><div class="loading-progress"></div></div>
+            <p style="color:#666;margin-top:1rem;font-size:0.8rem;">Loading your universe...</p>
         </div>
     </div>
 
@@ -27,182 +23,70 @@
     <div id="authScreen" class="auth-fullscreen" style="display:none;">
         <div class="auth-container">
             <div class="glass-panel auth-card">
-                <div class="auth-logo">
-                    <i class="fas fa-infinity" style="font-size:3rem; color:var(--neon-blue);"></i>
-                </div>
+                <div class="auth-logo"><i class="fas fa-infinity" style="font-size:3rem;color:var(--neon-blue);"></i></div>
                 <h2 class="neon-text auth-title" id="authTitle">Welcome Back</h2>
-                <p style="color:#888; margin-bottom:1.5rem; font-size:0.85rem;" id="authSubtitle">Sign in to continue your journey</p>
-                
-                <div class="input-group">
-                    <i class="fas fa-envelope input-icon"></i>
-                    <input type="email" id="authEmail" placeholder="Email address" class="auth-input">
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-lock input-icon"></i>
-                    <input type="password" id="authPass" placeholder="Password" class="auth-input">
-                </div>
-                <div class="input-group" id="signupField" style="display:none;">
-                    <i class="fas fa-user input-icon"></i>
-                    <input type="text" id="authUsername" placeholder="Choose username" class="auth-input">
-                </div>
-                <div class="input-group" id="signupNameField" style="display:none;">
-                    <i class="fas fa-id-card input-icon"></i>
-                    <input type="text" id="authName" placeholder="Full name" class="auth-input">
-                </div>
-                
+                <p style="color:#888;margin-bottom:1.5rem;font-size:0.85rem;" id="authSubtitle">Sign in to continue</p>
+                <div class="input-group"><i class="fas fa-envelope input-icon"></i><input type="email" id="authEmail" placeholder="Email address" class="auth-input"></div>
+                <div class="input-group"><i class="fas fa-lock input-icon"></i><input type="password" id="authPass" placeholder="Password" class="auth-input"></div>
+                <div class="input-group" id="signupField" style="display:none;"><i class="fas fa-user input-icon"></i><input type="text" id="authUsername" placeholder="Choose username" class="auth-input"></div>
+                <div class="input-group" id="signupNameField" style="display:none;"><i class="fas fa-id-card input-icon"></i><input type="text" id="authName" placeholder="Full name" class="auth-input"></div>
                 <button id="authActionBtn" class="btn-glow auth-btn-full">Login</button>
-                
-                <p class="auth-toggle">
-                    <span id="toggleAuthText">Don't have an account?</span>
-                    <span id="toggleAuthBtn" style="color:var(--neon-blue); cursor:pointer; text-decoration:underline; margin-left:0.3rem;">Sign Up</span>
-                </p>
+                <p class="auth-toggle"><span id="toggleAuthText">Don't have an account?</span> <span id="toggleAuthBtn" style="color:var(--neon-blue);cursor:pointer;text-decoration:underline;">Sign Up</span></p>
             </div>
         </div>
     </div>
 
     <!-- MAIN APP -->
     <div id="app-container" style="display:none;">
-        <!-- HOME / DASHBOARD PAGE -->
+        <!-- HOME PAGE -->
         <div id="homePage" class="page active">
             <div class="page-header">
-                <div>
-                    <h2 class="neon-text">✦ ChronoX</h2>
-                    <p style="font-size:0.75rem; color:#888;" id="greetingText">Good morning</p>
-                </div>
-                <div style="display:flex; gap:0.5rem;">
+                <div><h2 class="neon-text">✦ ChronoX</h2><p style="font-size:0.75rem;color:#888;" id="greetingText">Good morning</p></div>
+                <div style="display:flex;gap:0.5rem;">
                     <button class="btn-icon" onclick="window.navigate('search')"><i class="fas fa-search"></i></button>
-                    <button class="btn-icon" onclick="window.navigate('profile')">
-                        <img id="navAvatar" src="" style="width:35px;height:35px;border-radius:50%;object-fit:cover;">
-                    </button>
+                    <button class="btn-icon" onclick="window.navigate('profile')"><img id="navAvatar" src="" style="width:35px;height:35px;border-radius:50%;object-fit:cover;"></button>
                 </div>
             </div>
-
-            <!-- Stats Cards -->
             <div class="stats-grid">
-                <div class="glass-panel stat-card" onclick="window.navigate('profile')">
-                    <i class="fas fa-star" style="color:var(--gold);"></i>
-                    <div class="stat-value" id="statLevel">1</div>
-                    <div class="stat-label">Level</div>
-                </div>
-                <div class="glass-panel stat-card">
-                    <i class="fas fa-bolt" style="color:var(--neon-blue);"></i>
-                    <div class="stat-value" id="statXP">0</div>
-                    <div class="stat-label">XP</div>
-                </div>
-                <div class="glass-panel stat-card">
-                    <i class="fas fa-coins" style="color:var(--gold);"></i>
-                    <div class="stat-value" id="statCoins">0</div>
-                    <div class="stat-label">Coins</div>
-                </div>
-                <div class="glass-panel stat-card">
-                    <i class="fas fa-fire" style="color:#ff4757;"></i>
-                    <div class="stat-value" id="statStreak">0</div>
-                    <div class="stat-label">Streak</div>
-                </div>
+                <div class="glass-panel stat-card" onclick="window.navigate('profile')"><i class="fas fa-star" style="color:var(--gold);"></i><div class="stat-value" id="statLevel">1</div><div class="stat-label">Level</div></div>
+                <div class="glass-panel stat-card"><i class="fas fa-bolt" style="color:var(--neon-blue);"></i><div class="stat-value" id="statXP">0</div><div class="stat-label">XP</div></div>
+                <div class="glass-panel stat-card"><i class="fas fa-coins" style="color:var(--gold);"></i><div class="stat-value" id="statCoins">0</div><div class="stat-label">Coins</div></div>
+                <div class="glass-panel stat-card"><i class="fas fa-fire" style="color:#ff4757;"></i><div class="stat-value" id="statStreak">0</div><div class="stat-label">Streak</div></div>
             </div>
-
-            <!-- XP Progress Bar -->
-            <div class="glass-panel" style="padding:1rem; margin:1rem 0;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
-                    <span style="font-size:0.8rem;">XP Progress</span>
-                    <span style="font-size:0.8rem; color:var(--neon-blue);" id="xpProgressText">0/100</span>
-                </div>
-                <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%;"></div></div>
-            </div>
-
-            <!-- Daily Reward Button -->
-            <button id="dailyRewardBtn" class="btn-gold" style="width:100%;margin:0.5rem 0;padding:0.8rem;">
-                🎁 Claim Daily Reward
-            </button>
-
-            <!-- Quick Actions -->
+            <div class="glass-panel" style="padding:1rem;margin:1rem 0;"><div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;"><span style="font-size:0.8rem;">XP Progress</span><span style="font-size:0.8rem;color:var(--neon-blue);" id="xpProgressText">0/100</span></div><div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%;"></div></div></div>
+            <button id="dailyRewardBtn" class="btn-gold" style="width:100%;margin:0.5rem 0;padding:0.8rem;">🎁 Claim Daily Reward</button>
             <div class="quick-actions">
-                <button class="glass-panel action-btn" onclick="window.navigate('games')">
-                    <i class="fas fa-gamepad" style="font-size:1.5rem; color:var(--neon-blue);"></i><span>Games</span>
-                </button>
-                <button class="glass-panel action-btn" onclick="window.navigate('chats')">
-                    <i class="fas fa-comments" style="font-size:1.5rem; color:#2ED573;"></i><span>Chats</span>
-                </button>
-                <button class="glass-panel action-btn" onclick="window.navigate('search')">
-                    <i class="fas fa-users" style="font-size:1.5rem; color:#FFA502;"></i><span>Discover</span>
-                </button>
-                <button class="glass-panel action-btn" onclick="window.navigate('profile')">
-                    <i class="fas fa-user-astronaut" style="font-size:1.5rem; color:#7C3AED;"></i><span>Profile</span>
-                </button>
+                <button class="glass-panel action-btn" onclick="window.navigate('games')"><i class="fas fa-gamepad" style="font-size:1.5rem;color:var(--neon-blue);"></i><span>Games</span></button>
+                <button class="glass-panel action-btn" onclick="window.navigate('chats')"><i class="fas fa-comments" style="font-size:1.5rem;color:#2ED573;"></i><span>Chats</span></button>
+                <button class="glass-panel action-btn" onclick="window.navigate('search')"><i class="fas fa-users" style="font-size:1.5rem;color:#FFA502;"></i><span>Discover</span></button>
+                <button class="glass-panel action-btn" onclick="window.navigate('profile')"><i class="fas fa-user-astronaut" style="font-size:1.5rem;color:#7C3AED;"></i><span>Profile</span></button>
             </div>
-
-            <!-- Daily Tasks Section -->
-            <h3 style="margin:0.8rem 0; font-size:0.9rem; color:var(--gold);">📋 Daily Tasks</h3>
+            <h3 style="margin:0.8rem 0;font-size:0.9rem;color:var(--gold);">📋 Daily Tasks</h3>
             <div id="dailyTasksContainer"></div>
-
-            <!-- Recent Badges -->
-            <h3 style="margin:0.8rem 0; font-size:0.9rem; color:#888;">🏅 Recent Badges</h3>
+            <h3 style="margin:0.8rem 0;font-size:0.9rem;color:#888;">🏅 Recent Badges</h3>
             <div id="recentBadges" class="badges-row"></div>
-
-            <!-- Daily Challenge -->
-            <div class="glass-panel daily-challenge" style="padding:1rem; margin:1rem 0; background:linear-gradient(135deg, rgba(0,212,255,0.1), rgba(124,58,237,0.1));">
-                <div style="display:flex; align-items:center; gap:1rem;">
-                    <div style="font-size:2.5rem;">🎯</div>
-                    <div style="flex:1;">
-                        <h4 style="color:var(--neon-blue);">Daily Challenge</h4>
-                        <p style="font-size:0.8rem; color:#aaa;">Play 3 games today</p>
-                        <div class="xp-bar" style="margin-top:0.5rem;">
-                            <div class="xp-fill" id="dailyFill" style="width:0%; background:linear-gradient(90deg, #FFA502, #ff6348);"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- CHATS PAGE -->
-        <div id="chatsPage" class="page">
-            <div class="page-header"><h2 class="neon-text">💬 Messages</h2></div>
-            <div id="chatListContainer" class="chat-list"></div>
-        </div>
+        <div id="chatsPage" class="page"><div class="page-header"><h2 class="neon-text">💬 Messages</h2></div><div id="chatListContainer" class="chat-list"></div></div>
 
         <!-- SEARCH PAGE -->
         <div id="searchPage" class="page">
             <div class="page-header"><h2 class="neon-text">🔍 Discover</h2></div>
-            <div class="search-container">
-                <div class="input-group">
-                    <i class="fas fa-search input-icon"></i>
-                    <input type="text" id="searchInput" placeholder="Search by username..." class="auth-input">
-                </div>
-                <div id="searchResults" class="search-results"></div>
-            </div>
+            <div class="input-group"><i class="fas fa-search input-icon"></i><input type="text" id="searchInput" placeholder="Search by username..." class="auth-input"></div>
+            <div id="searchResults" class="search-results"></div>
         </div>
 
         <!-- GAMES PAGE -->
-        <div id="gamesPage" class="page">
-            <div class="page-header"><h2 class="neon-text">🎮 Games Hub</h2></div>
-            <div id="gamesGrid" class="games-grid"></div>
-            <div id="gameContainer" style="display:none; margin-top:1rem;">
-                <button onclick="window.closeGame()" class="btn-glow" style="margin-bottom:1rem;">
-                    <i class="fas fa-arrow-left"></i> Back to Games
-                </button>
-                <div id="gameCanvas" class="glass-panel" style="min-height:400px; display:flex; align-items:center; justify-content:center;"></div>
-            </div>
-        </div>
+        <div id="gamesPage" class="page"><div class="page-header"><h2 class="neon-text">🎮 Games Hub</h2></div><div id="gamesGrid" class="games-grid"></div><div id="gameContainer" style="display:none;margin-top:1rem;"><button onclick="window.closeGame()" class="btn-glow" style="margin-bottom:1rem;"><i class="fas fa-arrow-left"></i> Back</button><div id="gameCanvas" class="glass-panel" style="min-height:400px;"></div></div></div>
 
         <!-- PROFILE PAGE -->
-        <div id="profilePage" class="page">
-            <div id="profileContainer" class="profile-container"></div>
-        </div>
+        <div id="profilePage" class="page"><div id="profileContainer" class="profile-container"></div></div>
 
         <!-- CHAT MODAL -->
-        <div id="chatModal" class="chat-modal glass-panel">
-            <div class="chat-header">
-                <span id="chatTitle" class="neon-text">Chat</span>
-                <button id="closeChatModal" class="btn-icon"><i class="fas fa-times"></i></button>
-            </div>
-            <div id="chatMessages" class="chat-messages"></div>
-            <div class="chat-input-container">
-                <input type="text" id="chatMessageInput" placeholder="Type a message..." class="chat-input">
-                <button id="sendChatBtn" class="btn-glow send-btn"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
+        <div id="chatModal" class="chat-modal glass-panel"><div class="chat-header"><span id="chatTitle" class="neon-text">Chat</span><button id="closeChatModal" class="btn-icon"><i class="fas fa-times"></i></button></div><div id="chatMessages" class="chat-messages"></div><div class="chat-input-container"><input type="text" id="chatMessageInput" placeholder="Type..." class="chat-input"><button id="sendChatBtn" class="btn-glow send-btn"><i class="fas fa-paper-plane"></i></button></div></div>
 
-        <!-- BOTTOM NAVIGATION -->
+        <!-- BOTTOM NAV -->
         <nav class="bottom-nav">
             <div class="nav-item active" data-page="home"><i class="fas fa-home"></i><span>Home</span></div>
             <div class="nav-item" data-page="chats"><i class="fas fa-comment-dots"></i><span>Chats</span></div>
@@ -211,6 +95,27 @@
             <div class="nav-item" data-page="profile"><i class="fas fa-user"></i><span>Profile</span></div>
         </nav>
     </div>
+
+    <!-- EMERGENCY GLOBAL FUNCTIONS -->
+    <script>
+        // Ensure openUserProfile is accessible
+        window.viewProfile = function(uid) {
+            console.log('🎯 viewProfile called with UID:', uid);
+            if (typeof window.openUserProfile === 'function') {
+                window.openUserProfile(uid);
+            } else {
+                console.error('❌ openUserProfile not available yet, retrying...');
+                setTimeout(function() {
+                    if (typeof window.openUserProfile === 'function') {
+                        window.openUserProfile(uid);
+                    }
+                }, 500);
+            }
+        };
+        
+        // Debug: Log when modules load
+        console.log('✅ index.html loaded');
+    </script>
 
     <!-- SCRIPTS -->
     <script type="module" src="js/config.js"></script>
@@ -238,4 +143,4 @@
     <script type="module" src="js/achievements.js"></script>
     <script type="module" src="js/notifications.js"></script>
 </body>
-                    </html>
+                                                                                                              </html>
