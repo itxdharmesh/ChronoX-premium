@@ -24,21 +24,25 @@ document.getElementById('searchInput')?.addEventListener('input', async (e) => {
     const currentUserUid = window.auth?.currentUser?.uid;
     
     snapshot.forEach(doc => {
-        // Skip duplicates
-        if (seenUids.has(doc.id)) return;
-        seenUids.add(doc.id);
+        // Get the ACTUAL selected user's UID from Firestore document
+        const selectedUid = doc.id;
         
-        // Skip current user
-        if (doc.id === currentUserUid) return;
+        // Skip duplicates
+        if (seenUids.has(selectedUid)) return;
+        seenUids.add(selectedUid);
+        
+        // Skip current logged in user
+        if (selectedUid === currentUserUid) return;
         
         const userData = doc.data();
-        const uid = doc.id;
         
         const card = document.createElement('div');
         card.className = 'glass-panel search-result-card';
         card.style.cursor = 'pointer';
+        
+        // CRITICAL FIX: Use selectedUid (doc.id) NOT currentUser.uid
         card.onclick = function() {
-            window.openUserProfile(uid);
+            window.openUserProfile(selectedUid);
         };
         
         card.innerHTML = `
@@ -50,7 +54,8 @@ document.getElementById('searchInput')?.addEventListener('input', async (e) => {
                 <strong>${userData.name || 'User'}</strong>
                 <p style="font-size:0.75rem;color:#aaa;">@${userData.username || 'unknown'}</p>
             </div>
-            <button class="btn-glow" style="padding:0.3rem 0.8rem;font-size:0.7rem;" onclick="event.stopPropagation();window.openChat('${uid}')">
+            <button class="btn-glow" style="padding:0.3rem 0.8rem;font-size:0.7rem;" 
+                onclick="event.stopPropagation();window.openChat('${selectedUid}')">
                 <i class="fas fa-comment"></i>
             </button>
         `;
