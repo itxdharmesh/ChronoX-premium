@@ -1,0 +1,21 @@
+.xp-page { max-width: 700px; margin: 0 auto; }
+.xp-header { margin-bottom: var(--space-6); }
+.xp-header h2 { font-size: var(--text-2xl); }
+.level-card { text-align: center; padding: var(--space-8); border-radius: var(--radius-2xl); margin-bottom: var(--space-8); background: linear-gradient(135deg, rgba(108,92,231,0.1), rgba(165,94,234,0.1)); border: 1px solid rgba(108,92,231,0.3); }
+.level-badge { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: var(--gradient-primary); border-radius: var(--radius-full); font-size: var(--text-3xl); font-weight: var(--font-extrabold); color: white; margin: 0 auto var(--space-4); box-shadow: 0 0 30px rgba(108,92,231,0.4); }
+.level-card h3 { font-size: var(--text-xl); margin-bottom: var(--space-4); }
+.xp-bar-container { width: 100%; height: 12px; background: var(--bg-hover); border-radius: var(--radius-full); margin-bottom: var(--space-2); overflow: hidden; }
+.xp-bar-fill { height: 100%; background: var(--gradient-primary); border-radius: var(--radius-full); transition: width 0.5s ease; }
+.xp-text { font-size: var(--text-sm); color: var(--text-secondary); }
+.rewards-section { margin-bottom: var(--space-8); }
+.rewards-section h3 { margin-bottom: var(--space-4); }
+.rewards-timeline { display: flex; gap: var(--space-3); overflow-x: auto; padding-bottom: var(--space-4); }
+.reward-milestone { min-width: 120px; text-align: center; padding: var(--space-4); background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); }
+.reward-milestone.unlocked { border-color: var(--primary-500); }
+.reward-milestone.locked { opacity: 0.5; }
+.reward-icon { font-size: 2rem; margin-bottom: var(--space-2); }
+.reward-level { font-weight: var(--font-bold); font-size: var(--text-sm); }
+.reward-prize { font-size: var(--text-xs); color: var(--text-muted); }
+.xp-sources h3 { margin-bottom: var(--space-4); }
+.xp-source-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.xp-source-item { display: flex; justify-content: space-between; padding: var(--space-3) var(--space-4); background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color); }
