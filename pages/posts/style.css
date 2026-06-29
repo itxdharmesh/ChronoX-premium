@@ -1,0 +1,12 @@
+.post-view-page { max-width: 700px; margin: 0 auto; }
+.post-detail-card { padding: var(--space-6); border-radius: var(--radius-xl); margin-bottom: var(--space-6); }
+.post-detail-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
+.post-detail-content { font-size: var(--text-base); line-height: 1.7; margin-bottom: var(--space-4); }
+.post-detail-image { width: 100%; border-radius: var(--radius-lg); margin-bottom: var(--space-4); }
+.comments-section h4 { margin-bottom: var(--space-4); }
+.comment-form { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); }
+.comment-form input { flex: 1; }
+.comments-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.comment-item { padding: var(--space-3); background: var(--bg-hover); border-radius: var(--radius-lg); }
+.comment-user { font-weight: var(--font-semibold); font-size: var(--text-sm); margin-bottom: var(--space-1); }
+.comment-text { font-size: var(--text-sm); color: var(--text-secondary); }
