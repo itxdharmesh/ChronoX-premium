@@ -476,4 +476,79 @@ function sortPosts(posts, tab) {
             );
         case 'latest':
             return [...posts].sort((a, b) => 
-                new Date(b.createdAt) - new Date(a.createdAt
+                new Date(b.createdAt) - new Date(a.createdAt)
+            );
+        case 'friends':
+            const userId = auth.getCurrentUser()?.id;
+            return [...posts].filter(post => 
+                auth.getCurrentUser()?.friends?.includes(post.userId)
+            );
+        default:
+            return posts;
+    }
+}
+
+/**
+ * Check and update daily reward
+ */
+function checkDailyReward() {
+    const lastClaim = storage.get('lastDailyClaim');
+    const today = new Date().toDateString();
+
+    const claimBtn = document.getElementById('claimDailyBtn');
+    if (!claimBtn) return;
+
+    if (lastClaim === today) {
+        claimBtn.textContent = 'Claimed Today ✅';
+        claimBtn.disabled = true;
+    }
+}
+
+/**
+ * Claim daily reward
+ */
+async function claimDailyReward() {
+    const lastClaim = storage.get('lastDailyClaim');
+    const today = new Date().toDateString();
+
+    if (lastClaim === today) {
+        toast.info('Already claimed today!');
+        return;
+    }
+
+    // Calculate streak
+    const streak = storage.get('dailyStreak', 0);
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    const newStreak = lastClaim === yesterday ? streak + 1 : 1;
+
+    // Calculate reward
+    const baseReward = 50;
+    const streakBonus = Math.min(newStreak - 1, 7) * 10;
+    const totalReward = baseReward + streakBonus;
+
+    // Update user
+    await auth.addCoins(totalReward);
+    await auth.addXP(25);
+
+    // Save claim
+    storage.set('lastDailyClaim', today);
+    storage.set('dailyStreak', newStreak);
+
+    // Update UI
+    const claimBtn = document.getElementById('claimDailyBtn');
+    if (claimBtn) {
+        claimBtn.textContent = 'Claimed Today ✅';
+        claimBtn.disabled = true;
+    }
+
+    updateUserInfo();
+    toast.success(`Daily reward claimed! +${totalReward} coins (Streak: ${newStreak} days)`);
+}
+
+/**
+ * Handle post menu
+ */
+function handlePostMenu(postId, event) {
+    // Implement post menu (delete, report, etc.)
+    toast.info('Post menu coming soon');
+            }
