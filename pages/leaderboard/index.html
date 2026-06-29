@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<!-- ChronoX - Leaderboard Page -->
+<div class="leaderboard-page">
+    <div class="leaderboard-header">
+        <h2>Leaderboard</h2>
+        <select class="form-input" id="leaderboardFilter" style="width:200px;">
+            <option value="global">Global</option>
+            <option value="friends">Friends</option>
+            <option value="weekly">This Week</option>
+        </select>
+    </div>
+
+    <!-- Top 3 -->
+    <div class="top-three" id="topThree"></div>
+
+    <!-- Full Rankings -->
+    <div class="rankings-list glass" id="rankingsList">
+        <div class="ranking-header">
+            <span class="rank-col">Rank</span>
+            <span class="player-col">Player</span>
+            <span class="xp-col">XP</span>
+            <span class="level-col">Level</span>
+        </div>
+        <div id="rankingsContainer"></div>
+    </div>
+</div>
