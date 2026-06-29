@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<div class="game-container">
+    <div class="game-header"><button class="btn btn-icon" onclick="history.back()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button><h3>Color Match</h3><span id="colorScore">Score: 0</span></div>
+    <div class="color-target" id="colorTarget"></div>
+    <div class="color-options-grid" id="colorOptions"></div>
+    <p class="text-center mt-3" id="colorMessage"></p>
+</div>
+<style>.game-container{text-align:center;max-width:400px;margin:0 auto;}.game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);}.color-target{width:150px;height:150px;border-radius:var(--radius-xl);margin:var(--space-6)auto;border:3px solid var(--border-color);}.color-options-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3);}.color-option-btn{aspect-ratio:1;border-radius:var(--radius-lg);cursor:pointer;border:3px solid transparent;transition:all var(--transition-fast);}.color-option-btn:hover{transform:scale(1.05);border-color:white;}</style>
