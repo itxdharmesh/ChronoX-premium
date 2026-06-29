@@ -1,0 +1,23 @@
+.messages-page { max-width: 1000px; margin: 0 auto; height: calc(100vh - var(--navbar-height) - 100px); }
+.messages-container { display: flex; height: 100%; gap: var(--space-4); }
+.conversations-panel { width: 320px; border-radius: var(--radius-xl); padding: var(--space-4); display: flex; flex-direction: column; flex-shrink: 0; }
+.conversations-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); }
+.conversations-header h3 { margin: 0; font-size: var(--text-lg); }
+.conversations-search { margin-bottom: var(--space-3); }
+.conversations-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-1); }
+.conversation-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius-lg); cursor: pointer; transition: all var(--transition-fast); }
+.conversation-item:hover, .conversation-item.active { background: var(--bg-hover); }
+.conversation-name { font-weight: var(--font-semibold); font-size: var(--text-sm); }
+.conversation-last { font-size: var(--text-xs); color: var(--text-muted); }
+.chat-panel { flex: 1; border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; }
+.chat-placeholder { text-align: center; color: var(--text-muted); }
+.chat-placeholder svg { margin-bottom: var(--space-3); opacity: 0.5; }
+.chat-active { display: flex; flex-direction: column; height: 100%; width: 100%; }
+.chat-header { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); border-bottom: 1px solid var(--border-color); }
+.chat-messages { flex: 1; overflow-y: auto; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+.msg-bubble { max-width: 70%; padding: var(--space-3) var(--space-4); border-radius: var(--radius-xl); font-size: var(--text-sm); }
+.msg-sent { align-self: flex-end; background: var(--primary-500); color: white; border-bottom-right-radius: var(--radius-sm); }
+.msg-received { align-self: flex-start; background: var(--bg-hover); border-bottom-left-radius: var(--radius-sm); }
+.chat-input-area { display: flex; gap: var(--space-2); padding: var(--space-4); border-top: 1px solid var(--border-color); }
+.chat-input-area input { flex: 1; }
+@media (max-width: 767px) { .conversations-panel { width: 100%; } .chat-panel { display: none; } }
