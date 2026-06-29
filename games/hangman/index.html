@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<div class="game-container">
+    <div class="game-header"><button class="btn btn-icon" onclick="history.back()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button><h3>Hangman</h3><span id="hangScore">Wins: 0</span></div>
+    <div class="hang-word" id="hangWord"></div>
+    <div class="hang-keyboard" id="hangKeyboard"></div>
+    <p class="text-center mt-3" id="hangMessage"></p>
+    <button class="btn btn-secondary btn-sm mt-3" id="hangReset">New Word</button>
+</div>
+<style>.game-container{text-align:center;max-width:500px;margin:0 auto;}.game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);}.hang-word{font-size:2rem;letter-spacing:8px;margin:var(--space-6)0;font-family:var(--font-mono);}.hang-keyboard{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;}.hang-key{padding:var(--space-2)var(--space-3);background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-md);cursor:pointer;font-weight:var(--font-semibold);transition:all var(--transition-fast);}.hang-key:hover{background:var(--primary-500);color:white;}.hang-key.used{opacity:0.3;pointer-events:none;}</style>
