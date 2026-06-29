@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!-- ChronoX - Single Community Page -->
+<div class="community-page">
+    <!-- Community Header -->
+    <div class="community-banner" id="communityBanner">
+        <div class="community-banner-overlay">
+            <button class="btn btn-icon" onclick="history.back()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="community-info">
+        <div class="community-info-left">
+            <div class="community-avatar">🎮</div>
+            <div>
+                <h2 id="communityName">Gaming Hub</h2>
+                <p class="text-muted" id="communityMembers">12.5k members</p>
+            </div>
+        </div>
+        <div class="community-actions">
+            <button class="btn btn-primary" id="joinCommunityBtn">Join Community</button>
+            <button class="btn btn-secondary">Share</button>
+        </div>
+    </div>
+
+    <div class="community-tabs">
+        <button class="community-tab active" data-tab="feed">Feed</button>
+        <button class="community-tab" data-tab="about">About</button>
+        <button class="community-tab" data-tab="members">Members</button>
+        <button class="community-tab" data-tab="events">Events</button>
+    </div>
+
+    <div class="community-content" id="communityContent">
+        <div class="community-posts" id="communityPosts"></div>
+    </div>
+</div>
