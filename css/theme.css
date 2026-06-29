@@ -1,0 +1,177 @@
+/**
+ * ChronoX - Theme System
+ * Dark and Light theme with smooth transitions
+ */
+
+/* ============ DARK THEME (DEFAULT) ============ */
+[data-theme="dark"] {
+    /* Background */
+    --bg-primary: var(--dark-bg);
+    --bg-secondary: var(--dark-surface);
+    --bg-tertiary: #161630;
+    --bg-card: var(--dark-card);
+    --bg-hover: #222250;
+    --bg-input: var(--dark-surface);
+    
+    /* Text */
+    --text-primary: var(--dark-text);
+    --text-secondary: var(--dark-text-secondary);
+    --text-muted: #606080;
+    --text-inverse: #212529;
+    
+    /* Border */
+    --border-color: var(--dark-border);
+    --border-light: rgba(255, 255, 255, 0.05);
+    
+    /* Shadow */
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    
+    /* Glass */
+    --glass-bg: rgba(26, 26, 62, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    
+    /* Gradient */
+    --gradient-primary: linear-gradient(135deg, #6c5ce7, #a55eea);
+    --gradient-secondary: linear-gradient(135deg, #0091ff, #4ecdc4);
+    --gradient-dark: linear-gradient(135deg, #0a0a1a, #1a1a3e);
+    
+    /* Overlay */
+    --overlay: rgba(0, 0, 0, 0.7);
+}
+
+/* ============ LIGHT THEME ============ */
+[data-theme="light"] {
+    /* Background */
+    --bg-primary: var(--light-bg);
+    --bg-secondary: var(--light-surface);
+    --bg-tertiary: #f1f3f5;
+    --bg-card: var(--light-card);
+    --bg-hover: #f1f3f5;
+    --bg-input: #ffffff;
+    
+    /* Text */
+    --text-primary: var(--light-text);
+    --text-secondary: var(--light-text-secondary);
+    --text-muted: #868e96;
+    --text-inverse: #e4e4f0;
+    
+    /* Border */
+    --border-color: var(--light-border);
+    --border-light: rgba(0, 0, 0, 0.1);
+    
+    /* Shadow */
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    
+    /* Glass */
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    
+    /* Gradient */
+    --gradient-primary: linear-gradient(135deg, #6c5ce7, #a55eea);
+    --gradient-secondary: linear-gradient(135deg, #0091ff, #4ecdc4);
+    --gradient-dark: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    
+    /* Overlay */
+    --overlay: rgba(0, 0, 0, 0.4);
+}
+
+/* ============ APPLY THEME VARIABLES ============ */
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Cards */
+.card,
+.glass {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+.glass {
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+}
+
+/* Inputs */
+.form-input {
+    background: var(--bg-input);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* Buttons */
+.btn-secondary {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    color: var(--text-primary);
+}
+
+.theme-toggle:hover {
+    background: var(--bg-hover);
+}
+
+.theme-toggle .icon-sun,
+.theme-toggle .icon-moon {
+    font-size: 1.25rem;
+    transition: all var(--transition-base);
+}
+
+[data-theme="dark"] .theme-toggle .icon-sun {
+    display: block;
+}
+
+[data-theme="dark"] .theme-toggle .icon-moon {
+    display: none;
+}
+
+[data-theme="light"] .theme-toggle .icon-sun {
+    display: none;
+}
+
+[data-theme="light"] .theme-toggle .icon-moon {
+    display: block;
+}
+
+/* ============ THEME TRANSITIONS ============ */
+.theme-transition {
+    transition: background-color 0.3s ease,
+                color 0.3s ease,
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+}
+
+/* ============ COLOR SCHEMES ============ */
+.color-scheme-default {
+    --accent-color: var(--primary-500);
+}
+
+.color-scheme-ocean {
+    --accent-color: #0091ff;
+}
+
+.color-scheme-sunset {
+    --accent-color: #ff6b6b;
+}
+
+.color-scheme-forest {
+    --accent-color: #6bcf7f;
+}
+
+.color-scheme-purple {
+    --accent-color: #a55eea;
+}
