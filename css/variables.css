@@ -1,0 +1,134 @@
+/**
+ * ChronoX - Design Tokens
+ * All CSS custom properties for the platform
+ */
+
+:root {
+    /* ============ COLORS ============ */
+    
+    /* Primary */
+    --primary-50: #f0edff;
+    --primary-100: #d5cfff;
+    --primary-200: #b8a9ff;
+    --primary-300: #9b83ff;
+    --primary-400: #7e5dff;
+    --primary-500: #6c5ce7;
+    --primary-600: #5a4bd4;
+    --primary-700: #483ac1;
+    --primary-800: #3629ae;
+    --primary-900: #24189b;
+    
+    /* Secondary */
+    --secondary-400: #28a5ff;
+    --secondary-500: #0091ff;
+    --secondary-600: #0074cc;
+    
+    /* Accent */
+    --accent-pink: #ff6b6b;
+    --accent-orange: #ffa500;
+    --accent-yellow: #ffd93d;
+    --accent-green: #6bcf7f;
+    --accent-teal: #4ecdc4;
+    --accent-purple: #a55eea;
+    
+    /* Status */
+    --success: #40c057;
+    --error: #fa5252;
+    --warning: #fcc419;
+    --info: #228be6;
+    
+    /* Neutral */
+    --gray-50: #f8f9fa;
+    --gray-100: #f1f3f5;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #868e96;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+    
+    /* Dark Theme */
+    --dark-bg: #0a0a1a;
+    --dark-surface: #12122a;
+    --dark-card: #1a1a3e;
+    --dark-border: #2a2a4a;
+    --dark-text: #e4e4f0;
+    --dark-text-secondary: #a0a0c0;
+    
+    /* Light Theme */
+    --light-bg: #ffffff;
+    --light-surface: #f8f9fa;
+    --light-card: #ffffff;
+    --light-border: #dee2e6;
+    --light-text: #212529;
+    --light-text-secondary: #495057;
+    
+    /* ============ TYPOGRAPHY ============ */
+    --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-display: 'Outfit', 'Poppins', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+    --text-4xl: 2.25rem;
+    
+    --font-light: 300;
+    --font-normal: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+    
+    /* ============ SPACING ============ */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+    --space-20: 5rem;
+    
+    /* ============ BORDER RADIUS ============ */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+    --radius-full: 9999px;
+    
+    /* ============ SHADOWS ============ */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+    --shadow-xl: 0 20px 50px rgba(0,0,0,0.2);
+    --shadow-glow: 0 0 20px rgba(108,92,231,0.3);
+    
+    /* ============ TRANSITIONS ============ */
+    --transition-fast: 150ms ease;
+    --transition-base: 250ms ease;
+    --transition-slow: 350ms ease;
+    --transition-spring: 300ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* ============ Z-INDEX ============ */
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-modal: 300;
+    --z-toast: 400;
+    --z-tooltip: 500;
+    
+    /* ============ LAYOUT ============ */
+    --navbar-height: 64px;
+    --sidebar-width: 260px;
+    --sidebar-collapsed: 72px;
+    --max-width: 1200px;
+}
