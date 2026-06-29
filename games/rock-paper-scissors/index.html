@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<div class="game-container">
+    <div class="game-header"><button class="btn btn-icon" onclick="history.back()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button><h3>Rock Paper Scissors</h3><span id="rpsScore">Score: 0</span></div>
+    <div class="rps-arena"><div class="rps-choice" id="playerChoice">🤔</div><div class="rps-vs">VS</div><div class="rps-choice" id="aiChoice">🤔</div></div>
+    <div class="rps-buttons"><button class="btn btn-secondary btn-lg rps-btn" onclick="playRPS('rock')">🪨 Rock</button><button class="btn btn-secondary btn-lg rps-btn" onclick="playRPS('paper')">📄 Paper</button><button class="btn btn-secondary btn-lg rps-btn" onclick="playRPS('scissors')">✂️ Scissors</button></div>
+    <p class="text-center mt-3" id="rpsResult"></p>
+</div>
+<style>.game-container{text-align:center;max-width:500px;margin:0 auto;}.game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);}.rps-arena{display:flex;justify-content:center;align-items:center;gap:var(--space-8);margin:var(--space-8)0;}.rps-choice{font-size:5rem;min-width:120px;}.rps-vs{font-size:2rem;font-weight:var(--font-bold);color:var(--text-muted);}.rps-buttons{display:flex;gap:var(--space-3);justify-content:center;}</style>
