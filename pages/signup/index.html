@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<!-- ChronoX - Signup Page -->
+<div class="auth-page">
+    <div class="auth-container">
+        <!-- Left Side - Branding -->
+        <div class="auth-branding">
+            <div class="auth-logo">
+                <svg width="80" height="80" viewBox="0 0 80 80">
+                    <defs>
+                        <linearGradient id="signupLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#6c5ce7"/>
+                            <stop offset="100%" style="stop-color:#a55eea"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="40" cy="40" r="36" fill="url(#signupLogoGrad)" opacity="0.2"/>
+                    <polygon points="40,14 54,38 26,38" fill="url(#signupLogoGrad)"/>
+                    <circle cx="40" cy="30" r="6" fill="white"/>
+                    <text x="40" y="65" text-anchor="middle" fill="var(--text-primary)" font-size="16" font-weight="bold">X</text>
+                </svg>
+                <h1 class="auth-brand-name">Chrono<span class="text-primary">X</span></h1>
+            </div>
+            <p class="auth-tagline">Start your journey today</p>
+            <div class="auth-features">
+                <div class="auth-feature">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                    <span>100 free coins on signup</span>
+                </div>
+                <div class="auth-feature">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="8" r="7"/>
+                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+                    </svg>
+                    <span>Unlock achievements</span>
+                </div>
+                <div class="auth-feature">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="6" width="20" height="12" rx="2"/>
+                        <path d="M12 12h.01"/>
+                    </svg>
+                    <span>Play 11 mini games</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Signup Form -->
+        <div class="auth-form-container">
+            <div class="auth-form-wrapper glass">
+                <h2 class="auth-title">Create Account</h2>
+                <p class="auth-subtitle">Join the ChronoX community</p>
+
+                <form class="auth-form" id="signupForm" novalidate>
+                    <!-- Display Name -->
+                    <div class="form-group">
+                        <label class="form-label" for="signupName">Display Name</label>
+                        <div class="input-group">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <input 
+                                type="text" 
+                                id="signupName" 
+                                class="form-input" 
+                                placeholder="Enter your name"
+                                required
+                                autocomplete="name"
+                            >
+                        </div>
+                        <span class="form-error" id="signupNameError"></span>
+                    </div>
+
+                    <!-- Username -->
+                    <div class="form-group">
+                        <label class="form-label" for="signupUsername">Username</label>
+                        <div class="input-group">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="2" y1="12" x2="22" y2="12"/>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                            </svg>
+                            <input 
+                                type="text" 
+                                id="signupUsername" 
+                                class="form-input" 
+                                placeholder="Choose a username"
+                                required
+                                autocomplete="username"
+                                minlength="3"
+                                maxlength="20"
+                            >
+                            <span class="input-hint" id="usernameHint"></span>
+                        </div>
+                        <span class="form-error" id="signupUsernameError"></span>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label class="form-label" for="signupEmail">Email</label>
+                        <div class="input-group">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                            <input 
+                                type="email" 
+                                id="signupEmail" 
+                                class="form-input" 
+                                placeholder="Enter your email"
+                                required
+                                autocomplete="email"
+                            >
+                        </div>
+                        <span class="form-error" id="signupEmailError"></span>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group">
+                        <label class="form-label" for="signupPassword">Password</label>
+                        <div class="input-group">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            <input 
+                                type="password" 
+                                id="signupPassword" 
+                                class="form-input" 
+                                placeholder="Create a password"
+                                required
+                                autocomplete="new-password"
+                                minlength="8"
+                            >
+                        </div>
+                        <!-- Password Strength Meter -->
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="strength-bar" id="strengthBar1"></div>
+                            <div class="strength-bar" id="strengthBar2"></div>
+                            <div class="strength-bar" id="strengthBar3"></div>
+                            <div class="strength-bar" id="strengthBar4"></div>
+                        </div>
+                        <span class="strength-text" id="strengthText"></span>
+                        <span class="form-error" id="signupPasswordError"></span>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="form-group">
+                        <label class="form-label" for="signupConfirmPassword">Confirm Password</label>
+                        <div class="input-group">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 12l2 2 4-4"/>
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            <input 
+                                type="password" 
+                                id="signupConfirmPassword" 
+                                class="form-input" 
+                                placeholder="Confirm your password"
+                                required
+                                autocomplete="new-password"
+                            >
+                        </div>
+                        <span class="form-error" id="signupConfirmPasswordError"></span>
+                    </div>
+
+                    <!-- Terms Checkbox -->
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="agreeTerms" class="checkbox-input" required>
+                            <span class="checkbox-custom"></span>
+                            <span class="checkbox-text">
+                                I agree to the 
+                                <a href="#/privacy" class="auth-link">Terms of Service</a> 
+                                and 
+                                <a href="#/privacy" class="auth-link">Privacy Policy</a>
+                            </span>
+                        </label>
+                        <span class="form-error" id="agreeTermsError"></span>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" id="signupBtn">
+                        <span class="btn-text">Create Account</span>
+                        <span class="btn-loader" style="display:none;">
+                            <span class="btn-spinner"></span>
+                            Creating account...
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Divider -->
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+
+                <!-- Login Link -->
+                <p class="auth-switch">
+                    Already have an account? 
+                    <a href="#/login" class="auth-link">Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
