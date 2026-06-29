@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<!-- ChronoX - Avatar Customization Page -->
+<div class="avatar-page">
+    <div class="avatar-header">
+        <h2>Avatar Customization</h2>
+        <p class="text-muted">Customize your digital identity</p>
+    </div>
+
+    <div class="avatar-workspace">
+        <!-- Avatar Preview -->
+        <div class="avatar-preview glass">
+            <div class="avatar-canvas" id="avatarCanvas">
+                <div class="avatar-base" id="avatarBase">😊</div>
+                <div class="avatar-accessory avatar-hat" id="avatarHat"></div>
+                <div class="avatar-accessory avatar-glasses" id="avatarGlasses"></div>
+                <div class="avatar-accessory avatar-mask" id="avatarMask"></div>
+            </div>
+            <button class="btn btn-primary btn-block mt-4" id="saveAvatarBtn">Save Avatar</button>
+        </div>
+
+        <!-- Customization Options -->
+        <div class="avatar-options">
+            <div class="avatar-tabs">
+                <button class="avatar-tab active" data-tab="base">Base</button>
+                <button class="avatar-tab" data-tab="hats">Hats</button>
+                <button class="avatar-tab" data-tab="glasses">Glasses</button>
+                <button class="avatar-tab" data-tab="masks">Masks</button>
+                <button class="avatar-tab" data-tab="colors">Colors</button>
+            </div>
+            <div class="avatar-items-grid" id="avatarItemsGrid"></div>
+        </div>
+    </div>
+</div>
