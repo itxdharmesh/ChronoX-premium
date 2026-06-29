@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<!-- ChronoX - Home Page -->
+<div class="home-page">
+    <div class="home-container">
+        <!-- Left Column - Main Feed -->
+        <div class="home-feed">
+            <!-- Create Post Card -->
+            <div class="create-post-card glass">
+                <div class="create-post-header">
+                    <img src="assets/avatars/default.png" alt="Avatar" class="avatar" id="homeAvatar">
+                    <button class="create-post-input" id="openCreatePost">
+                        What's on your mind?
+                    </button>
+                </div>
+                <div class="create-post-actions">
+                    <button class="post-action-btn" id="postImageBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                        <span>Image</span>
+                    </button>
+                    <button class="post-action-btn" id="postGameBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        <span>Game Score</span>
+                    </button>
+                    <button class="post-action-btn" id="postAchievementBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="8" r="7"/>
+                            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+                        </svg>
+                        <span>Achievement</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Feed Tabs -->
+            <div class="feed-tabs">
+                <button class="feed-tab active" data-tab="trending">Trending</button>
+                <button class="feed-tab" data-tab="latest">Latest</button>
+                <button class="feed-tab" data-tab="friends">Friends</button>
+            </div>
+
+            <!-- Posts Container -->
+            <div class="posts-container" id="postsContainer">
+                <!-- Posts loaded dynamically -->
+                <div class="skeleton-card card">
+                    <div class="skeleton-header">
+                        <div class="skeleton-avatar skeleton"></div>
+                        <div class="skeleton-text-group">
+                            <div class="skeleton-text skeleton-text-sm skeleton"></div>
+                            <div class="skeleton-text skeleton-text-xs skeleton"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-body">
+                        <div class="skeleton-text skeleton-text-lg skeleton"></div>
+                        <div class="skeleton-text skeleton-text-md skeleton"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Load More -->
+            <div class="load-more-container" id="loadMoreContainer">
+                <button class="btn btn-secondary btn-block" id="loadMoreBtn">
+                    Load More Posts
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Column - Sidebar -->
+        <div class="home-sidebar">
+            <!-- User Stats Card -->
+            <div class="sidebar-card glass" id="userStatsCard">
+                <div class="stats-header">
+                    <img src="assets/avatars/default.png" alt="Avatar" class="avatar avatar-lg" id="sidebarAvatar">
+                    <div class="stats-user-info">
+                        <h4 id="sidebarUsername">User</h4>
+                        <p class="text-muted" id="sidebarLevel">Level 1</p>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="statXP">0</span>
+                        <span class="stat-label">XP</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="statCoins">0</span>
+                        <span class="stat-label">Coins</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="statFriends">0</span>
+                        <span class="stat-label">Friends</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trending Communities -->
+            <div class="sidebar-card glass">
+                <h4 class="sidebar-card-title">Trending Communities</h4>
+                <div class="trending-communities" id="trendingCommunities">
+                    <div class="community-item">
+                        <div class="community-icon">🎮</div>
+                        <div class="community-info">
+                            <span class="community-name">Gaming Hub</span>
+                            <span class="community-members">12.5k members</span>
+                        </div>
+                    </div>
+                    <div class="community-item">
+                        <div class="community-icon">🎨</div>
+                        <div class="community-info">
+                            <span class="community-name">Art Corner</span>
+                            <span class="community-members">8.2k members</span>
+                        </div>
+                    </div>
+                    <div class="community-item">
+                        <div class="community-icon">💻</div>
+                        <div class="community-info">
+                            <span class="community-name">Tech Talk</span>
+                            <span class="community-members">15.1k members</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Rewards Card -->
+            <div class="sidebar-card glass daily-reward-card" id="dailyRewardCard">
+                <div class="daily-reward-header">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    <span>Daily Reward</span>
+                </div>
+                <p class="daily-reward-text">Claim your daily bonus!</p>
+                <button class="btn btn-primary btn-block btn-sm" id="claimDailyBtn">
+                    Claim 50 Coins
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Post Modal Template -->
+<template id="createPostModal">
+    <div class="create-post-modal">
+        <div class="post-modal-header">
+            <img src="assets/avatars/default.png" alt="Avatar" class="avatar" id="modalAvatar">
+            <div class="post-modal-user">
+                <span id="modalUsername">User</span>
+            </div>
+        </div>
+        <textarea 
+            class="post-textarea" 
+            id="postContent" 
+            placeholder="What's on your mind?"
+            maxlength="500"
+            rows="4"
+        ></textarea>
+        <div class="post-char-count">
+            <span id="charCount">0</span>/500
+        </div>
+        <div class="post-image-preview" id="postImagePreview" style="display:none;">
+            <img src="" alt="Preview" id="postPreviewImg">
+            <button class="remove-image-btn" id="removeImageBtn">✕</button>
+        </div>
+        <div class="post-modal-actions">
+            <button class="btn btn-secondary btn-sm" id="addImageBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                Add Image
+            </button>
+            <button class="btn btn-primary btn-sm" id="submitPostBtn">Post</button>
+        </div>
+        <input type="file" id="imageFileInput" accept="image/*" style="display:none;">
+    </div>
+  </template>
