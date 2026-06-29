@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<!-- ChronoX - Avatar Customization Page -->
+<div class="avatar-page">
+    <div class="avatar-header">
+        <h2>Avatar Customization</h2>
+        <p class="text-muted">Customize your digital identity</p>
+    </div>
+
+    <div class="avatar-workspace">
+        <!-- Avatar Preview -->
+        <div class="avatar-preview glass">
+            <div class="avatar-canvas" id="avatarCanvas">
+                <div class="avatar-base" id="avatarBase">😊</div>
+                <div class="avatar-accessory avatar-hat" id="avatarHat"></div>
+                <div class="avatar-accessory avatar-glasses" id="avatarGlasses"></div>
+                <div class="avatar-accessory avatar-mask" id="avatarMask"></div>
+            </div>
+            <button class="btn btn-primary btn-block mt-4" id="saveAvatarBtn">Save Avatar</button>
+        </div>
+
+        <!-- Customization Options -->
+        <div class="avatar-options">
+            <div class="avatar-tabs">
+                <button class="avatar-tab active" data-tab="base">Base</button>
+                <button class="avatar-tab" data-tab="hats">Hats</button>
+                <button class="avatar-tab" data-tab="glasses">Glasses</button>
+                <button class="avatar-tab" data-tab="masks">Masks</button>
+                <button class="avatar-tab" data-tab="colors">Colors</button>
+            </div>
+            <div class="avatar-items-grid" id="avatarItemsGrid"></div>
+        </div>
+    </div>
+</div>.shop-page { max-width: 1000px; margin: 0 auto; }
+.shop-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6); }
+.shop-header h2 { font-size: var(--text-2xl); margin: 0; }
+.shop-coins { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); font-weight: var(--font-semibold); cursor: pointer; }
+.shop-tabs { display: flex; gap: var(--space-1); background: var(--bg-card); border-radius: var(--radius-lg); padding: var(--space-1); border: 1px solid var(--border-color); margin-bottom: var(--space-4); }
+.shop-tab { flex: 1; padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); font-size: var(--text-sm); font-weight: var(--font-medium); background: none; border: none; color: var(--text-secondary); cursor: pointer; transition: all var(--transition-fast); }
+.shop-tab.active { background: var(--primary-500); color: white; }
+.shop-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); }
+.shop-item { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: var(--space-4); text-align: center; cursor: pointer; transition: all var(--transition-fast); position: relative; overflow: hidden; }
+.shop-item:hover { border-color: var(--primary-500); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.shop-item.owned { opacity: 0.7; }
+.shop-item.owned::after { content: '✓ Owned'; position: absolute; top: var(--space-2); right: var(--space-2); background: var(--success); color: white; padding: 2px 8px; border-radius: var(--radius-full); font-size: 10px; }
+.shop-item-icon { font-size: 3rem; margin-bottom: var(--space-3); }
+.shop-item-name { font-weight: var(--font-semibold); font-size: var(--text-sm); margin-bottom: var(--space-2); }
+.shop-item-price { font-size: var(--text-sm); font-weight: var(--font-bold); color: var(--accent-yellow); }
+@media (max-width: 767px) { .shop-grid { grid-template-columns: repeat(2, 1fr); } }
