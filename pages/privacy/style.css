@@ -1,0 +1,7 @@
+.privacy-page { max-width: 700px; margin: 0 auto; }
+.privacy-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-6); }
+.privacy-header h2 { font-size: var(--text-2xl); margin: 0; }
+.privacy-content { padding: var(--space-6); border-radius: var(--radius-xl); }
+.privacy-content h4 { font-size: var(--text-base); font-weight: var(--font-semibold); margin: var(--space-6) 0 var(--space-2); }
+.privacy-content h4:first-of-type { margin-top: 0; }
+.privacy-content p { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.7; }
