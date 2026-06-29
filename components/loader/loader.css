@@ -1,0 +1,337 @@
+/**
+ * ChronoX - Loader Styles
+ * Loading animations, skeleton screens, and progress indicators
+ */
+
+/* ============ GLOBAL LOADER OVERLAY ============ */
+.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+    animation: fadeIn 0.3s ease;
+}
+
+.loader-container {
+    text-align: center;
+    padding: var(--space-10);
+    border-radius: var(--radius-2xl);
+    min-width: 320px;
+    max-width: 400px;
+    animation: scaleIn 0.3s ease;
+}
+
+/* ============ LOGO ANIMATION ============ */
+.loader-logo {
+    margin-bottom: var(--space-6);
+}
+
+.loader-logo-animation {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.loader-circle {
+    animation: loaderCircle 2s linear infinite;
+    transform-origin: center;
+}
+
+.loader-triangle {
+    animation: loaderTriangle 2s ease-in-out infinite;
+    transform-origin: center;
+}
+
+@keyframes loaderCircle {
+    0% {
+        stroke-dashoffset: 176;
+    }
+    50% {
+        stroke-dashoffset: 0;
+    }
+    100% {
+        stroke-dashoffset: -176;
+    }
+}
+
+@keyframes loaderTriangle {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(0.8);
+    }
+}
+
+/* ============ LOADER TEXT ============ */
+.loader-text {
+    margin-bottom: var(--space-6);
+}
+
+.loader-title {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-2);
+}
+
+.loader-message {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    margin: 0;
+}
+
+/* ============ PROGRESS BAR ============ */
+.loader-progress-container {
+    width: 100%;
+    height: 4px;
+    background: var(--bg-hover);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--space-6);
+}
+
+.loader-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+    animation: progressIndeterminate 2s ease-in-out infinite;
+}
+
+@keyframes progressIndeterminate {
+    0% {
+        width: 0%;
+        margin-left: 0;
+    }
+    50% {
+        width: 70%;
+        margin-left: 15%;
+    }
+    100% {
+        width: 0%;
+        margin-left: 100%;
+    }
+}
+
+/* ============ LOADING DOTS ============ */
+.loader-dots {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+}
+
+.loader-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--primary-400);
+    border-radius: var(--radius-full);
+    animation: dotBounce 1.4s ease-in-out infinite;
+}
+
+.loader-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.loader-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes dotBounce {
+    0%, 80%, 100% {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ============ SKELETON SCREENS ============ */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--bg-hover) 0%,
+        var(--bg-card) 50%,
+        var(--bg-hover) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Skeleton Card */
+.skeleton-card {
+    padding: var(--space-6);
+    margin-bottom: var(--space-4);
+}
+
+.skeleton-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+}
+
+.skeleton-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+}
+
+.skeleton-avatar-lg {
+    width: 96px;
+    height: 96px;
+    border-radius: var(--radius-full);
+    margin: -48px auto var(--space-4);
+    border: 4px solid var(--bg-card);
+}
+
+.skeleton-text-group {
+    flex: 1;
+}
+
+.skeleton-text {
+    height: 16px;
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-2);
+}
+
+.skeleton-text-xs { width: 30%; height: 12px; }
+.skeleton-text-sm { width: 50%; }
+.skeleton-text-md { width: 80%; }
+.skeleton-text-lg { width: 90%; height: 20px; }
+.skeleton-text-xl { width: 40%; height: 24px; }
+
+.skeleton-center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.skeleton-body {
+    margin-bottom: var(--space-4);
+}
+
+.skeleton-image {
+    height: 200px;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-4);
+}
+
+.skeleton-footer {
+    display: flex;
+    gap: var(--space-4);
+}
+
+.skeleton-button {
+    width: 60px;
+    height: 36px;
+    border-radius: var(--radius-md);
+}
+
+/* Skeleton Profile */
+.skeleton-profile {
+    text-align: center;
+    padding: var(--space-6);
+}
+
+.skeleton-banner {
+    height: 150px;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-6);
+}
+
+.skeleton-stats {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-8);
+    margin-top: var(--space-4);
+}
+
+.skeleton-stat {
+    width: 80px;
+    height: 50px;
+    border-radius: var(--radius-md);
+}
+
+/* Skeleton List Item */
+.skeleton-list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    margin-bottom: var(--space-2);
+}
+
+/* ============ PAGE LOADER ============ */
+.page-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.loader-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--primary-500);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============ BUTTON LOADER ============ */
+.btn-loader {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.btn-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 575px) {
+    .loader-container {
+        min-width: auto;
+        width: 90%;
+        padding: var(--space-6);
+    }
+
+    .loader-logo svg {
+        width: 48px;
+        height: 48px;
+    }
+
+    .loader-title {
+        font-size: var(--text-xl);
+    }
+}
