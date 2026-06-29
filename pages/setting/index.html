@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<!-- ChronoX - Settings Page -->
+<div class="settings-page">
+    <div class="settings-header">
+        <h2>Settings</h2>
+    </div>
+
+    <div class="settings-container">
+        <!-- Sidebar Navigation -->
+        <div class="settings-sidebar glass">
+            <button class="settings-nav active" data-section="appearance">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Appearance
+            </button>
+            <button class="settings-nav" data-section="notifications">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Notifications
+            </button>
+            <button class="settings-nav" data-section="security">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Security
+            </button>
+            <button class="settings-nav" data-section="language">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                Language
+            </button>
+            <button class="settings-nav" data-section="about">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                About
+            </button>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="settings-content" id="settingsContent">
+            <!-- Appearance Section -->
+            <div class="settings-section active" id="section-appearance">
+                <h3>Appearance</h3>
+                <div class="setting-item">
+                    <div><strong>Theme</strong><small>Choose your preferred theme</small></div>
+                    <select class="form-input" id="themeSelect" style="width:150px;">
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <div><strong>Color Scheme</strong><small>Accent color</small></div>
+                    <div class="color-options">
+                        <button class="color-option active" data-color="default" style="background:#6c5ce7;"></button>
+                        <button class="color-option" data-color="ocean" style="background:#0091ff;"></button>
+                        <button class="color-option" data-color="sunset" style="background:#ff6b6b;"></button>
+                        <button class="color-option" data-color="forest" style="background:#6bcf7f;"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications Section -->
+            <div class="settings-section" id="section-notifications" style="display:none;">
+                <h3>Notifications</h3>
+                <div class="setting-item">
+                    <div><strong>Push Notifications</strong><small>Receive push notifications</small></div>
+                    <label class="toggle-switch"><input type="checkbox" id="pushNotif" checked><span class="toggle-slider"></span></label>
+                </div>
+                <div class="setting-item">
+                    <div><strong>Email Notifications</strong><small>Receive email updates</small></div>
+                    <label class="toggle-switch"><input type="checkbox" id="emailNotif"><span class="toggle-slider"></span></label>
+                </div>
+                <div class="setting-item">
+                    <div><strong>Sound</strong><small>Play notification sounds</small></div>
+                    <label class="toggle-switch"><input type="checkbox" id="soundNotif" checked><span class="toggle-slider"></span></label>
+                </div>
+            </div>
+
+            <!-- Security Section -->
+            <div class="settings-section" id="section-security" style="display:none;">
+                <h3>Security</h3>
+                <div class="setting-item">
+                    <div><strong>Change Password</strong><small>Update your password</small></div>
+                    <button class="btn btn-secondary btn-sm" id="changePasswordBtn">Change</button>
+                </div>
+                <div class="setting-item">
+                    <div><strong>Two-Factor Auth</strong><small>Add extra security</small></div>
+                    <label class="toggle-switch"><input type="checkbox" id="twoFactor"><span class="toggle-slider"></span></label>
+                </div>
+                <div class="setting-item">
+                    <div><strong>Active Sessions</strong><small>Manage logged in devices</small></div>
+                    <button class="btn btn-secondary btn-sm">Manage</button>
+                </div>
+            </div>
+
+            <!-- Language Section -->
+            <div class="settings-section" id="section-language" style="display:none;">
+                <h3>Language</h3>
+                <div class="setting-item">
+                    <div><strong>Display Language</strong><small>Select your language</small></div>
+                    <select class="form-input" id="langSelect" style="width:200px;">
+                        <option value="en">English</option>
+                        <option value="hi">हिंदी</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <div class="settings-section" id="section-about" style="display:none;">
+                <h3>About ChronoX</h3>
+                <p class="text-muted">Version 1.0.0</p>
+                <p class="text-sm">Next Generation Social Gaming Platform</p>
+                <div class="about-links mt-4">
+                    <a href="#/privacy">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Contact Support</a>
+                </div>
+            </div>
+        </div>
+    </div>
+                                                                                                  </div>
