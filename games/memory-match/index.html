@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<div class="game-container">
+    <div class="game-header"><button class="btn btn-icon" onclick="history.back()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button><h3>Memory Match</h3><span id="memScore">Moves: 0</span></div>
+    <div class="memory-grid" id="memGrid"></div>
+    <button class="btn btn-secondary btn-sm mt-4" id="memReset">Reset</button>
+</div>
+<style>.game-container{text-align:center;max-width:500px;margin:0 auto;}.game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);}.memory-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}.mem-card{aspect-ratio:1;background:var(--primary-500);border-radius:var(--radius-lg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:2rem;transition:all 0.3s ease;}.mem-card.flipped{background:var(--bg-card);border:2px solid var(--primary-500);}.mem-card.matched{background:var(--success);opacity:0.7;pointer-events:none;}</style>
