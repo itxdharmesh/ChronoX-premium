@@ -1,0 +1,21 @@
+.daily-rewards-page { max-width: 600px; margin: 0 auto; text-align: center; }
+.rewards-header { margin-bottom: var(--space-6); }
+.rewards-header h2 { font-size: var(--text-2xl); margin-bottom: var(--space-2); }
+.streak-card { padding: var(--space-8); border-radius: var(--radius-2xl); margin-bottom: var(--space-8); background: linear-gradient(135deg, rgba(255,107,107,0.1), rgba(255,165,0,0.1)); border: 1px solid rgba(255,107,107,0.3); }
+.streak-fire { font-size: 4rem; margin-bottom: var(--space-2); animation: float 2s ease-in-out infinite; }
+.streak-count { font-size: var(--text-5xl); font-weight: var(--font-extrabold); color: var(--accent-orange); }
+.streak-label { font-size: var(--text-lg); color: var(--text-secondary); margin-bottom: var(--space-2); }
+.streak-bonus { font-size: var(--text-sm); color: var(--accent-yellow); }
+.weekly-rewards { margin-bottom: var(--space-8); }
+.weekly-rewards h3 { margin-bottom: var(--space-4); font-size: var(--text-lg); }
+.week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-2); }
+.day-card { padding: var(--space-3); background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); transition: all var(--transition-fast); }
+.day-card.claimed { border-color: var(--success); opacity: 0.6; }
+.day-card.today { border-color: var(--primary-500); box-shadow: 0 0 15px rgba(108,92,231,0.3); }
+.day-card.locked { opacity: 0.4; }
+.day-name { font-size: var(--text-xs); color: var(--text-muted); margin-bottom: var(--space-1); }
+.day-icon { font-size: 1.5rem; margin-bottom: var(--space-1); }
+.day-reward { font-size: var(--text-xs); font-weight: var(--font-semibold); color: var(--accent-yellow); }
+.claim-section { margin-top: var(--space-8); }
+#claimRewardBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+@media (max-width: 575px) { .week-grid { grid-template-columns: repeat(4, 1fr); } }
