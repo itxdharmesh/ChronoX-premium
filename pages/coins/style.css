@@ -1,0 +1,19 @@
+.coins-page { max-width: 800px; margin: 0 auto; }
+.coins-header { margin-bottom: var(--space-6); }
+.coins-header h2 { font-size: var(--text-2xl); }
+.balance-card { text-align: center; padding: var(--space-8); border-radius: var(--radius-2xl); margin-bottom: var(--space-8); background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.1)); border: 1px solid rgba(255,215,0,0.3); }
+.balance-icon { font-size: 3rem; margin-bottom: var(--space-2); }
+.balance-amount { font-size: var(--text-5xl); font-weight: var(--font-extrabold); color: var(--accent-yellow); }
+.balance-label { color: var(--text-secondary); font-size: var(--text-lg); margin-bottom: var(--space-2); }
+.balance-xp { font-size: var(--text-sm); color: var(--primary-400); }
+.earn-section { margin-bottom: var(--space-8); }
+.earn-section h3 { margin-bottom: var(--space-4); }
+.earn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+.earn-card { padding: var(--space-5); border-radius: var(--radius-xl); text-align: center; }
+.earn-icon { font-size: 2rem; margin-bottom: var(--space-2); }
+.earn-card h4 { font-size: var(--text-sm); margin-bottom: var(--space-1); }
+.earn-card p { font-size: var(--text-xs); color: var(--text-muted); margin-bottom: var(--space-2); }
+.transactions-section h3 { margin-bottom: var(--space-4); }
+.transactions-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.transaction-item { display: flex; justify-content: space-between; align-items: center; padding: var(--space-3) var(--space-4); background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color); }
+@media (max-width: 767px) { .earn-grid { grid-template-columns: repeat(2, 1fr); } }
