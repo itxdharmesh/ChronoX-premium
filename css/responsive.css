@@ -1,0 +1,163 @@
+/**
+ * ChronoX - Responsive Design
+ * Media queries for all device sizes
+ */
+
+/* ============ EXTRA LARGE (1400px+) ============ */
+@media (min-width: 1400px) {
+    .main-content {
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* ============ LARGE DESKTOP (1200px - 1399px) ============ */
+@media (max-width: 1399px) {
+    .grid-4 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ============ DESKTOP (1024px - 1199px) ============ */
+@media (max-width: 1199px) {
+    .grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .main-content {
+        padding: var(--space-6);
+    }
+}
+
+/* ============ TABLET LANDSCAPE (900px - 1023px) ============ */
+@media (max-width: 1023px) {
+    :root {
+        --sidebar-width: 72px;
+    }
+    
+    .main-content {
+        margin-left: var(--sidebar-width);
+        padding: var(--space-4);
+    }
+    
+    .sidebar-text {
+        display: none;
+    }
+}
+
+/* ============ TABLET PORTRAIT (768px - 899px) ============ */
+@media (max-width: 899px) {
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        margin-bottom: 60px;
+        padding: var(--space-4);
+    }
+    
+    .hide-tablet {
+        display: none;
+    }
+}
+
+/* ============ MOBILE LANDSCAPE (576px - 767px) ============ */
+@media (max-width: 767px) {
+    :root {
+        --navbar-height: 56px;
+    }
+    
+    html {
+        font-size: 15px;
+    }
+    
+    .main-content {
+        padding: var(--space-3);
+    }
+    
+    .card {
+        padding: var(--space-4);
+    }
+    
+    .btn-lg {
+        padding: var(--space-3) var(--space-6);
+    }
+    
+    .hide-mobile {
+        display: none;
+    }
+}
+
+/* ============ MOBILE PORTRAIT (320px - 575px) ============ */
+@media (max-width: 575px) {
+    html {
+        font-size: 14px;
+    }
+    
+    :root {
+        --navbar-height: 52px;
+    }
+    
+    .main-content {
+        padding: var(--space-2);
+    }
+    
+    .card {
+        padding: var(--space-3);
+        border-radius: var(--radius-lg);
+    }
+    
+    h1 { font-size: var(--text-2xl); }
+    h2 { font-size: var(--text-xl); }
+    h3 { font-size: var(--text-lg); }
+    
+    .btn {
+        padding: var(--space-2) var(--space-4);
+    }
+    
+    .form-input {
+        padding: var(--space-2) var(--space-3);
+    }
+}
+
+/* ============ HIGH DPI SCREENS ============ */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    img {
+        image-rendering: -webkit-optimize-contrast;
+    }
+}
+
+/* ============ DARK MODE PREFERENCE ============ */
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
+    }
+}
+
+/* ============ PRINT STYLES ============ */
+@media print {
+    .navbar,
+    .sidebar,
+    .footer,
+    .btn {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin: 0;
+        padding: 0;
+    }
+    
+    body {
+        background: white;
+        color: black;
+    }
+}
