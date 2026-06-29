@@ -1,0 +1,279 @@
+/**
+ * ChronoX - Modal Styles
+ * Glassmorphism modal dialogs and overlays
+ */
+
+/* ============ MODAL OVERLAY ============ */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+    padding: var(--space-4);
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-overlay.closing {
+    animation: fadeOut 0.2s ease forwards;
+}
+
+/* ============ MODAL CONTAINER ============ */
+.modal-container {
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: scaleIn 0.3s ease;
+}
+
+.modal-container.closing {
+    animation: scaleOut 0.2s ease forwards;
+}
+
+/* Size Variants */
+.modal-sm {
+    max-width: 400px;
+}
+
+.modal-lg {
+    max-width: 700px;
+}
+
+.modal-xl {
+    max-width: 900px;
+}
+
+.modal-fullscreen {
+    max-width: 95vw;
+    max-height: 95vh;
+}
+
+/* ============ MODAL HEADER ============ */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-5) var(--space-6);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.modal-close {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background: none;
+    border: none;
+}
+
+.modal-close:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* ============ MODAL BODY ============ */
+.modal-body {
+    padding: var(--space-6);
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: var(--radius-full);
+}
+
+/* ============ MODAL FOOTER ============ */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--border-color);
+}
+
+/* ============ CONFIRM DIALOG ============ */
+.modal-confirm,
+.modal-alert {
+    text-align: center;
+    padding: var(--space-4) 0;
+}
+
+.modal-icon {
+    margin-bottom: var(--space-4);
+    color: var(--primary-400);
+}
+
+.modal-message {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* ============ IMAGE PREVIEW ============ */
+.modal-image-preview {
+    text-align: center;
+}
+
+.modal-preview-image {
+    max-width: 100%;
+    max-height: 70vh;
+    border-radius: var(--radius-lg);
+    object-fit: contain;
+}
+
+.modal-image-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+}
+
+/* ============ FORM IN MODAL ============ */
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.modal-form .form-group {
+    margin-bottom: 0;
+}
+
+/* ============ LIST IN MODAL ============ */
+.modal-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.modal-list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.modal-list-item:hover {
+    background: var(--bg-hover);
+}
+
+/* ============ SHARE MODAL ============ */
+.modal-share {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.share-options {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-3);
+}
+
+.share-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background: var(--bg-hover);
+    border: none;
+    color: var(--text-primary);
+}
+
+.share-option:hover {
+    background: var(--primary-500);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.share-option svg {
+    width: 24px;
+    height: 24px;
+}
+
+.share-option span {
+    font-size: var(--text-xs);
+}
+
+.share-link {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.share-link input {
+    flex: 1;
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 575px) {
+    .modal-container {
+        max-width: 100%;
+        max-height: 100vh;
+        border-radius: var(--radius-xl);
+    }
+
+    .modal-header {
+        padding: var(--space-4);
+    }
+
+    .modal-body {
+        padding: var(--space-4);
+    }
+
+    .modal-footer {
+        padding: var(--space-3) var(--space-4);
+        flex-direction: column;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+
+    .share-options {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
