@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<div class="game-container">
+    <div class="game-header"><button class="btn btn-icon" onclick="history.back()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button><h3>Minesweeper</h3><span id="mineStatus">💣 10</span></div>
+    <div class="mine-grid" id="mineGrid"></div>
+    <button class="btn btn-secondary btn-sm mt-4" id="mineReset">New Game</button>
+</div>
+<style>.game-container{text-align:center;max-width:400px;margin:0 auto;}.game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);}.mine-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;}.mine-cell{aspect-ratio:1;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:var(--font-bold);font-size:var(--text-sm);transition:all var(--transition-fast);}.mine-cell.revealed{background:var(--bg-hover);}.mine-cell.mine{background:var(--error);}.mine-cell.flag{background:var(--warning);}</style>
