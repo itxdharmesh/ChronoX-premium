@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<div class="game-container">
+    <div class="game-header"><button class="btn btn-icon" onclick="history.back()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button><h3>Tic Tac Toe</h3><span id="tttStatus">Your turn</span></div>
+    <div class="ttt-grid" id="tttGrid"></div>
+    <button class="btn btn-secondary btn-sm mt-4" id="tttReset">Reset</button>
+</div>
+<style>.game-container{text-align:center;max-width:400px;margin:0 auto;}.game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);}.ttt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--border-color);border-radius:var(--radius-lg);overflow:hidden;}.ttt-cell{aspect-ratio:1;background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-size:3rem;cursor:pointer;transition:all var(--transition-fast);}.ttt-cell:hover{background:var(--bg-hover);}.ttt-cell.x{color:var(--primary-400);}.ttt-cell.o{color:var(--accent-pink);}</style>
