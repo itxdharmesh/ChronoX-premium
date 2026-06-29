@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<!-- ChronoX - Edit Profile Page -->
+<div class="edit-profile-page">
+    <div class="edit-profile-container">
+        <!-- Page Header -->
+        <div class="edit-profile-header">
+            <button class="btn btn-icon" onclick="history.back()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"/>
+                    <polyline points="12 19 5 12 12 5"/>
+                </svg>
+            </button>
+            <h2>Edit Profile</h2>
+        </div>
+
+        <form class="edit-profile-form" id="editProfileForm" novalidate>
+            <!-- Banner Section -->
+            <div class="edit-section glass">
+                <h3 class="edit-section-title">Profile Banner</h3>
+                <div class="banner-edit" id="bannerEdit">
+                    <img src="assets/backgrounds/default-banner.png" alt="Banner" id="editBannerPreview">
+                    <div class="banner-edit-overlay">
+                        <button type="button" class="btn btn-secondary btn-sm" id="changeBannerEditBtn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                <circle cx="12" cy="13" r="4"/>
+                            </svg>
+                            Change Banner
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avatar Section -->
+            <div class="edit-section glass">
+                <h3 class="edit-section-title">Profile Picture</h3>
+                <div class="avatar-edit">
+                    <img src="assets/avatars/default.png" alt="Avatar" class="avatar avatar-xl" id="editAvatarPreview">
+                    <button type="button" class="btn btn-secondary btn-sm" id="changeAvatarEditBtn">
+                        Change Photo
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" id="removeAvatarEditBtn">
+                        Remove
+                    </button>
+                </div>
+            </div>
+
+            <!-- Basic Info Section -->
+            <div class="edit-section glass">
+                <h3 class="edit-section-title">Basic Information</h3>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editDisplayName">Display Name</label>
+                    <input 
+                        type="text" 
+                        id="editDisplayName" 
+                        class="form-input" 
+                        placeholder="Enter your display name"
+                        maxlength="50"
+                        required
+                    >
+                    <span class="form-hint">This is your public display name</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editUsername">Username</label>
+                    <input 
+                        type="text" 
+                        id="editUsername" 
+                        class="form-input" 
+                        placeholder="Choose username"
+                        maxlength="20"
+                        disabled
+                    >
+                    <span class="form-hint">Username cannot be changed</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editEmail">Email</label>
+                    <input 
+                        type="email" 
+                        id="editEmail" 
+                        class="form-input" 
+                        placeholder="Your email address"
+                        disabled
+                    >
+                    <span class="form-hint">Email cannot be changed</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editBio">Bio</label>
+                    <textarea 
+                        id="editBio" 
+                        class="form-input form-textarea" 
+                        placeholder="Tell us about yourself..."
+                        maxlength="200"
+                        rows="4"
+                    ></textarea>
+                    <div class="char-counter">
+                        <span id="bioCharCount">0</span>/200
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Links -->
+            <div class="edit-section glass">
+                <h3 class="edit-section-title">Social Links</h3>
+                
+                <div class="form-group">
+                    <label class="form-label" for="editWebsite">Website</label>
+                    <input 
+                        type="url" 
+                        id="editWebsite" 
+                        class="form-input" 
+                        placeholder="https://your-website.com"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editTwitter">Twitter</label>
+                    <input 
+                        type="text" 
+                        id="editTwitter" 
+                        class="form-input" 
+                        placeholder="@username"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="editGithub">GitHub</label>
+                    <input 
+                        type="text" 
+                        id="editGithub" 
+                        class="form-input" 
+                        placeholder="username"
+                    >
+                </div>
+            </div>
+
+            <!-- Gaming Info -->
+            <div class="edit-section glass">
+                <h3 class="edit-section-title">Gaming Preferences</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">Favorite Game Genres</label>
+                    <div class="checkbox-grid" id="gameGenres">
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="action" class="checkbox-input">
+                            <span class="checkbox-custom"></span>
+                            <span class="checkbox-text">Action</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="puzzle" class="checkbox-input">
+                            <span class="checkbox-custom"></span>
+                            <span class="checkbox-text">Puzzle</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="strategy" class="checkbox-input">
+                            <span class="checkbox-custom"></span>
+                            <span class="checkbox-text">Strategy</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="arcade" class="checkbox-input">
+                            <span class="checkbox-custom"></span>
+                            <span class="checkbox-text">Arcade</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="racing" class="checkbox-input">
+                            <span class="checkbox-custom"></span>
+                            <span class="checkbox-text">Racing</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="sports" class="checkbox-input">
+                            <span class="checkbox-custom"></span>
+                            <span class="checkbox-text">Sports</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Privacy Section -->
+            <div class="edit-section glass">
+                <h3 class="edit-section-title">Privacy Settings</h3>
+                
+                <div class="form-group">
+                    <label class="toggle-label">
+                        <span class="toggle-text">
+                            <strong>Private Profile</strong>
+                            <small>Only approved friends can see your posts</small>
+                        </span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="editPrivateProfile">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="toggle-label">
+                        <span class="toggle-text">
+                            <strong>Show Game Activity</strong>
+                            <small>Let friends see when you're playing games</small>
+                        </span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="editShowGameActivity" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="toggle-label">
+                        <span class="toggle-text">
+                            <strong>Show Online Status</strong>
+                            <small>Display when you're online</small>
+                        </span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="editShowOnlineStatus" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="edit-profile-actions">
+                <button type="button" class="btn btn-secondary" onclick="history.back()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" id="saveProfileBtn">
+                    <span class="btn-text">Save Changes</span>
+                    <span class="btn-loader" style="display:none;">
+                        <span class="btn-spinner"></span>
+                        Saving...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Hidden file inputs -->
+<input type="file" id="bannerFileInput" accept="image/*" style="display:none;">
+<input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
